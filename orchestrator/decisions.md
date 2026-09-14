@@ -128,3 +128,31 @@ trace interface + edge-capture instruction; mutation testing + real PPA).
   which broke a naive "assume PC=0" differential-test setup; fixed by
   snapshotting the RTL's actual post-load architectural state into the
   Python model rather than assuming a fixed cycle count.
+
+## 2026-09-15 - Iteration 2: Real UART firmware, independent decoder & isolated unit tests
+
+- **Parameterized UART assembly generator:** Since the core has no data RAM,
+  bytes to transmit are loaded via `LDI`. `tools/uart_model.py` provides
+  `build_uart_tx_asm(byte_value, bit_period_cycles, pin)` that parameterizes
+  both the transmitted byte and the bit duration in clock cycles.
+- **Cycle-exact bit timing:** Detailed cycle analysis revealed that since
+  `uio_out` is registered on posedge clk, `SHIFTOUT` takes 1 cycle to present
+  the shifted bit. Therefore, to achieve a bit period of $P$ cycles, each bit
+  is held with `WAIT (P - 2)`. This yields exactly $P$ clock cycles for the
+  start bit, each of the 8 data bits, and the stop bit.
+- **Independent UART decoder model:** To avoid circular verification,
+  `tools/uart_model.py`'s `UartReceiver` implements a standard asynchronous
+  receiver algorithm: detect falling edge, sample at $0.5 \times P$ to verify
+  the start bit, sample at $(k + 0.5) \times P$ for data bits $k \in [0, 7]$,
+  and sample at $9.5 \times P$ to verify stop bit is high. Any off-by-one timing
+  bug would accumulate phase error and trigger framing errors.
+- **Verification results:** `test/test_uart.py` verifies transmission of edge
+  cases (`0x00`, `0xFF`, `0x55`, `0xAA`) and pseudorandom frames across multiple
+  bit periods ($P=4, 8, 16$) with a fresh reset and serial bootload for each frame.
+- **Per-opcode isolated unit tests:** Created `test/test_opcodes.py` directly
+  exercising all ALU operations, conditional branches, loops, GPIO directions,
+  and bit shifts in isolation with deterministic assertions.
+- **UART RX quantization jitter finding:** Formulated the key motivation for
+  Iteration 3's `WAITEDGE` instruction: software poll-loops (`GRD`/`ANDI`/`JNZ`)
+  take 3 cycles per iteration, causing 3-cycle jitter (37.5%-75% of bit period at
+  $P \le 8$), proving the necessity of hardware-level edge synchronization.

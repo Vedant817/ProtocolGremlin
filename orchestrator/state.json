@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-reprogrammable-verified",
+  "phase": "isa-v1-uart-verified",
   "best_commit": null,
-  "active_objective": "4-iteration novelty & verification push: (1) reprogrammable RAM + shift ops [DONE], (2) UART firmware, (3) trace/edge-capture novelty, (4) mutation testing + real PPA",
+  "active_objective": "4-iteration novelty & verification push: (1) reprogrammable RAM + shift ops [DONE], (2) UART firmware + opcode tests [DONE], (3) trace/edge-capture novelty, (4) mutation testing + real PPA",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 2,
+  "iterations": 3,
   "halt": false,
-  "notes": "Iteration 1 of 4 complete: chip is now genuinely reprogrammable after fabrication (serial bootloader over the uio bus, no $readmemh anywhere) and ISA v1 adds SHIFTOUT/SHIFTIN. test/test.py passes (63/63 cycles, RTL == Python model, loaded entirely via test/bootload.py). See orchestrator/queue.md for iteration 2 (UART firmware) and orchestrator/decisions.md for the research grounding behind the full 4-iteration plan."
+  "notes": "Iteration 2 of 4 complete: real UART TX firmware parameterized assembly (tools/uart_model.py) verified against independent cycle-by-cycle UartReceiver model (test/test_uart.py) across edge cases (0x00, 0xFF, 0x55, 0xAA) and pseudorandom data at bit periods 4, 8, 16. Added per-opcode isolated unit tests (test/test_opcodes.py). 6/6 test suites pass in regression. Next: Iteration 3 (PVFI formal interface, SymbiYosys formal harness, WAITEDGE edge-capture instruction)."
 }

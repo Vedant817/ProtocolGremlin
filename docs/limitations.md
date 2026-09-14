@@ -32,12 +32,23 @@ pipeline hazards to reason about), but a real SRAM macro is typically
 synchronous-read, so this will likely need revisiting once real synthesis
 data exists (`orchestrator/queue.md`, `docs/ppa.md`).
 
-## No UART/SPI/I2C firmware yet
+## ~~No UART/SPI/I2C firmware yet~~ (UART TX implemented and verified)
 
-The required initial protocols (UART, SPI, I2C) have not been implemented
-as firmware yet. ISA v1 added the `SHIFTOUT`/`SHIFTIN` primitives real
-bit-banging firmware needs (`docs/isa.md`), but no protocol firmware has
-been written against them yet - queued next.
+UART TX bit-banged firmware via parameterized assembly (`tools/uart_model.py`)
+is fully implemented and verified in `test/test_uart.py` across edge cases
+(0x00, 0xFF, 0x55, 0xAA) and pseudorandom bytes at multiple bit periods (4, 8,
+16 cycles/bit) against an independent software UART receiver model. SPI and
+I2C remain queued.
+
+### UART RX status & quantization jitter finding
+Pure software bit-banged UART RX requires polling the line for a start-bit
+falling edge. On ISA v1, the tightest polling loop (`poll: GRD R1; ANDI R1, 1;
+JNZ poll`) takes 3 cycles per iteration. This creates up to 3 cycles of
+unavoidable quantization jitter between the actual edge and software detection.
+At fast bit periods ($P \le 8$ cycles), 3 cycles of jitter represents
+37.5%–75% of a bit period, severely degrading sampling margin. This concrete
+empirical finding directly motivates Iteration 3's `WAITEDGE` hardware
+primitive (single-cycle hardware edge wait + timestamp capture).
 
 ## `ui_in` / `uo_out` are unused
 
@@ -68,11 +79,15 @@ instruction stream could currently execute a reserved opcode without any
 test noticing whether RTL and model still agree by coincidence or by
 matching intent.
 
-## Single test, single program
-
-`test/test.py` currently exercises exactly one hand-written program. See
-`docs/verification.md` "Known verification debt" for the full list of
-missing test categories.
+## ~~Single test, single program~~ (Expanded test suite)
+ 
+ The regression suite now executes 6 distinct test suites covering:
+ 1. Full cycle-by-cycle differential verification against Python ISA model (`test/test.py`).
+ 2. Real UART TX edge cases (0x00, 0xFF, 0x55, 0xAA) across multiple baud rates (`test/test_uart.py`).
+ 3. Real UART TX randomized data with fixed seeds (`test/test_uart.py`).
+ 4. ALU and register isolated unit tests (`test/test_opcodes.py`).
+ 5. Branching, loops, and condition code unit tests (`test/test_opcodes.py`).
+ 6. GPIO and bit-serial shift isolated unit tests (`test/test_opcodes.py`).
 
 ## Top module name is a placeholder
 

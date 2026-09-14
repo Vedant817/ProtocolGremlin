@@ -4,22 +4,17 @@ Priority order within each tier is not strict; use judgement per
 `orchestrator/WARP_CYCLE_PROMPT.md` step 4 ("identify the highest-value
 bounded problem").
 
-## Done (was P0, kept for history)
-
-- ~~Replace `src/program_rom.v` with a serially loaded program RAM~~ - done:
-  `src/program_ram.v` + the `core.v` bootloader FSM, see `docs/isa.md`
-  "Bootloader protocol". No `$readmemh` remains anywhere, including tests.
-- ~~Add SHIFTOUT/SHIFTIN instructions~~ - done, ISA v1, see `docs/isa.md`.
+- ~~Implement UART TX firmware (bit-banged via `SHIFTOUT`+`WAIT`) and verify
+  against an independent Python UART receiver model~~ - done: `tools/uart_model.py`
+  (UartReceiver + build_uart_tx_asm) + `test/test_uart.py` (verified across
+  edge cases, pseudorandom frames, and periods 4, 8, 16).
+- ~~Add per-opcode isolated unit tests~~ - done: `test/test_opcodes.py` directly
+  exercises all ALU, branch, loop, GPIO, and shift instructions.
 
 ## P0
 
 - Rename `tt_um_change_me_protocol_emulator` to include the real GitHub
   username, once known, in `src/project.v`, `info.yaml`, and `test/tb.v`.
-- Implement UART TX firmware (bit-banged via `SHIFTOUT`+`WAIT`) and verify
-  against an independent Python UART receiver model
-  (`PROJECT_MASTER_PLAN.md` section 8.2). UART RX if time allows.
-- Add per-opcode isolated unit tests (currently only exercised indirectly
-  via `firmware/loop_demo.asm`).
 
 ## P1
 
