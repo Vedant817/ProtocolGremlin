@@ -1,0 +1,25 @@
+# Simulation artifacts
+test/sim_build/
+**/sim_build/
+test/program.hex
+*.vcd
+*.fst
+*.fst.hier
+results.xml
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Toolchain (installed locally, not committed)
+miniforge3/
+.conda/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Autonomous loop control
+/HALT
+orchestrator/logs/*.log
