@@ -129,6 +129,14 @@ MUTANTS = [
         "replacement": "write_rd(rd_idx, {rd_val[6:0], gpio_in[pin_idx]});",
         "description": "Shift input bug: SHIFTIN LSB mode shifts left instead of right (reverses bit order)",
     },
+    {
+        "id": "MUT_14_OPEN_DRAIN_OE_POLARITY",
+        "category": "Protocol / Open-Drain",
+        "file": "src/gpio.v",
+        "target": "assign pin_oe  = (dir & ~od_mode) | (dir & od_mode & ~out_val);",
+        "replacement": "assign pin_oe  = (dir & ~od_mode) | (dir & od_mode & out_val);",
+        "description": "Open-drain OE polarity inversion: pin_oe asserts on out_val=1 instead of out_val=0",
+    },
 ]
 
 

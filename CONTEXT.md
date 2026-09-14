@@ -17,7 +17,7 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 
 ## Current status
 
-- **Phase:** ISA v1 complete — Iterations 1–9 complete (Zero-Jitter UART RX with WAITEDGE, Bootloader CRC-8 Hardware Protection, I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART TX, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
+- **Phase:** ISA v1 complete — Iterations 1–10 complete (Dallas 1-Wire Master with Single-Cycle Presence Pulse Discovery, Zero-Jitter UART RX with WAITEDGE, Bootloader CRC-8 Hardware Protection, I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART TX, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
 - **What exists:**
   1. **Core:** 24 opcodes, 4 registers, bidirectional GPIO bus on `uio[7:0]`,
      `SHIFTOUT`/`SHIFTIN` with MSB/LSB direction select (`imm8[3]`), `WAITEDGE`
@@ -37,11 +37,11 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
   5. **Firmware & Decoders:** Parameterized bit-banged UART TX and zero-jitter UART RX with
      framing error and glitch rejection (`tools/uart_model.py`),
      full-duplex SPI Master supporting all 4 modes ($CPOL \in \{0,1\}, CPHA \in \{0,1\}$) (`tools/spi_model.py`),
-     and I2C Master write/read transactions with compact `DECJNZ` loops (`tools/i2c_model.py`),
-     including dynamic clock-stretching absorption (`WAITEDGE`) and multi-master arbitration loss detection (`GRD`),
-     paired with independent `UartReceiver`, `UartTransmitter`, `SpiSlave`, and `I2cSlave` verification models.
-  6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 13
-     architectural fault categories, measuring **100.0% kill rate (13/13 killed)**
+     I2C Master write/read transactions with compact `DECJNZ` loops (`tools/i2c_model.py`),
+     and Dallas 1-Wire Master protocol engine with single-cycle presence pulse width measurement and read/write timeslots (`tools/onewire_model.py`),
+     paired with independent `UartReceiver`, `UartTransmitter`, `SpiSlave`, `I2cSlave`, and `OneWireSlave` verification models.
+  6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 14
+     architectural fault categories, measuring **100.0% kill rate (14/14 killed)**
      (citing Huang et al. 2015, Firefly 2025).
   7. **Constrained-Random Fuzzing:** Automated instruction fuzzer (`tools/fuzzer.py`)
      with delta-debugging program shrinker, verified in `test/test_fuzz.py`.
@@ -49,7 +49,7 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
      19,291 CMOS cells (37,832 GE). Active processor logic is only 1,580 cells
      (~2.2 kGE) with 91.8% of cells in the synthesized flip-flop RAM matrix.
      Fits the 8x4 competition tile footprint with >80 ns timing slack at 10 MHz.
-- **What's verified:** 31/31 test suites pass cleanly via `scripts/regress.sh`:
+- **What's verified:** 35/35 test suites pass cleanly via `scripts/regress.sh`:
   (1) cycle-by-cycle differential test (`test/test.py`),
   (2) UART TX edge-case verification (`0x00`, `0xFF`, `0x55`, `0xAA` at 4, 8, 16 cycles/bit),
   (3) UART TX pseudorandom frames,
@@ -80,7 +80,11 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
   (28) bootloader corrupted CRC rejection and halt lock,
   (29) single-bit payload bitflip corruption rejection,
   (30) premature LOAD_REQ deassertion abort detection,
-  (31) warm-boot skip without recalculating CRC.
+  (31) warm-boot skip without recalculating CRC,
+  (32) 1-Wire Master reset pulse and presence pulse discovery across duration sweep (15, 20, 25, 30 cycles),
+  (33) 1-Wire Master read timeslot scratchpad byte capture into R0,
+  (34) 1-Wire Master write timeslot command transmission to OneWireSlave,
+  (35) 1-Wire physical open-drain electrical safety (zero bus contention under forced external pull-down).
 - **Git:** Sequence of small, reviewable commits (`git log`).
 
 ## Repository map
@@ -88,8 +92,8 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 ```text
 src/            RTL: project.v (TT wrapper), core.v, alu.v, gpio.v, program_ram.v
 firmware/       Assembly programs (loop_demo.asm)
-tools/          assembler.py, isa_model.py, uart_model.py, spi_model.py, i2c_model.py, fuzzer.py
-test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz, test_spi, test_i2c, test_bootload)
+tools/          assembler.py, isa_model.py, uart_model.py, spi_model.py, i2c_model.py, onewire_model.py, fuzzer.py
+test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz, test_spi, test_i2c, test_bootload, test_onewire)
 formal/         SymbiYosys formal harness (core.sby, core_formal.v)
 scripts/        setup_env.sh, regress.sh, mutate.py, synth.sh, synth.ys
 docs/           architecture, ISA, verification, toolchain, PPA, limitations
@@ -100,9 +104,9 @@ orchestrator/   Durable state (decisions.md, queue.md, metrics.json, experiments
 
 ```bash
 bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
-bash scripts/regress.sh     # runs all 31 cocotb regression tests (~18s)
+bash scripts/regress.sh     # runs all 35 cocotb regression tests (~21s)
 sby -f formal/core.sby      # runs SymbiYosys formal verification with Z3
-python3 scripts/mutate.py   # runs RTL mutation testing campaign (13/13 killed)
+python3 scripts/mutate.py   # runs RTL mutation testing campaign (14/14 killed)
 bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 ```
 
@@ -121,9 +125,9 @@ bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 
 Full prioritized backlog: `orchestrator/queue.md`. Entering continuous loop:
 
-1. Iteration 10: 1-Wire Master Protocol Engine (Dallas DS18B20 Timing) with presence pulse discovery and bit timeslots via open-drain and WAITEDGE.
-2. Iteration 11: Hardware PWM & High-Resolution Timer Engine (`PWM` instruction / cycle-accurate waveform generator).
-3. Iteration 12+: PS/2 host controller, JTAG TAP controller, SWD line reset, Dual-lane architecture (`core_dual.v`).
+1. Iteration 11: PS/2 Bidirectional Host Controller (device clock edge sync on falling clock, 11-bit odd-parity verified frame reception and host-to-device inhibit/send via open-drain and WAITEDGE).
+2. Iteration 12: JTAG TAP Controller Engine (TMS state machine: Test-Logic-Reset, Run-Test/Idle, Shift-DR, Shift-IR, BYPASS and IDCODE readout).
+3. Iteration 13+: ARM SWD, Manchester Biphase, CAN Bus, Dual-lane architecture (`core_dual.v`).
 
 ## Keeping this file current
 

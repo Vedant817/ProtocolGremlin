@@ -355,5 +355,31 @@ mutation-kill rates.
   - Mutation Testing: Added `MUT_13_SHIFTIN_BIT_ORDER` (verifying bit reversal on shift inputs). Evaluated against all 13 mutants: **13/13 mutants killed (100.0% kill rate)** in 220.45s.
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
 
+## 2026-09-15 - Iteration 10: Dallas 1-Wire Master Protocol Engine & Presence Pulse Discovery
+
+- **Motivation & Bus Topology:**
+  - Maxim/Dallas 1-Wire is a standard single-wire bidirectional open-drain bus with pull-up resistor widely used for temperature sensors (DS18B20), EEPROMs, and identification silicon.
+  - Demonstrating full 1-Wire Master capability on our processor proves multi-standard open-drain agility alongside I2C.
+- **Novelty Highlight (Hardware Presence Discovery):**
+  - Standard microcontrollers lack hardware edge-timing discovery; they either sample the presence pulse at an arbitrary fixed delay (e.g. 70 µs) or run software polling loops subject to quantization error.
+  - Our core issues the Master Reset pulse ($t_{\text{RSTL}}$) via `GWRI 0x00` and `WAIT`, releases the line via `GWRI (1 << pin)`, and uses `WAITEDGE R3, pin` (falling edge mode 0) to synchronize to the exact cycle the slave asserts presence.
+  - The core immediately follows with `WAITEDGE R1, (1 << 3 | pin)` (rising edge mode 1), which stalls until the slave releases the bus and captures the **exact presence pulse width in clock cycles directly into R1** with single-cycle precision!
+- **Firmware & Models (`tools/onewire_model.py`):**
+  - `build_onewire_reset_presence_asm`: Issues reset pulse and captures presence duration into `R1`.
+  - `build_onewire_read_byte_asm`: Generates 8 read timeslots (master pulls low for 2 cycles, releases, waits 2 cycles for synchronizer settlement, samples line with `SHIFTIN R0, pin` LSB first, and waits 22 cycles recovery).
+  - `build_onewire_write_byte_asm`: Generates 8 write timeslots (write 1: pull low 2 cycles, release 26 cycles; write 0: pull low 20 cycles, release 10 cycles).
+  - `OneWireSlave`: Independent cycle-accurate model of a Dallas DS18B20 device simulating presence pulses, read slot bit generation, and write command latching.
+- **Verification (`test/test_onewire.py`):**
+  - `test_onewire_reset_and_presence`: Verified presence pulse durations (15, 20, 25, 30 cycles) captured with single-cycle precision in `R1`.
+  - `test_onewire_read_byte`: Verified reading `0x05` (DS18B20 power-on scratchpad default), `0x55`, `0xAA`, `0x00`, `0xFF`, `0x3C` into `R0`.
+  - `test_onewire_write_byte`: Verified writing ROM commands (`0xCC` Skip ROM, `0x44` Convert T, `0xBE` Read Scratchpad) latched by `OneWireSlave`.
+  - `test_onewire_electrical_safety`: Asserted cycle-by-cycle electrical non-contention: master never asserts `uio_out=1` while `uio_oe=1` on open-drain pins.
+  - Regression Suite: **35/35 tests passing (100.0%)** in 21.4s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified in 65s (PASS, 0 violations).
+  - Mutation Testing: Added `MUT_14_OPEN_DRAIN_OE_POLARITY`. Evaluated against all 14 mutants: **14/14 mutants killed (100.0% kill rate)** in 263.34s.
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
+
+
 
 

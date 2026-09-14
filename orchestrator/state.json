@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-uart-rx-verified",
+  "phase": "isa-v1-onewire-master-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 9 complete (UART RX Firmware with WAITEDGE Zero-Jitter Synchronization, Framing Error Handling, and Glitch Rejection). Next: Iteration 10 (Dallas 1-Wire Master Protocol Engine).",
+  "active_objective": "Continuous engineering loop: Iteration 10 complete (Dallas 1-Wire Master Protocol Engine with Single-Cycle Presence Pulse Discovery & Timeslots). Next: Iteration 11 (PS/2 Bidirectional Host Controller Engine).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 10,
+  "iterations": 11,
   "halt": false,
-  "notes": "Iteration 9 complete: Implemented build_uart_rx_asm() and UartTransmitter in tools/uart_model.py utilizing WAITEDGE for 0-jitter start-bit edge synchronization, single-cycle accurate 1.5P..8.5P mid-bit sampling, 9.5P stop-bit framing error verification, and 0.5P false-start glitch rejection. Added 4 new cocotb tests in test/test_uart.py. All 31 regression tests pass (100%). SymbiYosys formal verification passed (20-step Z3 BMC, 0 violations). Added MUT_13_SHIFTIN_BIT_ORDER in scripts/mutate.py, achieving 13/13 mutants killed (100.0% kill rate). Synthesis cell count unchanged at 19,291 CMOS cells."
+  "notes": "Iteration 10 complete: Created tools/onewire_model.py (OneWireSlave DS18B20 emulation, reset presence capture, read timeslots, write timeslots) and test/test_onewire.py (4/4 tests: presence duration sweep across 15, 20, 25, 30 cycles captured with single-cycle precision into R1; read scratchpad byte into R0; write ROM command bytes; electrical non-contention safety). Added test_onewire to test/Makefile. All 35 regression tests pass (100%). SymbiYosys formal BMC passed (20-step Z3, 0 violations). Added MUT_14_OPEN_DRAIN_OE_POLARITY in scripts/mutate.py, achieving 14/14 mutants killed (100.0% kill rate). Synthesis cell count unchanged at 19,291 CMOS cells."
 }

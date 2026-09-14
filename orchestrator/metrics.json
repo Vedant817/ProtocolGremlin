@@ -1,7 +1,7 @@
 {
   "correctness": {
-    "rtl_tests_passed": 31,
-    "rtl_tests_total": 31,
+    "rtl_tests_passed": 35,
+    "rtl_tests_total": 35,
     "gate_tests_passed": 0,
     "gate_tests_total": 0
   },
@@ -12,7 +12,8 @@
     "i2c_master": true,
     "i2c_clock_stretching": true,
     "i2c_multi_master_arbitration": true,
-    "bootloader_crc8_integrity": true
+    "bootloader_crc8_integrity": true,
+    "onewire_master": true
   },
   "verification": {
     "randomized_iterations": 10,

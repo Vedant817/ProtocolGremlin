@@ -57,7 +57,11 @@ bounded problem").
   done: on-chip hardware CRC-8 accumulator, `test/test_bootload.py` (5/5 tests), SymbiYosys proven, 12/12 mutants killed.
 - ~~UART RX firmware with start-bit edge synchronization via `WAITEDGE`~~ -
   done: `tools/uart_model.py` (build_uart_rx_asm + UartTransmitter) + `test/test_uart.py` (31/31 regression pass, zero jitter, framing error & glitch rejection, 13/13 mutants killed).
-- 1-Wire Master Protocol Engine (Dallas DS18B20 Timing) with presence pulse discovery and bit timeslots via open-drain and `WAITEDGE`.
+- ~~1-Wire Master Protocol Engine (Dallas DS18B20 Timing) with presence pulse discovery and bit timeslots via open-drain and `WAITEDGE`~~ -
+  done: `tools/onewire_model.py` (OneWireSlave + build_onewire_reset_presence_asm + build_onewire_read_byte_asm + build_onewire_write_byte_asm) + `test/test_onewire.py` (35/35 regression pass, presence duration sweep, read/write timeslots, 14/14 mutants killed).
+- PS/2 Bidirectional Host Controller (device clock edge sync on falling clock, 11-bit odd-parity verified frame reception and host-to-device inhibit/send via open-drain and `WAITEDGE`).
+- JTAG TAP Controller Engine (TMS state machine: Test-Logic-Reset, Run-Test/Idle, Shift-DR, Shift-IR, BYPASS and IDCODE readout).
+- ARM SWD (Serial Wire Debug) Interface Engine (Line Reset sequence 50+ clocks high, JTAG-to-SWD switching, turnaround bits, SWD header and ACK readout).
 - Convert `program_ram.v` to a synchronous-read design once real synthesis
   data shows it matters for PPA (`docs/limitations.md`).
 
