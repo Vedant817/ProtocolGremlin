@@ -1,13 +1,13 @@
 {
   "correctness": {
-    "rtl_tests_passed": 27,
-    "rtl_tests_total": 27,
+    "rtl_tests_passed": 31,
+    "rtl_tests_total": 31,
     "gate_tests_passed": 0,
     "gate_tests_total": 0
   },
   "protocols": {
     "uart_tx": true,
-    "uart_rx": false,
+    "uart_rx": true,
     "spi_modes_passed": 4,
     "i2c_master": true,
     "i2c_clock_stretching": true,

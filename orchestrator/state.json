@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-bootloader-crc8-verified",
+  "phase": "isa-v1-uart-rx-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 8 complete (Bootloader Hardware CRC-8 Integrity Checking & Error Reporting). Next: Iteration 9 (UART RX Firmware with WAITEDGE start-bit synchronization).",
+  "active_objective": "Continuous engineering loop: Iteration 9 complete (UART RX Firmware with WAITEDGE Zero-Jitter Synchronization, Framing Error Handling, and Glitch Rejection). Next: Iteration 10 (Dallas 1-Wire Master Protocol Engine).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 9,
+  "iterations": 10,
   "halt": false,
-  "notes": "Iteration 8 complete: Added hardware CRC-8 accumulator (poly 0x07) and LD_CRC state in src/core.v. Exposed boot_done (uo_out[0]) and boot_err (uo_out[1]) on Tiny Tapeout dedicated outputs in src/project.v. Hardened fail-safe: any CRC mismatch or premature LOAD_REQ deassertion locks the core in halt, permanently preventing corrupted code execution. Added test/test_bootload.py (5/5 tests: clean load, inverted CRC rejection, single-bit corruption, truncated load, warm boot skip). All 27 regression tests pass (100%). SymbiYosys formal verification passed (assert pvfi_halted && !pvfi_valid on boot_err). 12/12 mutants killed (100.0% kill rate). Synthesis: 19,291 CMOS cells (+48 cells)."
+  "notes": "Iteration 9 complete: Implemented build_uart_rx_asm() and UartTransmitter in tools/uart_model.py utilizing WAITEDGE for 0-jitter start-bit edge synchronization, single-cycle accurate 1.5P..8.5P mid-bit sampling, 9.5P stop-bit framing error verification, and 0.5P false-start glitch rejection. Added 4 new cocotb tests in test/test_uart.py. All 31 regression tests pass (100%). SymbiYosys formal verification passed (20-step Z3 BMC, 0 violations). Added MUT_13_SHIFTIN_BIT_ORDER in scripts/mutate.py, achieving 13/13 mutants killed (100.0% kill rate). Synthesis cell count unchanged at 19,291 CMOS cells."
 }

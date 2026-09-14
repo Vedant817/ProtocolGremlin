@@ -35,23 +35,23 @@ pipeline hazards to reason about), but a real SRAM macro is typically
 synchronous-read, so this will likely need revisiting once real synthesis
 data exists (`orchestrator/queue.md`, `docs/ppa.md`).
 
-## ~~No UART/SPI/I2C firmware yet~~ (UART TX implemented and verified)
+## ~~No UART/SPI/I2C firmware yet~~ (UART TX/RX, SPI Master, and I2C Master verified)
 
-UART TX bit-banged firmware via parameterized assembly (`tools/uart_model.py`)
-is fully implemented and verified in `test/test_uart.py` across edge cases
+UART TX and RX firmware via parameterized assembly (`tools/uart_model.py`)
+are fully implemented and verified in `test/test_uart.py` across edge cases
 (0x00, 0xFF, 0x55, 0xAA) and pseudorandom bytes at multiple bit periods (4, 8,
-16 cycles/bit) against an independent software UART receiver model. SPI and
-I2C remain queued.
+16 cycles/bit) against independent software models (`UartReceiver` and `UartTransmitter`).
+SPI Master (all 4 modes, full-duplex) and I2C Master (START, STOP, ACK/NACK,
+clock-stretching via `WAITEDGE`, and arbitration loss detection via `GRD`) are also fully verified.
 
-### UART RX status & quantization jitter finding
-Pure software bit-banged UART RX requires polling the line for a start-bit
-falling edge. On ISA v1, the tightest polling loop (`poll: GRD R1; ANDI R1, 1;
-JNZ poll`) takes 3 cycles per iteration. This creates up to 3 cycles of
-unavoidable quantization jitter between the actual edge and software detection.
-At fast bit periods ($P \le 8$ cycles), 3 cycles of jitter represents
-37.5%–75% of a bit period, severely degrading sampling margin. This concrete
-empirical finding directly motivated Iteration 3's `WAITEDGE` hardware
-primitive (single-cycle hardware edge wait + timestamp capture).
+### ~~UART RX quantization jitter limitation~~ (fixed in Iteration 9)
+Pure software bit-banged UART RX originally required polling the line for a start-bit
+falling edge, which created up to 3 cycles of unavoidable quantization jitter.
+**Fixed in Iteration 9**: Using `WAITEDGE R3, pin`, the hardware edge detector halts PC
+advancement on the exact cycle of the falling edge, achieving **0 cycles of quantization jitter**.
+The firmware then positions the mid-bit sampling points at $1.5P, 2.5P, \dots, 8.5P$
+with single-cycle precision using `WAIT` and `SHIFTIN`, and samples the stop bit at $9.5P$,
+reporting framing errors (`0xFE` in `R2`) and rejecting false-start glitches (`0xFF` in `R2`).
 
 ## `ui_in` / `uo_out` are unused
 

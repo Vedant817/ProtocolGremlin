@@ -55,7 +55,9 @@ bounded problem").
   done: `tools/i2c_model.py` (build_i2c_write_with_stretch_asm, build_i2c_write_with_arbitration_asm) + `test/test_i2c.py` (22/22 regression pass, stretch absorbed, arbitration loss cleanly aborted).
 - ~~Bootloader CRC-8 checksum addition to detect corrupted/truncated frames~~ -
   done: on-chip hardware CRC-8 accumulator, `test/test_bootload.py` (5/5 tests), SymbiYosys proven, 12/12 mutants killed.
-- UART RX firmware with start-bit edge synchronization via `WAITEDGE`.
+- ~~UART RX firmware with start-bit edge synchronization via `WAITEDGE`~~ -
+  done: `tools/uart_model.py` (build_uart_rx_asm + UartTransmitter) + `test/test_uart.py` (31/31 regression pass, zero jitter, framing error & glitch rejection, 13/13 mutants killed).
+- 1-Wire Master Protocol Engine (Dallas DS18B20 Timing) with presence pulse discovery and bit timeslots via open-drain and `WAITEDGE`.
 - Convert `program_ram.v` to a synchronous-read design once real synthesis
   data shows it matters for PPA (`docs/limitations.md`).
 

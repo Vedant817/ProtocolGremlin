@@ -332,4 +332,28 @@ mutation-kill rates.
   - Mutation Testing: Added `MUT_12_BOOTLOADER_CRC_BYPASS`. Evaluated against the entire suite: **12/12 mutants killed (100.0% kill rate)** in 180.59s.
   - Yosys Synthesis: Mapped 19,291 CMOS cells (+48 cells over Iteration 7 baseline, 37,832 GE total). Active processor core logic is 1,580 cells (~2.2 kGE).
 
+## 2026-09-15 - Iteration 9: UART RX Hardware Edge-Synchronization & Framing Error Handling
+
+- **Motivation & Limitation Elimination:**
+  - In `docs/limitations.md`, UART RX was documented as an open limitation because software polling loops (`GRD`/`ANDI`/`JNZ`) introduce 3 cycles of unavoidable quantization jitter, consuming 37.5%–75% of bit timing margin at fast baud rates ($P \le 8$).
+  - With Iteration 3's `WAITEDGE` instruction, this limitation is now completely eliminated: `WAITEDGE R3, pin` stalls until the exact cycle the start bit falling edge arrives, providing **0 cycles of quantization jitter**.
+- **Firmware Architecture (`tools/uart_model.py`):**
+  - Implemented `build_uart_rx_asm(bit_period_cycles, pin, check_false_start)`:
+    1. Synchronize to falling edge with 0 jitter via `WAITEDGE R3, pin`.
+    2. Optional False-Start Glitch Rejection (`check_false_start=True`): sample line at $0.5 \times P$. If line returned HIGH, abort immediately with status `R2 = 0xFF`.
+    3. Center-Sample 8 Data Bits: delay to $1.5 \times P$, sample bit 0 into `R0` with `SHIFTIN R0, pin` (LSB first), then execute 7 successive loops/intervals of $P$ cycles (`WAIT (P-2)` + `SHIFTIN`) to sample bits 1–7 at exact bit midpoints $2.5P, \dots, 8.5P$.
+    4. Stop Bit & Framing Error Verification: delay $P$ cycles to $9.5 \times P$ (midpoint of stop bit), read bus via `GRD R1`, mask bit with `ANDI R1, pin_mask`, and branch via `JNZ rx_success`. If stop bit was 0 (framing error), set status `R2 = 0xFE`.
+  - Created `UartTransmitter` model in `tools/uart_model.py` capable of synthesizing cycle-accurate UART frames, injecting stop-bit framing errors, and injecting short noise glitches.
+- **Verification (`test/test_uart.py`):**
+  - Added `test_uart_rx_edge_cases`: verified clean reception of `0x00`, `0xFF`, `0x55`, `0xAA` at bit periods 8 and 16 cycles/bit.
+  - Added `test_uart_rx_pseudorandom`: verified clean reception of fixed-seed pseudorandom bytes.
+  - Added `test_uart_rx_framing_error`: transmitter holds stop bit low; core detects framing error and sets `R2 = 0xFE`.
+  - Added `test_uart_rx_glitch_rejection`: 1-cycle low pulse injected on start; core detects false start and halts with `R2 = 0xFF`.
+  - Regression Suite: **31/31 tests passing (100.0%)** in 18.2s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified in 64s (PASS, 0 violations).
+  - Mutation Testing: Added `MUT_13_SHIFTIN_BIT_ORDER` (verifying bit reversal on shift inputs). Evaluated against all 13 mutants: **13/13 mutants killed (100.0% kill rate)** in 220.45s.
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
+
+
 

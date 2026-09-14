@@ -121,6 +121,14 @@ MUTANTS = [
         "replacement": "if (1'b1) begin",
         "description": "Bootloader security bug: core accepts corrupted programs by bypassing CRC-8 verification",
     },
+    {
+        "id": "MUT_13_SHIFTIN_BIT_ORDER",
+        "category": "Protocol / Bit-Serial",
+        "file": "src/core.v",
+        "target": "write_rd(rd_idx, {gpio_in[pin_idx], rd_val[7:1]});",
+        "replacement": "write_rd(rd_idx, {rd_val[6:0], gpio_in[pin_idx]});",
+        "description": "Shift input bug: SHIFTIN LSB mode shifts left instead of right (reverses bit order)",
+    },
 ]
 
 
