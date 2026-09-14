@@ -47,6 +47,8 @@ OPCODES = {
     "SHIFTOUT": 19,
     "SHIFTIN": 20,
     "WAITEDGE": 21,
+    "GODRI": 22,
+    "GODR": 23,
 }
 
 # Instructions that take (rd, imm8). SHIFTOUT/SHIFTIN's "imm8" is a
@@ -55,9 +57,9 @@ RD_IMM_OPS = {"LDI", "ADDI", "SUBI", "ANDI", "ORI", "XORI", "SHIFTOUT", "SHIFTIN
 # Instructions that take (rd, rs)
 RD_RS_OPS = {"MOV"}
 # Instructions that take (imm8) only
-IMM_ONLY_OPS = {"GDIRI", "GWRI", "WAIT"}
+IMM_ONLY_OPS = {"GDIRI", "GWRI", "WAIT", "GODRI"}
 # Instructions that take (rd) only
-RD_ONLY_OPS = {"GDIR", "GWR", "GRD"}
+RD_ONLY_OPS = {"GDIR", "GWR", "GRD", "GODR"}
 # Instructions that take (addr) only
 ADDR_ONLY_OPS = {"JMP", "JZ", "JNZ"}
 # Instructions that take (rd, addr)

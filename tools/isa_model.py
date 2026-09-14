@@ -39,6 +39,8 @@ OP_HALT = 18
 OP_SHIFTOUT = 19
 OP_SHIFTIN = 20
 OP_WAITEDGE = 21
+OP_GODRI = 22
+OP_GODR = 23
 
 ADDR_WIDTH = 8
 ADDR_MASK = (1 << ADDR_WIDTH) - 1
@@ -54,10 +56,19 @@ class CoreState:
     wait_remaining: int = 0
     gpio_dir: int = 0
     gpio_out: int = 0
+    gpio_od_mode: int = 0
     gpio_in_sync: int = 0
     gpio_in_prev: int = 0
     cycle_cnt: int = 0
     edge_wait_cnt: int = 0
+
+    @property
+    def effective_pin_out(self) -> int:
+        return (self.gpio_out & ~self.gpio_od_mode) & 0xFF
+
+    @property
+    def effective_pin_oe(self) -> int:
+        return ((self.gpio_dir & ~self.gpio_od_mode) | (self.gpio_dir & self.gpio_od_mode & ~self.gpio_out)) & 0xFF
 
     def snapshot(self) -> dict:
         return {
@@ -68,8 +79,10 @@ class CoreState:
             "r3": self.regs[3],
             "z": self.z,
             "halted": self.halted,
-            "gpio_dir": self.gpio_dir,
-            "gpio_out": self.gpio_out,
+            "wait_remaining": self.wait_remaining,
+            "gpio_dir": self.effective_pin_oe,
+            "gpio_out": self.effective_pin_out,
+            "gpio_od_mode": self.gpio_od_mode,
             "cycle_cnt": self.cycle_cnt,
             "edge_wait_cnt": self.edge_wait_cnt,
         }
@@ -166,6 +179,10 @@ class CoreModel:
                 s.gpio_out = operand
             elif opcode == OP_GWR:
                 s.gpio_out = self._reg_get(s.regs, rd)
+            elif opcode == OP_GODRI:
+                s.gpio_od_mode = operand
+            elif opcode == OP_GODR:
+                s.gpio_od_mode = self._reg_get(s.regs, rd)
             elif opcode == OP_GRD:
                 self._reg_set(s.regs, rd, old_in_sync)
                 s.z = old_in_sync == 0

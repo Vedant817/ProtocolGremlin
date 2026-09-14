@@ -69,12 +69,20 @@ Fixed 16-bit instruction width:
 |     16 | `JNZ`    | addr8      | `PC = addr8` if `!Z`, else `PC = PC + 1`.                           |
 |     17 | `DECJNZ` | rd, addr8  | `rd = rd - 1`; `Z` set; `PC = addr8` if `rd != 0`, else `PC + 1`.   |
 |     18 | `HALT`   | -          | Core stops fetching/executing until the next reset.                |
-|     19 | `SHIFTOUT` | rd, pin  | Drive `rd[0]` onto GPIO bit `pin` (operand[2:0]); `rd = rd >> 1` (zero-fill). `Z` set. |
-|     20 | `SHIFTIN`  | rd, pin  | `rd = {sampled bit, rd[7:1]}` (sampled bit from synchronized GPIO bit `pin`). `Z` set. |
+|     19 | `SHIFTOUT` | rd, pin [, DIR] | Drive `rd[0]` (LSB) or `rd[7]` (MSB, when operand[3]=1) onto GPIO bit `pin`; shift `rd`. `Z` set. |
+|     20 | `SHIFTIN`  | rd, pin [, DIR] | Shift in synchronized GPIO bit `pin` at bit 7 (LSB mode) or bit 0 (MSB mode). `Z` set. |
 |     21 | `WAITEDGE` | rd, imm8 | Stall until GPIO edge; `rd = elapsed_cycles` (autobaud/timing discovery). Mode 3: timestamp (`rd = cycle_cnt[7:0]`). `Z` set. |
+|     22 | `GODRI`    | imm8     | GPIO Open-Drain mask register = `imm8` (1 = open-drain mode on pin, 0 = push-pull). |
+|     23 | `GODR`     | rd       | GPIO Open-Drain mask register = `rd`. |
 
-Opcodes 22-31 are reserved/illegal in v1 and currently behave as `NOP`
+Opcodes 24-31 are reserved/illegal in v1 and currently behave as `NOP`
 (documented, not asserted-against - see `docs/limitations.md`).
+
+### Hardware Open-Drain Mode (`GODRI`, `GODR`)
+For any pin `i` where `gpio_od_mode[i] == 1`:
+- `uio_out[i]` is forced to 0 (never actively drives HIGH, provably eliminating bus contention).
+- When `gpio_out[i] == 0`: `uio_oe[i] = 1`, pulling the pin actively to LOW (0).
+- When `gpio_out[i] == 1`: `uio_oe[i] = 0`, releasing the pin to high-impedance (tri-state), allowing an external pull-up resistor (or slave ACK) to pull the bus HIGH.
 
 ### WAITEDGE Encoding & Operands
 `imm8` layout for `WAITEDGE rd, imm8`:

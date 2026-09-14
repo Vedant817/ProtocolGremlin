@@ -20,8 +20,9 @@
 module gpio (
     input  wire       clk,
     input  wire       rst_n,
-    input  wire [7:0] dir,      // 1 = output, 0 = input (-> uio_oe)
-    input  wire [7:0] out_val,  // -> uio_out
+    input  wire [7:0] dir,      // 1 = output, 0 = input
+    input  wire [7:0] out_val,  // -> uio_out data
+    input  wire [7:0] od_mode,  // 1 = open-drain mode, 0 = push-pull mode
     input  wire [7:0] pin_in,   // <- uio_in (raw, async)
     output wire [7:0] pin_out,  // -> uio_out
     output wire [7:0] pin_oe,   // -> uio_oe
@@ -40,7 +41,12 @@ module gpio (
     end
   end
 
-  assign pin_out = out_val;
-  assign pin_oe  = dir;
+  // Push-pull mode: pin_out = out_val, pin_oe = dir
+  // Open-drain mode:
+  //   pin_out = 1'b0 (never drive high actively)
+  //   pin_oe  = 1 when dir=1 and out_val=0 (drive 0 actively)
+  //   pin_oe  = 0 when dir=0 or out_val=1 (high-Z / released to pullup)
+  assign pin_out = out_val & ~od_mode;
+  assign pin_oe  = (dir & ~od_mode) | (dir & od_mode & ~out_val);
 
 endmodule

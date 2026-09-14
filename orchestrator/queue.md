@@ -47,9 +47,11 @@ bounded problem").
   `scripts/mutate.py`, 10/10 mutants killed (100.0% kill rate) in 46.95s.
 - ~~SPI Master firmware supporting all 4 modes (CPOL 0/1, CPHA 0/1) and full-duplex~~ -
   done: `tools/spi_model.py` (build_spi_master_asm + SpiSlave) + `test/test_spi.py` (Mode 0-3, full duplex, random).
-- I2C firmware (START, STOP, ACK/NACK, open-drain primitive).
-- Explicit test coverage for reserved/illegal opcodes 21-31 (currently
-  silently behave as NOP, untested - see `docs/limitations.md`).
+- ~~I2C firmware (START, STOP, ACK/NACK, open-drain primitive OP_GODRI/OP_GODR)~~ -
+  done: `src/core.v`, `src/gpio.v`, `tools/i2c_model.py` (build_i2c_write_asm + build_i2c_read_asm + I2cSlave) + `test/test_i2c.py` (5/5 tests pass, open-drain contention prevention formally proven).
+- I2C Clock Stretching & Arbitration Detection via `WAITEDGE`.
+- Bootloader CRC-8 checksum addition to detect corrupted/truncated frames.
+- UART RX firmware with start-bit edge synchronization via `WAITEDGE`.
 - Convert `program_ram.v` to a synchronous-read design once real synthesis
   data shows it matters for PPA (`docs/limitations.md`).
 

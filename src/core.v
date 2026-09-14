@@ -80,6 +80,8 @@ module core #(
   localparam [4:0] OP_SHIFTOUT = 5'd19;
   localparam [4:0] OP_SHIFTIN  = 5'd20;
   localparam [4:0] OP_WAITEDGE = 5'd21;
+  localparam [4:0] OP_GODRI    = 5'd22;
+  localparam [4:0] OP_GODR     = 5'd23;
 
   localparam [2:0] ALU_ADD = 3'd0;
   localparam [2:0] ALU_SUB = 3'd1;
@@ -110,6 +112,7 @@ module core #(
 
   reg [7:0] gpio_dir;
   reg [7:0] gpio_out;
+  reg [7:0] gpio_od_mode;
   wire [7:0] gpio_in;
   reg [7:0] gpio_in_prev;
   reg [31:0] cycle_cnt;
@@ -153,6 +156,7 @@ module core #(
       .rst_n  (rst_n),
       .dir    (gpio_dir),
       .out_val(gpio_out),
+      .od_mode(gpio_od_mode),
       .pin_in (uio_in),
       .pin_out(uio_out),
       .pin_oe (uio_oe),
@@ -233,6 +237,7 @@ module core #(
       wait_remaining <= 8'h00;
       gpio_dir       <= 8'h00;
       gpio_out       <= 8'h00;
+      gpio_od_mode   <= 8'h00;
       gpio_in_prev   <= 8'h00;
       cycle_cnt      <= 32'd0;
       edge_wait_cnt  <= 8'h00;
@@ -342,6 +347,8 @@ module core #(
               OP_GDIR:  gpio_dir <= rd_val;
               OP_GWRI:  gpio_out <= operand;
               OP_GWR:   gpio_out <= rd_val;
+              OP_GODRI: gpio_od_mode <= operand;
+              OP_GODR:  gpio_od_mode <= rd_val;
 
               OP_GRD: begin
                 write_rd(rd_idx, gpio_in);
@@ -501,6 +508,7 @@ module core #(
       assert(wait_remaining == 8'h00);
       assert(gpio_dir == 8'h00);
       assert(gpio_out == 8'h00);
+      assert(gpio_od_mode == 8'h00);
       assert(ld_state == 3'd0);
       assert(cycle_cnt == 32'd0);
     end
@@ -525,12 +533,16 @@ module core #(
         assert(r3 == $past(r3));
         assert(gpio_out == $past(gpio_out));
         assert(gpio_dir == $past(gpio_dir));
+        assert(gpio_od_mode == $past(gpio_od_mode));
       end
 
       // Bootloader done absorbency: never leaves LD_DONE once reached
       if ($past(ld_state) == 3'd3) begin
         assert(ld_state == 3'd3);
       end
+
+      // Invariant: Open-drain pins NEVER actively drive 1 (bus contention prevention)
+      assert((uio_oe & gpio_od_mode & uio_out) == 8'h00);
     end
   end
 `endif

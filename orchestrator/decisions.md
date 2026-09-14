@@ -251,3 +251,36 @@ mutation-kill rates.
   - RTL Mutation Testing: 10/10 mutants killed (100.0% kill rate) in 44.9s.
   - Yosys Synthesis: 19,184 mapped CMOS gates (+41 gates over Iteration 4 baseline, 37,605 GE total), proving the MSB/LSB shift multiplexer added virtually zero area overhead.
 
+## 2026-09-15 - Iteration 6: Hardware Open-Drain Primitives (OP_GODRI, OP_GODR), I2C Master Firmware & I2cSlave Model
+
+- **Hardware Open-Drain Architectural Primitives (`OP_GODRI`, `OP_GODR`):**
+  - Added opcode 22 (`OP_GODRI imm8`) and opcode 23 (`OP_GODR rd`) to configure an 8-bit architectural open-drain mask register `gpio_od_mode`.
+  - In `src/gpio.v`:
+    `assign pin_out = out_val & ~od_mode;`
+    `assign pin_oe  = (dir & ~od_mode) | (dir & od_mode & ~out_val);`
+  - In open-drain mode (`od_mode[i] == 1`):
+    - When `out_val[i] == 0`: `pin_oe[i] = 1`, `pin_out[i] = 0` (actively drives LOW).
+    - When `out_val[i] == 1`: `pin_oe[i] = 0`, `pin_out[i] = 0` (releases pin to high-Z, pulled HIGH by external resistor).
+  - **Electrical Contention Elimination:** By forcing `pin_out = out_val & ~od_mode`, open-drain pins physically *cannot* drive 1. This provably prevents shoot-through current and bus contention when an external slave acknowledges (ACK) by pulling SDA low simultaneously.
+  - **Comparison with RP2040 PIO:** In RP2040 PIO, open-drain is not supported natively in the pin logic; developers must constantly execute `set pindirs` to flip between input and output, consuming valuable instruction slots and complicating bit shifts. In our ASIC, `GODRI 0x03` enables open-drain in a single instruction, and standard bit-serial instructions (`SHIFTOUT`, `SHIFTIN`, `GWRI`) work seamlessly.
+- **Cycle-Exact I2C Master Firmware (`tools/i2c_model.py`):**
+  - Implemented `build_i2c_write_asm(addr7, data_bytes, half_period)` and `build_i2c_read_asm(addr7, num_bytes, half_period)`.
+  - Utilized `DECJNZ` (loop counter) to serialize the 8 bits of each address and data byte in only 16 instructions per byte (instead of 65 unrolled instructions), keeping multi-byte transactions well below the 255-word bootloader limit.
+  - Implemented textbook I2C framing: START condition (SDA 1->0 while SCL=1), 7-bit Address + R/W bit, 9th clock ACK/NACK sampling with high-Z release, and STOP condition (SDA 0->1 while SCL=1).
+- **Independent I2C Slave Model (`tools/i2c_model.py`):**
+  - Created cycle-by-cycle `I2cSlave` tracking START/STOP edge conditions and clock transitions.
+  - Correctly differentiated the SCL falling edge completing the START condition from data bit clocks, preventing off-by-one phase alignment errors during address sampling.
+  - Implemented automatic address matching, 9th-bit ACK drive (pulling SDA low), data byte latching, and Master NACK handling.
+- **Rigorous Verification (`test/test_i2c.py`):**
+  - Added 5 new cocotb test cases:
+    1. Single-byte write (`0xA5` to Slave address `0x3C`, verified ACK, data, and STOP).
+    2. Multi-byte write (`[0x10, 0x42, 0x99]` EEPROM payload to Slave address `0x50`, verified sequence and ACKs).
+    3. Single-byte read (Slave `0x3C` returns `0x5A`, Master captures into `R0` and generates NACK).
+    4. Unresponsive slave NACK detection (Master addresses unassigned `0x77`, detects `R1 == 1`).
+    5. Electrical contention prevention proof: Monitored DUT drive state on every cycle; verified zero instances of active HIGH drive while output-enabled on open-drain pins (`dut_oe & od_mode & dut_out == 0`).
+  - Total regression suite expanded to **19/19 tests passing (100.0%)** in 12.79s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: Added formal safety property `assert((uio_oe & gpio_od_mode & uio_out) == 8'h00);`. Formally proved over 20 steps with Z3 (PASS, 0 violations).
+  - Mutation Testing: Added `MUT_11_OPEN_DRAIN_DRIVE_HIGH`. Tested against the expanded suite: **11/11 mutants killed (100.0% kill rate)** in 141.45s.
+  - Yosys Synthesis: Mapped 19,243 CMOS cells (+59 cells over Iteration 5 baseline, 37,736 GE total). Core logic is only 1,486 cells (~2.1 kGE), maintaining 92.3% memory dominance and zero timing violations.
+

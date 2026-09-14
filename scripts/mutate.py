@@ -85,8 +85,8 @@ MUTANTS = [
         "id": "MUT_08_GPIO_OE_INVERT",
         "category": "Interface / Tri-state",
         "file": "src/gpio.v",
-        "target": "assign pin_oe  = dir;",
-        "replacement": "assign pin_oe  = ~dir;",
+        "target": "assign pin_oe  = (dir & ~od_mode) | (dir & od_mode & ~out_val);",
+        "replacement": "assign pin_oe  = ~((dir & ~od_mode) | (dir & od_mode & ~out_val));",
         "description": "GPIO bus direction inversion: pin_oe driven inverted",
     },
     {
@@ -104,6 +104,14 @@ MUTANTS = [
         "target": "if (gpio_in[LOAD_REQ_BIT]) begin",
         "replacement": "if (1'b0) begin",
         "description": "Bootloader FSM bug: core ignores host serial LOAD_REQ signal",
+    },
+    {
+        "id": "MUT_11_OPEN_DRAIN_DRIVE_HIGH",
+        "category": "Protocol / Open-Drain",
+        "file": "src/gpio.v",
+        "target": "assign pin_out = out_val & ~od_mode;",
+        "replacement": "assign pin_out = out_val;",
+        "description": "Open-drain electrical bug: pin_out actively drives high in open-drain mode",
     },
 ]
 
