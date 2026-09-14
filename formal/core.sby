@@ -1,0 +1,17 @@
+[options]
+mode bmc
+depth 20
+
+[engines]
+smtbmc z3
+
+[script]
+read -formal -DPVFI -DFORMAL core_formal.v core.v alu.v gpio.v program_ram.v
+prep -top core_formal
+
+[files]
+formal/core_formal.v
+src/core.v
+src/alu.v
+src/gpio.v
+src/program_ram.v

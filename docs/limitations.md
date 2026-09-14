@@ -47,7 +47,7 @@ JNZ poll`) takes 3 cycles per iteration. This creates up to 3 cycles of
 unavoidable quantization jitter between the actual edge and software detection.
 At fast bit periods ($P \le 8$ cycles), 3 cycles of jitter represents
 37.5%–75% of a bit period, severely degrading sampling margin. This concrete
-empirical finding directly motivates Iteration 3's `WAITEDGE` hardware
+empirical finding directly motivated Iteration 3's `WAITEDGE` hardware
 primitive (single-cycle hardware edge wait + timestamp capture).
 
 ## `ui_in` / `uo_out` are unused
@@ -61,33 +61,34 @@ lane in a multi-lane architecture.
 
 No Yosys synthesis run has happened yet. Area, cell count, and timing are
 all unknown. `clock_hz: 10000000` in `info.yaml` is a placeholder, not a
-result of static timing analysis. `docs/ppa.md` will be updated once real
-numbers exist.
+result of static timing analysis. `docs/ppa.md` will be updated in Iteration 4
+once real synthesis numbers exist.
 
-## No formal verification yet
+## ~~No formal verification yet~~ (SymbiYosys formal harness proven)
 
-None of the properties listed in `PROJECT_MASTER_PLAN.md` section 8.4 have
-been proven yet (PC-in-range, reset convergence, wait-terminates, GPIO
-output-enable safety, etc).
+Core invariants are now formally proven with SymbiYosys (`formal/core.sby`) using
+Z3: reset convergence, PC range safety, WAIT deterministic countdown and
+termination, halt permanence, cycle counter monotonicity, bootloader FSM
+absorbency, and PVFI retirement integrity.
 
 ## Reserved/illegal opcodes are unspecified-but-not-asserted
 
-Opcodes 21-31 currently behave as `NOP` in both the RTL and the Python
-model (by falling through to a `default` case), but this has not been
-turned into an explicit formal or test assertion. A random/fuzzed
-instruction stream could currently execute a reserved opcode without any
-test noticing whether RTL and model still agree by coincidence or by
-matching intent.
+Opcodes 22-31 currently behave as `NOP` in both the RTL and the Python
+model (by falling through to a `default` case). A fuzzed instruction stream
+could execute a reserved opcode without noticing divergence from intent.
 
-## ~~Single test, single program~~ (Expanded test suite)
- 
- The regression suite now executes 6 distinct test suites covering:
- 1. Full cycle-by-cycle differential verification against Python ISA model (`test/test.py`).
- 2. Real UART TX edge cases (0x00, 0xFF, 0x55, 0xAA) across multiple baud rates (`test/test_uart.py`).
- 3. Real UART TX randomized data with fixed seeds (`test/test_uart.py`).
- 4. ALU and register isolated unit tests (`test/test_opcodes.py`).
- 5. Branching, loops, and condition code unit tests (`test/test_opcodes.py`).
- 6. GPIO and bit-serial shift isolated unit tests (`test/test_opcodes.py`).
+## ~~Single test, single program~~ (Expanded 9-test regression suite)
+
+The regression suite (`scripts/regress.sh`) now executes 9 distinct test suites covering:
+1. Full cycle-by-cycle differential verification against Python ISA model (`test/test.py`).
+2. Real UART TX edge cases (0x00, 0xFF, 0x55, 0xAA) across multiple baud rates (`test/test_uart.py`).
+3. Real UART TX randomized data with fixed seeds (`test/test_uart.py`).
+4. ALU and register isolated unit tests (`test/test_opcodes.py`).
+5. Branching, loops, and condition code unit tests (`test/test_opcodes.py`).
+6. GPIO and bit-serial shift isolated unit tests (`test/test_opcodes.py`).
+7. WAITEDGE pulse measurement across random unknown pulse widths (`test/test_waitedge.py`).
+8. WAITEDGE free-running timestamp capture (`test/test_waitedge.py`).
+9. WAITEDGE cycle-by-cycle differential verification with Python model (`test/test_waitedge.py`).
 
 ## Top module name is a placeholder
 

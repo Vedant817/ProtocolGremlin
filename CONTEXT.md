@@ -17,23 +17,28 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 
 ## Current status
 
-- **Phase:** ISA v1, iteration 2 of a 4-iteration novelty & verification
-  push complete (see `orchestrator/decisions.md` "Iteration 2" for details).
-- **What exists:** a core (21 opcodes, 4 registers, GPIO bus on Tiny
+- **Phase:** ISA v1, iteration 3 of a 4-iteration novelty & verification
+  push complete (see `orchestrator/decisions.md` "Iteration 3" for details).
+- **What exists:** a core (22 opcodes, 4 registers, GPIO bus on Tiny
   Tapeout's `uio[7:0]`) in `src/`, with a **genuinely reprogrammable
   program RAM loaded by an on-chip serial bootloader** (no `$readmemh`
-  anywhere - see `docs/isa.md` "Bootloader protocol") and `SHIFTOUT`/
-  `SHIFTIN` bit-serial instructions. Assembler, independent Python reference
-  model, and asynchronous software UART decoder model live in `tools/`.
-- **What's verified:** 6/6 test suites pass cleanly via `scripts/regress.sh`:
+  anywhere - see `docs/isa.md` "Bootloader protocol"), `SHIFTOUT`/
+  `SHIFTIN` bit-serial instructions, and a dedicated `WAITEDGE` edge-capture
+  timing discovery instruction backed by a 32-bit cycle counter. Debug
+  builds include a PVFI trace port gated under `ifdef PVFI (zero tapeout
+  pin overhead). SymbiYosys formal harness (`formal/core.sby`) with Z3
+  proves safety invariants over 20 cycles. Assembler, independent Python
+  reference model, and asynchronous software UART decoder model live in `tools/`.
+- **What's verified:** 9/9 test suites pass cleanly via `scripts/regress.sh`:
   (1) cycle-by-cycle differential test (`test/test.py`), (2) UART TX edge-case
   verification (`0x00`, `0xFF`, `0x55`, `0xAA` at 4, 8, 16 cycles/bit),
   (3) UART TX pseudorandom frames, (4) isolated ALU/register unit tests,
-  (5) isolated branch/loop unit tests, (6) isolated GPIO/shift unit tests.
-  Every frame is loaded through the hardware serial bootloader with a fresh reset.
-- **What's NOT done yet (iterations 3-4):** PVFI trace formal interface,
-  SymbiYosys formal harness, WAITEDGE edge-capture instruction, mutation
-  testing, and real synthesis/PPA data.
+  (5) isolated branch/loop unit tests, (6) isolated GPIO/shift unit tests,
+  (7) WAITEDGE single-cycle pulse width measurement (5, 11, 23, 47 cycles),
+  (8) cycle counter timestamp capture, (9) WAITEDGE differential test vs Python model.
+  SymbiYosys 20-step bounded model check passes with 0 violations.
+- **What's NOT done yet (iteration 4):** Mutation testing harness (`scripts/mutate.py`),
+  constrained-random fuzzer with automated shrinking, and real Yosys synthesis/PPA data.
 - **Git:** history is being built as a sequence of small, reviewable
   commits (see `git log`) rather than one large commit.
 
@@ -76,16 +81,14 @@ bash scripts/regress.sh     # assembles firmware, runs the cocotb test suite
 ## What to work on next
  
  Full prioritized backlog: `orchestrator/queue.md`. Immediate next
- (iteration 3 of the 4-iteration plan in `orchestrator/decisions.md`):
+ (iteration 4 of the 4-iteration plan in `orchestrator/decisions.md`):
  
- 1. RVFI-style trace interface ("PVFI") gated by `SIM`/`PVFI` define.
- 2. SymbiYosys formal harness under `formal/` for core invariants.
- 3. `WAITEDGE rd, imm8` instruction (GPIO edge wait + cycle capture for
-    unknown-protocol reverse engineering & autobaud) + free-running cycle counter.
- 4. Novelty documentation citing the RP2040 PIO total lack of runtime
-    observability finding.
- 
- Iteration 4 (mutation testing, fuzzer, real synthesis/PPA data) will follow.
+ 1. Seeded mutation testing harness (`scripts/mutate.py`) targeting `src/core.v`
+    and measuring test suite kill rate (citing Huang et al. 2015 & Firefly 2025).
+ 2. Constrained-random instruction fuzzer (`tools/fuzzer.py` / `test/test_fuzz.py`)
+    with automated shrink-on-failure comparing RTL against `tools/isa_model.py`.
+ 3. Real Yosys synthesis pass for IHP 130nm / standard cell target, capturing
+    actual cell count, gate count, and mapped area in `docs/ppa.md` and `info.yaml`.
 
 ## Keeping this file current
 

@@ -6,6 +6,7 @@ test/program.hex
 *.fst
 *.fst.hier
 results.xml
+formal/*/
 
 # Python
 __pycache__/

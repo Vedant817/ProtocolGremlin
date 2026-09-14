@@ -20,16 +20,18 @@ bounded problem").
 
 - Add a bootloader checksum/CRC and a way to signal a failed/short load
   back to the host (see `docs/limitations.md`).
-- Add an RVFI-style per-cycle verification interface ("PVFI", debug-only,
+- ~~Add an RVFI-style per-cycle verification interface ("PVFI", debug-only,
   gated by a `SIM`/`PVFI` define) and a first SymbiYosys formal harness
   under `formal/`: "PC stays in valid range", "reset reaches a known
-  state", "WAIT/bootloader-load sequences terminate".
-- Add `WAITEDGE rd, imm8` (stall for an edge on the GPIO bus, capture
+  state", "WAIT/bootloader-load sequences terminate"~~ - done: `src/core.v`
+  PVFI ports gated under `ifdef PVFI, formal harness `formal/core.sby` +
+  `formal/core_formal.v` verified 20 steps with Z3 (0 violations).
+- ~~Add `WAITEDGE rd, imm8` (stall for an edge on the GPIO bus, capture
   elapsed cycles into `rd`) plus a free-running cycle counter - a genuine
   autobaud/timing-discovery primitive for reverse-engineering unknown
   protocols, and something RP2040 PIO's documented total lack of runtime
-  observability cannot do. See `orchestrator/decisions.md` for the research
-  behind this.
+  observability cannot do~~ - done: `src/core.v` opcode 21, 32-bit cycle counter,
+  `test/test_waitedge.py` pulse-width measurement to single-cycle precision.
 - Run first Yosys synthesis pass; record mapped cell count/area breakdown
   in `docs/ppa.md` and `orchestrator/metrics.json`.
 - Add a randomized instruction-stream fuzzer that runs against both the

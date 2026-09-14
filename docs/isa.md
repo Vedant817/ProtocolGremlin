@@ -71,9 +71,19 @@ Fixed 16-bit instruction width:
 |     18 | `HALT`   | -          | Core stops fetching/executing until the next reset.                |
 |     19 | `SHIFTOUT` | rd, pin  | Drive `rd[0]` onto GPIO bit `pin` (operand[2:0]); `rd = rd >> 1` (zero-fill). `Z` set. |
 |     20 | `SHIFTIN`  | rd, pin  | `rd = {sampled bit, rd[7:1]}` (sampled bit from synchronized GPIO bit `pin`). `Z` set. |
+|     21 | `WAITEDGE` | rd, imm8 | Stall until GPIO edge; `rd = elapsed_cycles` (autobaud/timing discovery). Mode 3: timestamp (`rd = cycle_cnt[7:0]`). `Z` set. |
 
-Opcodes 21-31 are reserved/illegal in v1 and currently behave as `NOP`
+Opcodes 22-31 are reserved/illegal in v1 and currently behave as `NOP`
 (documented, not asserted-against - see `docs/limitations.md`).
+
+### WAITEDGE Encoding & Operands
+`imm8` layout for `WAITEDGE rd, imm8`:
+- `operand[2:0]` (`pin`): GPIO pin index 0–7.
+- `operand[4:3]` (`mode`):
+  - `00` (`0x00 | pin`): Falling edge wait (1 -> 0). Measures elapsed cycles until edge.
+  - `01` (`0x08 | pin`): Rising edge wait (0 -> 1). Measures elapsed cycles until edge.
+  - `10` (`0x10 | pin`): Any edge wait (0 -> 1 or 1 -> 0).
+  - `11` (`0x18`): Free-running timestamp capture. Immediately writes `cycle_cnt[7:0]` into `rd` without stalling.
 
 `SHIFTOUT`/`SHIFTIN` are deliberately paired so that N back-to-back
 `SHIFTOUT`s (LSB of `rd` first) followed by N `SHIFTIN`s on the receiving

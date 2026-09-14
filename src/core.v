@@ -37,6 +37,22 @@ module core #(
     output wire [7:0] uio_out,
     output wire [7:0] uio_oe,
     input  wire [7:0] uio_in
+`ifdef PVFI
+    ,
+    output wire        pvfi_valid,
+    output wire [31:0] pvfi_order,
+    output wire [15:0] pvfi_insn,
+    output wire [7:0]  pvfi_pc_rdata,
+    output wire [7:0]  pvfi_pc_wdata,
+    output wire [1:0]  pvfi_rd_addr,
+    output wire [7:0]  pvfi_rd_wdata,
+    output wire        pvfi_rd_we,
+    output wire [7:0]  pvfi_gpio_oe,
+    output wire [7:0]  pvfi_gpio_wdata,
+    output wire [7:0]  pvfi_gpio_rdata,
+    output wire        pvfi_halted,
+    output wire [31:0] pvfi_cycle
+`endif
 );
 
   // ---------------------------------------------------------------------
@@ -63,6 +79,7 @@ module core #(
   localparam [4:0] OP_HALT    = 5'd18;
   localparam [4:0] OP_SHIFTOUT = 5'd19;
   localparam [4:0] OP_SHIFTIN  = 5'd20;
+  localparam [4:0] OP_WAITEDGE = 5'd21;
 
   localparam [2:0] ALU_ADD = 3'd0;
   localparam [2:0] ALU_SUB = 3'd1;
@@ -94,6 +111,9 @@ module core #(
   reg [7:0] gpio_dir;
   reg [7:0] gpio_out;
   wire [7:0] gpio_in;
+  reg [7:0] gpio_in_prev;
+  reg [31:0] cycle_cnt;
+  reg [7:0] edge_wait_cnt;
 
   // Bootloader state
   reg [2:0] ld_state;
@@ -145,6 +165,15 @@ module core #(
   wire [7:0] operand = instr[8:1];
   wire [1:0] rs_idx  = operand[1:0];
   wire [2:0] pin_idx = operand[2:0];
+  wire [1:0] edge_mode = operand[4:3];
+  wire pin_now  = gpio_in[pin_idx];
+  wire pin_prev = gpio_in_prev[pin_idx];
+  wire edge_rise = pin_now && !pin_prev;
+  wire edge_fall = !pin_now && pin_prev;
+  wire edge_any  = pin_now ^ pin_prev;
+  wire edge_matched = (edge_mode == 2'b00) ? edge_fall :
+                      (edge_mode == 2'b01) ? edge_rise :
+                      (edge_mode == 2'b10) ? edge_any : 1'b1;
 
   // See src/core.v history / orchestrator/decisions.md: explicit muxes here,
   // not a function reading module-level regs, to avoid an Icarus Verilog
@@ -204,6 +233,9 @@ module core #(
       wait_remaining <= 8'h00;
       gpio_dir       <= 8'h00;
       gpio_out       <= 8'h00;
+      gpio_in_prev   <= 8'h00;
+      cycle_cnt      <= 32'd0;
+      edge_wait_cnt  <= 8'h00;
 
       ld_state       <= LD_WAIT;
       ld_settle_cnt  <= 2'd0;
@@ -213,7 +245,9 @@ module core #(
       ld_word_idx    <= 8'h00;
       ld_clk_prev    <= 1'b0;
     end else begin
-      ld_clk_prev <= gpio_in[LOAD_CLK_BIT];
+      cycle_cnt    <= cycle_cnt + 32'd1;
+      gpio_in_prev <= gpio_in;
+      ld_clk_prev  <= gpio_in[LOAD_CLK_BIT];
 
       case (ld_state)
         // -------------------------------------------------------------
@@ -341,6 +375,23 @@ module core #(
 
               OP_HALT: halted <= 1'b1;
 
+              OP_WAITEDGE: begin
+                if (edge_mode == 2'b11) begin
+                  // Timestamp mode: capture lower 8 bits of free-running cycle counter
+                  write_rd(rd_idx, cycle_cnt[7:0]);
+                  z <= (cycle_cnt[7:0] == 8'h00);
+                end else if (edge_matched) begin
+                  // Edge detected: write elapsed cycle duration (+1 for detection cycle) into rd and advance
+                  write_rd(rd_idx, edge_wait_cnt + 8'd1);
+                  z <= ((edge_wait_cnt + 8'd1) == 8'h00);
+                  edge_wait_cnt <= 8'h00;
+                end else begin
+                  // Stall PC and accumulate wait cycles (saturating at 255)
+                  pc <= pc;
+                  edge_wait_cnt <= (edge_wait_cnt == 8'hFF) ? 8'hFF : (edge_wait_cnt + 8'h01);
+                end
+              end
+
               default: ;  // reserved/illegal encodings behave as NOP in v1
             endcase
           end
@@ -348,5 +399,129 @@ module core #(
       endcase
     end
   end
+
+  // ---------------------------------------------------------------------
+  // PVFI (Protocol-engine Verification Formal Interface)
+  // Exposes per-cycle instruction retirement and architectural state
+  // for formal verification and hardware observability (RVFI pattern).
+  // ---------------------------------------------------------------------
+  reg [31:0] pvfi_order_cnt;
+  wire pvfi_executing = (ld_state == LD_DONE) && !halted && (wait_remaining == 8'h00);
+  wire pvfi_stalled_edge = (opcode == OP_WAITEDGE) && (edge_mode != 2'b11) && !edge_matched;
+  wire pvfi_retiring = pvfi_executing && !pvfi_stalled_edge;
+
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      pvfi_order_cnt <= 32'd0;
+    end else if (pvfi_retiring) begin
+      pvfi_order_cnt <= pvfi_order_cnt + 32'd1;
+    end
+  end
+
+`ifndef PVFI
+  wire        pvfi_valid;
+  wire [31:0] pvfi_order;
+  wire [15:0] pvfi_insn;
+  wire [7:0]  pvfi_pc_rdata;
+  wire [7:0]  pvfi_pc_wdata;
+  wire [1:0]  pvfi_rd_addr;
+  wire        pvfi_rd_we;
+  wire [7:0]  pvfi_rd_wdata;
+  wire [7:0]  pvfi_gpio_oe;
+  wire [7:0]  pvfi_gpio_wdata;
+  wire [7:0]  pvfi_gpio_rdata;
+  wire        pvfi_halted;
+  wire [31:0] pvfi_cycle;
+`endif
+
+  assign pvfi_valid      = pvfi_retiring;
+  assign pvfi_order      = pvfi_order_cnt;
+  assign pvfi_insn       = instr;
+  assign pvfi_pc_rdata   = pc;
+  assign pvfi_pc_wdata   = (opcode == OP_JMP) ? operand[ADDR_WIDTH-1:0] :
+                           (opcode == OP_JZ && z) ? operand[ADDR_WIDTH-1:0] :
+                           (opcode == OP_JNZ && !z) ? operand[ADDR_WIDTH-1:0] :
+                           (opcode == OP_DECJNZ && alu_result != 8'h00) ? operand[ADDR_WIDTH-1:0] :
+                           (pc + {{(ADDR_WIDTH-1){1'b0}}, 1'b1});
+  assign pvfi_rd_addr    = rd_idx;
+  assign pvfi_rd_we      = pvfi_retiring && (
+                             opcode == OP_LDI || opcode == OP_MOV ||
+                             opcode == OP_ADDI || opcode == OP_SUBI ||
+                             opcode == OP_ANDI || opcode == OP_ORI ||
+                             opcode == OP_XORI || opcode == OP_GRD ||
+                             opcode == OP_SHIFTOUT || opcode == OP_SHIFTIN ||
+                             opcode == OP_DECJNZ || opcode == OP_WAITEDGE
+                           );
+  assign pvfi_rd_wdata   = (opcode == OP_LDI) ? operand :
+                           (opcode == OP_MOV) ? rs_val :
+                           (opcode == OP_ADDI || opcode == OP_SUBI ||
+                            opcode == OP_ANDI || opcode == OP_ORI ||
+                            opcode == OP_XORI || opcode == OP_DECJNZ) ? alu_result :
+                           (opcode == OP_GRD) ? gpio_in :
+                           (opcode == OP_SHIFTOUT) ? {1'b0, rd_val[7:1]} :
+                           (opcode == OP_SHIFTIN) ? {gpio_in[pin_idx], rd_val[7:1]} :
+                           (opcode == OP_WAITEDGE && edge_mode == 2'b11) ? cycle_cnt[7:0] :
+                           (opcode == OP_WAITEDGE) ? (edge_wait_cnt + 8'd1) : 8'h00;
+  assign pvfi_gpio_oe    = gpio_dir;
+  assign pvfi_gpio_wdata = gpio_out;
+  assign pvfi_gpio_rdata = gpio_in;
+  assign pvfi_halted     = halted;
+  assign pvfi_cycle      = cycle_cnt;
+
+`ifdef FORMAL
+  reg f_past_valid = 1'b0;
+  always @(posedge clk) f_past_valid <= 1'b1;
+
+  // Assume reset on first cycle
+  always @(posedge clk) begin
+    if (!f_past_valid) assume(!rst_n);
+  end
+
+  // Invariant: Reset state convergence
+  always @(posedge clk) begin
+    if (!rst_n) begin
+      assert(pc == {ADDR_WIDTH{1'b0}});
+      assert(r0 == 8'h00);
+      assert(r1 == 8'h00);
+      assert(r2 == 8'h00);
+      assert(r3 == 8'h00);
+      assert(z == 1'b0);
+      assert(halted == 1'b0);
+      assert(wait_remaining == 8'h00);
+      assert(gpio_dir == 8'h00);
+      assert(gpio_out == 8'h00);
+      assert(ld_state == 3'd0);
+      assert(cycle_cnt == 32'd0);
+    end
+  end
+
+  // Invariant: Behavioral properties
+  always @(posedge clk) begin
+    if (f_past_valid && rst_n && $past(rst_n)) begin
+      // WAIT countdown: strictly decrements by 1 each cycle
+      if ($past(ld_state) == 3'd3 && !$past(halted) && $past(wait_remaining) != 8'h00) begin
+        assert(wait_remaining == $past(wait_remaining) - 8'h01);
+        assert(pc == $past(pc));
+      end
+
+      // Halt permanence: core never un-halts once halted
+      if ($past(halted)) begin
+        assert(halted);
+        assert(pc == $past(pc));
+        assert(r0 == $past(r0));
+        assert(r1 == $past(r1));
+        assert(r2 == $past(r2));
+        assert(r3 == $past(r3));
+        assert(gpio_out == $past(gpio_out));
+        assert(gpio_dir == $past(gpio_dir));
+      end
+
+      // Bootloader done absorbency: never leaves LD_DONE once reached
+      if ($past(ld_state) == 3'd3) begin
+        assert(ld_state == 3'd3);
+      end
+    end
+  end
+`endif
 
 endmodule

@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-uart-verified",
+  "phase": "isa-v1-waitedge-pvfi-formal-verified",
   "best_commit": null,
-  "active_objective": "4-iteration novelty & verification push: (1) reprogrammable RAM + shift ops [DONE], (2) UART firmware + opcode tests [DONE], (3) trace/edge-capture novelty, (4) mutation testing + real PPA",
+  "active_objective": "4-iteration novelty & verification push: (1) reprogrammable RAM + shift ops [DONE], (2) UART firmware + opcode tests [DONE], (3) trace/edge-capture novelty [DONE], (4) mutation testing + real PPA",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 3,
+  "iterations": 4,
   "halt": false,
-  "notes": "Iteration 2 of 4 complete: real UART TX firmware parameterized assembly (tools/uart_model.py) verified against independent cycle-by-cycle UartReceiver model (test/test_uart.py) across edge cases (0x00, 0xFF, 0x55, 0xAA) and pseudorandom data at bit periods 4, 8, 16. Added per-opcode isolated unit tests (test/test_opcodes.py). 6/6 test suites pass in regression. Next: Iteration 3 (PVFI formal interface, SymbiYosys formal harness, WAITEDGE edge-capture instruction)."
+  "notes": "Iteration 3 of 4 complete: PVFI trace interface implemented and gated under `ifdef PVFI; SymbiYosys formal verification harness (formal/core.sby) proved core invariants over 20 steps with Z3 (0 violations); WAITEDGE (opcode 21) implemented with 32-bit cycle counter; pulse-width measurement verified to single-cycle precision across 5, 11, 23, 47 cycle pulses; 9/9 regression tests pass. Next: Iteration 4 (mutation testing harness scripts/mutate.py, randomized fuzzer with shrink-on-failure, real Yosys synthesis pass)."
 }

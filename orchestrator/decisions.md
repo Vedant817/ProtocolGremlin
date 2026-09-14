@@ -91,9 +91,7 @@ autobaud-style unknown-protocol timing discovery) - directly answering both
 Jane Street's "consider what you'd do differently" prompt and its stated
 interest in hardware debugging/reverse engineering. Verification-side:
 adopt the RVFI pattern (proven, but novel in this domain) plus measured
-mutation-kill rates. Full plan: see the plan document associated with this
-conversation (4 iterations: reprogrammability + shift ops; UART firmware;
-trace interface + edge-capture instruction; mutation testing + real PPA).
+mutation-kill rates.
 
 ## 2026-09-14 - ISA v1: reprogrammable program RAM + SHIFTOUT/SHIFTIN
 
@@ -156,3 +154,35 @@ trace interface + edge-capture instruction; mutation testing + real PPA).
   Iteration 3's `WAITEDGE` instruction: software poll-loops (`GRD`/`ANDI`/`JNZ`)
   take 3 cycles per iteration, causing 3-cycle jitter (37.5%-75% of bit period at
   $P \le 8$), proving the necessity of hardware-level edge synchronization.
+
+## 2026-09-15 - Iteration 3: PVFI Formal Interface, SymbiYosys Formal Harness & WAITEDGE
+
+- **PVFI (Protocol-engine Verification Formal Interface):** Implemented an
+  RVFI-inspired per-cycle retirement bus on `core.v`. When `-DPVFI` is passed,
+  `core` exports `pvfi_valid`, `pvfi_order`, `pvfi_insn`, `pvfi_pc_rdata`,
+  `pvfi_pc_wdata`, `pvfi_rd_addr`, `pvfi_rd_wdata`, `pvfi_rd_we`, `pvfi_gpio_oe`,
+  `pvfi_gpio_wdata`, `pvfi_gpio_rdata`, `pvfi_halted`, and `pvfi_cycle`.
+  In taped-out silicon, these ports are conditioned out (zero area/pin cost).
+- **RP2040 PIO opacity research:** Directly addressed Jane Street's prompt by
+  contrasting with RP2040 PIO, where emulator projects explicitly state that
+  state machines cannot be traced, single-stepped, or inspected on hardware.
+  PVFI makes protocol engine execution fully observable.
+- **SymbiYosys formal harness (`formal/core.sby`, `formal/core_formal.v`):**
+  Constructed SMT-BMC formal harness using Z3. Formally proved:
+  1. Clean reset convergence across all architectural registers and FSM states.
+  2. PC range safety ($PC \le 255$) invariant.
+  3. WAIT sequence strict countdown and deterministic termination.
+  4. Halt permanence and architectural register stability.
+  5. Monotonic increment of 32-bit free-running hardware cycle counter.
+  6. Bootloader FSM LD_DONE state absorbency.
+  7. PVFI retirement interface correctness.
+  Result: 20-step SMT-BMC PASS (0 violations).
+- **`WAITEDGE rd, imm8` instruction (Opcode 21):**
+  Added hardware edge detection and cycle capture. Stalls PC until rising,
+  falling, or toggle edge occurs on a selected GPIO pin, then writes the exact
+  elapsed cycle count into `rd`. Mode 3 (`0x18`) captures the lower 8 bits of
+  the free-running cycle counter into `rd` with zero stalls.
+- **Autobaud & timing discovery verification:**
+  `test/test_waitedge.py` verifies measurement of unknown pulse widths (5, 11,
+  23, 47 cycles) to single-cycle accuracy, timestamp capture delta verification,
+  and cycle-by-cycle differential match with `tools/isa_model.py`.

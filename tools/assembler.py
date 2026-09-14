@@ -46,12 +46,12 @@ OPCODES = {
     "HALT": 18,
     "SHIFTOUT": 19,
     "SHIFTIN": 20,
+    "WAITEDGE": 21,
 }
 
-# Instructions that take (rd, imm8). SHIFTOUT/SHIFTIN's "imm8" is really a
-# 3-bit pin select (operand bits [7:3] reserved, must be 0) but the encoding
-# and assembler syntax are identical to a normal rd+imm8 instruction.
-RD_IMM_OPS = {"LDI", "ADDI", "SUBI", "ANDI", "ORI", "XORI", "SHIFTOUT", "SHIFTIN"}
+# Instructions that take (rd, imm8). SHIFTOUT/SHIFTIN's "imm8" is a
+# 3-bit pin select. WAITEDGE takes (rd, mode_pin).
+RD_IMM_OPS = {"LDI", "ADDI", "SUBI", "ANDI", "ORI", "XORI", "SHIFTOUT", "SHIFTIN", "WAITEDGE"}
 # Instructions that take (rd, rs)
 RD_RS_OPS = {"MOV"}
 # Instructions that take (imm8) only

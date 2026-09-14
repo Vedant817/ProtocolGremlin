@@ -38,6 +38,7 @@ OP_DECJNZ = 17
 OP_HALT = 18
 OP_SHIFTOUT = 19
 OP_SHIFTIN = 20
+OP_WAITEDGE = 21
 
 ADDR_WIDTH = 8
 ADDR_MASK = (1 << ADDR_WIDTH) - 1
@@ -54,6 +55,9 @@ class CoreState:
     gpio_dir: int = 0
     gpio_out: int = 0
     gpio_in_sync: int = 0
+    gpio_in_prev: int = 0
+    cycle_cnt: int = 0
+    edge_wait_cnt: int = 0
 
     def snapshot(self) -> dict:
         return {
@@ -66,6 +70,8 @@ class CoreState:
             "halted": self.halted,
             "gpio_dir": self.gpio_dir,
             "gpio_out": self.gpio_out,
+            "cycle_cnt": self.cycle_cnt,
+            "edge_wait_cnt": self.edge_wait_cnt,
         }
 
 
@@ -195,9 +201,37 @@ class CoreModel:
                 new_val = (bit << 7) | (rd_val >> 1)
                 self._reg_set(s.regs, rd, new_val & 0xFF)
                 s.z = new_val == 0
+            elif opcode == OP_WAITEDGE:
+                pin = operand & 0x7
+                mode = (operand >> 3) & 0x3
+                if mode == 3:
+                    val = s.cycle_cnt & 0xFF
+                    self._reg_set(s.regs, rd, val)
+                    s.z = val == 0
+                else:
+                    pin_now = (old_in_sync >> pin) & 1
+                    pin_prev = (s.gpio_in_prev >> pin) & 1
+                    edge_rise = pin_now == 1 and pin_prev == 0
+                    edge_fall = pin_now == 0 and pin_prev == 1
+                    edge_any = pin_now != pin_prev
+                    matched = (
+                        edge_fall if mode == 0 else
+                        edge_rise if mode == 1 else
+                        edge_any
+                    )
+                    if matched:
+                        captured = (s.edge_wait_cnt + 1) & 0xFF
+                        self._reg_set(s.regs, rd, captured)
+                        s.z = captured == 0
+                        s.edge_wait_cnt = 0
+                    else:
+                        next_pc = s.pc  # stall PC on current instruction
+                        s.edge_wait_cnt = min(255, s.edge_wait_cnt + 1)
             # else: reserved/illegal encoding behaves as NOP in v1
 
             s.pc = next_pc
 
+        s.cycle_cnt = (s.cycle_cnt + 1) & 0xFFFFFFFF
+        s.gpio_in_prev = old_in_sync
         self._sync_stage0 = gpio_in_pin
         s.gpio_in_sync = old_sync0
