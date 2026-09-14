@@ -1,0 +1,41 @@
+{
+  "correctness": {
+    "rtl_tests_passed": 1,
+    "rtl_tests_total": 1,
+    "gate_tests_passed": 0,
+    "gate_tests_total": 0
+  },
+  "protocols": {
+    "uart_tx": false,
+    "uart_rx": false,
+    "spi_modes_passed": 0,
+    "i2c_master": false,
+    "i2c_clock_stretching": false
+  },
+  "verification": {
+    "randomized_iterations": 0,
+    "mutation_detection_rate": null,
+    "formal_properties_proven": 0,
+    "formal_properties_bounded": 0,
+    "opcodes_exercised": 15,
+    "opcodes_total": 19
+  },
+  "ppa": {
+    "mapped_cells": null,
+    "area": null,
+    "worst_slack": null,
+    "target_clock_hz": 10000000,
+    "route_status": null
+  },
+  "firmware": {
+    "uart_tx_words": null,
+    "spi_byte_words": null,
+    "i2c_write_words": null
+  },
+  "novelty": {
+    "multi_lane": false,
+    "protocol_bridge_demo": false,
+    "fault_injection_demo": false,
+    "trace_replay_demo": false
+  }
+}
