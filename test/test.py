@@ -16,14 +16,17 @@ import cocotb  # noqa: E402
 from cocotb.clock import Clock  # noqa: E402
 from cocotb.triggers import FallingEdge, ReadOnly, RisingEdge  # noqa: E402
 
-from assembler import assemble, write_hex  # noqa: E402
+from assembler import assemble  # noqa: E402
 from isa_model import CoreModel  # noqa: E402
 
-ASM_PATH = os.path.join(os.path.dirname(__file__), "..", "firmware", "loop_demo.asm")
-HEX_PATH = os.path.join(os.path.dirname(__file__), "program.hex")
+from bootload import bootload  # noqa: E402
 
-# Fixed external stimulus on the bidirectional bus. This test does not yet
-# exercise time-varying external input - see orchestrator/queue.md.
+ASM_PATH = os.path.join(os.path.dirname(__file__), "..", "firmware", "loop_demo.asm")
+
+# Fixed external stimulus on the bidirectional bus, applied AFTER the
+# bootloader finishes (during loading, uio_in carries the load protocol
+# instead - see test/bootload.py). This test does not yet exercise
+# time-varying external input - see orchestrator/queue.md.
 EXTERNAL_UIO_IN = 0xA5
 
 # Generous cycle budget; loop_demo.asm halts well within this.
@@ -33,13 +36,11 @@ MAX_CYCLES = 200
 def _assemble_program() -> list[int]:
     with open(ASM_PATH, encoding="utf-8") as fh:
         source = fh.read()
-    words = assemble(source)
-    write_hex(words, HEX_PATH)
-    return words
+    return assemble(source)
 
 
 @cocotb.test()
-async def test_isa_v0_differential(dut):
+async def test_isa_v1_differential(dut):
     dut._log.info("Assembling firmware/loop_demo.asm")
     words = _assemble_program()
 
@@ -51,13 +52,33 @@ async def test_isa_v0_differential(dut):
 
     dut.ena.value = 1
     dut.ui_in.value = 0
-    dut.uio_in.value = EXTERNAL_UIO_IN
+    dut.uio_in.value = 0
     dut.rst_n.value = 0
     await FallingEdge(dut.clk)
     dut.rst_n.value = 1
-    model.reset()
+
+    # Reprogram the chip over its own GPIO bus - no $readmemh involved (see
+    # docs/isa.md "Bootloader protocol" and orchestrator/decisions.md).
+    await bootload(dut, words)
+    dut.uio_in.value = EXTERNAL_UIO_IN
+    await ReadOnly()
 
     core = dut.user_project.u_core
+
+    # bootload() cannot return at the *exact* cycle the loader hands off to
+    # normal execution (the handoff happens partway through driving the
+    # final load bit), so a few real instructions may already have retired
+    # by the time it returns. Rather than guess that count, snapshot the
+    # RTL's actual post-load architectural state and use it as the model's
+    # starting point - the cycle-by-cycle comparison loop below is then
+    # exact and insensitive to bootload()'s internal timing.
+    model.state.pc = int(core.pc.value)
+    model.state.regs = [int(core.r0.value), int(core.r1.value), int(core.r2.value), int(core.r3.value)]
+    model.state.z = bool(core.z.value)
+    model.state.halted = bool(core.halted.value)
+    model.state.wait_remaining = int(core.wait_remaining.value)
+    model.state.gpio_dir = int(dut.uio_oe.value)
+    model.state.gpio_out = int(dut.uio_out.value)
 
     cycle = 0
     for cycle in range(MAX_CYCLES):
