@@ -225,3 +225,29 @@ mutation-kill rates.
     RAM read multiplexer tree. At 10 MHz ($T_{\text{clk}} = 100\,\text{ns}$), estimated
     combinational propagation delay is $< 12\,\text{ns}$, providing $> 80\,\text{ns}$ of timing slack.
 
+## 2026-09-15 - Iteration 5: Full-duplex SPI Master across all 4 modes, MSB bit-shifts & SpiSlave model
+
+- **RTL & ISA MSB/LSB Shift Extension:**
+  - Upgraded `OP_SHIFTOUT` and `OP_SHIFTIN` in `src/core.v`, `tools/assembler.py`, and `tools/isa_model.py`.
+  - Bit 3 of the operand byte (`imm8[3]`) now controls shift direction: `imm8[3] == 0` for LSB-first (backward-compatible UART mode), and `imm8[3] == 1` for MSB-first (standard SPI mode).
+  - Assembler syntax: `SHIFTOUT rd, pin` (default LSB) or `SHIFTOUT rd, pin, MSB` / `SHIFTOUT rd, pin, LSB`.
+  - In `core.v`, `OP_SHIFTOUT` outputs `reg_file[rd][7]` on MSB mode and shifts left (`<< 1`), while LSB mode outputs `reg_file[rd][0]` and shifts right (`>> 1`). `OP_SHIFTIN` shifts in at bit 0 (MSB mode) or bit 7 (LSB mode).
+  - Synchronized PVFI retirement data `pvfi_rd_wdata` for both shift directions.
+- **Cycle-Exact Full-Duplex SPI Firmware (`tools/spi_model.py`):**
+  - Parameterized firmware generator `build_spi_master_asm(tx_byte, cpol, cpha, half_period_cycles, cs_pin, sclk_pin, mosi_pin, miso_pin)` supporting all four standard SPI modes ($CPOL \in \{0, 1\}, CPHA \in \{0, 1\}$).
+  - Utilized single-cycle pin toggling via register loading and `SHIFTOUT` to control CS_N and SCLK independently on the shared GPIO bus without disturbing other output bits.
+  - Implemented exact $CPHA$ phase offsets: $CPHA=0$ drives MOSI before the first active clock edge and samples MISO on the active edge; $CPHA=1$ asserts the active edge first, drives MOSI, and samples on the trailing return edge.
+- **Independent SPI Slave Software Model (`tools/spi_model.py`):**
+  - Implemented cycle-by-cycle `SpiSlave` model tracking CS_N, SCLK edges, shifting out a programmable response byte on MISO while receiving MOSI.
+  - Independent edge-sampling logic ensures non-circular verification.
+- **Rigorous Verification (`test/test_spi.py`):**
+  - Added 3 new comprehensive test cases to the cocotb regression suite:
+    1. Mode sweep: Verified transmission across all 4 modes (Mode 0, 1, 2, 3) at 4 cycles/half-period.
+    2. Full-duplex simultaneous bidirectional transfer: Master transmits `0x7E` and simultaneously receives `0x42` from Slave into `r1`, verified via register snapshot.
+    3. Edge cases and pseudorandom frames: Tested `0x00`, `0xFF`, `0x55`, `0xAA` and random bytes across multiple modes.
+  - Regression suite expanded to 14/14 tests passing in 11.2s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys formal verification (`formal/core.sby`): 20-step Z3 BMC passed with 0 violations.
+  - RTL Mutation Testing: 10/10 mutants killed (100.0% kill rate) in 44.9s.
+  - Yosys Synthesis: 19,184 mapped CMOS gates (+41 gates over Iteration 4 baseline, 37,605 GE total), proving the MSB/LSB shift multiplexer added virtually zero area overhead.
+

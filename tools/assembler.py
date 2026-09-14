@@ -156,10 +156,16 @@ def assemble(source: str) -> list[int]:
             if instr.args and instr.args != [""]:
                 raise AssemblerError(f"line {instr.line_no}: {op} takes no operands")
         elif op in RD_IMM_OPS:
-            if len(instr.args) != 2:
-                raise AssemblerError(f"line {instr.line_no}: {op} needs rd, imm8")
-            rd = _parse_reg(instr.args[0], instr.line_no)
-            operand = _parse_int(instr.args[1], instr.line_no) & 0xFF
+            if len(instr.args) == 2:
+                rd = _parse_reg(instr.args[0], instr.line_no)
+                operand = _parse_int(instr.args[1], instr.line_no) & 0xFF
+            elif len(instr.args) == 3 and op in ("SHIFTOUT", "SHIFTIN"):
+                rd = _parse_reg(instr.args[0], instr.line_no)
+                pin = _parse_int(instr.args[1], instr.line_no) & 0x7
+                dir_flag = 0x08 if instr.args[2].upper() in ("1", "MSB", "TRUE") else 0x00
+                operand = pin | dir_flag
+            else:
+                raise AssemblerError(f"line {instr.line_no}: {op} needs rd, imm8 (or rd, pin, msb)")
         elif op in RD_RS_OPS:
             if len(instr.args) != 2:
                 raise AssemblerError(f"line {instr.line_no}: {op} needs rd, rs")

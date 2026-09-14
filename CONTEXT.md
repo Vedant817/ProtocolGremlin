@@ -17,12 +17,11 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 
 ## Current status
 
-- **Phase:** ISA v1 complete — all 4 iterations of the novelty & verification
-  push complete (see `orchestrator/decisions.md` for full breakdown).
+- **Phase:** ISA v1 complete — all 5 iterations complete (SPI Master, MSB shifts, UART, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
 - **What exists:**
   1. **Core:** 22 opcodes, 4 registers, bidirectional GPIO bus on `uio[7:0]`,
-     `SHIFTOUT`/`SHIFTIN` bit-serial primitives, and `WAITEDGE` hardware edge-detect
-     and cycle-capture timing discovery backed by a 32-bit cycle counter.
+     `SHIFTOUT`/`SHIFTIN` with MSB/LSB direction select (`imm8[3]`), and `WAITEDGE`
+     hardware edge-detect and cycle-capture timing discovery backed by a 32-bit cycle counter.
   2. **Reprogrammability:** On-chip serial bootloader FSM writing to a true
      writable program RAM (`src/program_ram.v`) over `uio[0:2]`. No `$readmemh`
      anywhere in the RTL or testbench.
@@ -31,18 +30,19 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
   4. **Formal Harness:** SymbiYosys (`formal/core.sby`) with Z3 SMT solver proving
      reset convergence, PC bounds, WAIT termination, halt permanence, counter
      monotonicity, and PVFI interface correctness (20 steps, 0 violations).
-  5. **Firmware & Decoders:** Parameterized bit-banged UART TX assembly generator
-     and independent cycle-by-cycle `UartReceiver` software model in `tools/uart_model.py`.
+  5. **Firmware & Decoders:** Parameterized bit-banged UART TX (`tools/uart_model.py`)
+     and full-duplex SPI Master supporting all 4 modes ($CPOL \in \{0,1\}, CPHA \in \{0,1\}$)
+     with independent `UartReceiver` and `SpiSlave` models (`tools/spi_model.py`).
   6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 10
      architectural fault categories, measuring **100.0% kill rate (10/10 killed)**
      (citing Huang et al. 2015, Firefly 2025).
   7. **Constrained-Random Fuzzing:** Automated instruction fuzzer (`tools/fuzzer.py`)
      with delta-debugging program shrinker, verified in `test/test_fuzz.py`.
   8. **Real PPA Baseline:** Mapped with Yosys 0.69+ (`scripts/synth.sh`), measuring
-     19,143 CMOS cells (37,542 GE). Proved active processor logic is only 1,402 cells
-     (~1.99 kGE) with 92.7% of cells in the synthesized flip-flop RAM matrix.
+     19,184 CMOS cells (37,605 GE). Proved active processor logic is only 1,427 cells
+     (~2.0 kGE) with 92.6% of cells in the synthesized flip-flop RAM matrix.
      Fits the 8x4 competition tile footprint with >80 ns timing slack at 10 MHz.
-- **What's verified:** 11/11 test suites pass cleanly via `scripts/regress.sh`:
+- **What's verified:** 14/14 test suites pass cleanly via `scripts/regress.sh`:
   (1) cycle-by-cycle differential test (`test/test.py`), (2) UART TX edge-case
   verification (`0x00`, `0xFF`, `0x55`, `0xAA` at 4, 8, 16 cycles/bit),
   (3) UART TX pseudorandom frames, (4) isolated ALU/register unit tests,
@@ -50,7 +50,10 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
   (7) WAITEDGE single-cycle pulse width measurement (5, 11, 23, 47 cycles),
   (8) cycle counter timestamp capture, (9) WAITEDGE differential test vs Python model,
   (10) constrained-random fuzzing (10 iterations differential vs Python model),
-  (11) delta-debugging shrinker unit test.
+  (11) delta-debugging shrinker unit test,
+  (12) SPI Mode sweep (Modes 0, 1, 2, 3),
+  (13) SPI full-duplex simultaneous bidirectional transfer (0x7E tx / 0x42 rx),
+  (14) SPI edge-case and random frame verification.
 - **Git:** Sequence of small, reviewable commits (`git log`).
 
 ## Repository map
@@ -58,8 +61,8 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 ```text
 src/            RTL: project.v (TT wrapper), core.v, alu.v, gpio.v, program_ram.v
 firmware/       Assembly programs (loop_demo.asm)
-tools/          assembler.py, isa_model.py, uart_model.py, fuzzer.py
-test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz)
+tools/          assembler.py, isa_model.py, uart_model.py, spi_model.py, fuzzer.py
+test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz, test_spi)
 formal/         SymbiYosys formal harness (core.sby, core_formal.v)
 scripts/        setup_env.sh, regress.sh, mutate.py, synth.sh, synth.ys
 docs/           architecture, ISA, verification, toolchain, PPA, limitations
@@ -70,7 +73,7 @@ orchestrator/   Durable state (decisions.md, queue.md, metrics.json, experiments
 
 ```bash
 bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
-bash scripts/regress.sh     # runs all 11 cocotb regression tests (~3s)
+bash scripts/regress.sh     # runs all 14 cocotb regression tests (~11s)
 sby -f formal/core.sby      # runs SymbiYosys formal verification with Z3
 python3 scripts/mutate.py   # runs RTL mutation testing campaign (10/10 killed)
 bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
@@ -85,16 +88,17 @@ bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 - Multi-tiered verification: differential cycle-by-cycle testing, SymbiYosys formal
   safety proofs, independent protocol decoders, 100% mutation kill rate, and
   constrained-random fuzzing with automated shrinking.
-- Synthesized PPA measured: active core is 1,402 cells (~1.99 kGE), RAM is 17,741 cells.
+- Synthesized PPA measured: active core is 1,427 cells (~2.0 kGE), RAM is 17,741 cells.
 
 ## What to work on next
 
-Full prioritized backlog: `orchestrator/queue.md`. Entering RESEARCH_AND_PROOF mode:
+Full prioritized backlog: `orchestrator/queue.md`. Entering continuous loop:
 
-1. SPI master firmware (Mode 0, CPOL=0/CPHA=0) using `SHIFTOUT`/`SHIFTIN` and independent SPI slave model.
-2. I2C master firmware (START condition, ACK sampling, STOP condition).
-3. Bootloader CRC-8 checksum addition to detect transmission errors.
-4. Gate-level simulation against mapped netlist with cell delays (`GATES=yes`).
+1. Iteration 6: I2C master firmware (START, STOP, ACK/NACK, open-drain primitive `ODRN`).
+2. Iteration 7: I2C clock stretching & arbitration detection with `WAITEDGE`.
+3. Iteration 8: Bootloader CRC-8 frame checksum and error reporting.
+4. Iteration 9: UART RX firmware with start-bit synchronization using `WAITEDGE`.
+5. Iteration 10+: 1-Wire, JTAG TAP, SWD line reset, Dual-lane architecture (`core_dual.v`).
 
 ## Keeping this file current
 

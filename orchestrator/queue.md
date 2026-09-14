@@ -45,7 +45,9 @@ bounded problem").
   off-by-one a `WAIT` counter / wrong ALU op / dropped reset, confirm the
   test suite catches it, and report a measured kill rate~~ - done:
   `scripts/mutate.py`, 10/10 mutants killed (100.0% kill rate) in 46.95s.
-- SPI and I2C firmware once UART is solid.
+- ~~SPI Master firmware supporting all 4 modes (CPOL 0/1, CPHA 0/1) and full-duplex~~ -
+  done: `tools/spi_model.py` (build_spi_master_asm + SpiSlave) + `test/test_spi.py` (Mode 0-3, full duplex, random).
+- I2C firmware (START, STOP, ACK/NACK, open-drain primitive).
 - Explicit test coverage for reserved/illegal opcodes 21-31 (currently
   silently behave as NOP, untested - see `docs/limitations.md`).
 - Convert `program_ram.v` to a synchronous-read design once real synthesis

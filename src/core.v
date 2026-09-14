@@ -349,14 +349,25 @@ module core #(
               end
 
               OP_SHIFTOUT: begin
-                gpio_out[pin_idx] <= rd_val[0];
-                write_rd(rd_idx, {1'b0, rd_val[7:1]});
-                z <= (rd_val[7:1] == 7'h00);
+                if (operand[3]) begin
+                  gpio_out[pin_idx] <= rd_val[7];
+                  write_rd(rd_idx, {rd_val[6:0], 1'b0});
+                  z <= (rd_val[6:0] == 7'h00);
+                end else begin
+                  gpio_out[pin_idx] <= rd_val[0];
+                  write_rd(rd_idx, {1'b0, rd_val[7:1]});
+                  z <= (rd_val[7:1] == 7'h00);
+                end
               end
 
               OP_SHIFTIN: begin
-                write_rd(rd_idx, {gpio_in[pin_idx], rd_val[7:1]});
-                z <= (rd_val[7:1] == 7'h00) && !gpio_in[pin_idx];
+                if (operand[3]) begin
+                  write_rd(rd_idx, {rd_val[6:0], gpio_in[pin_idx]});
+                  z <= (rd_val[6:0] == 7'h00) && !gpio_in[pin_idx];
+                end else begin
+                  write_rd(rd_idx, {gpio_in[pin_idx], rd_val[7:1]});
+                  z <= (rd_val[7:1] == 7'h00) && !gpio_in[pin_idx];
+                end
               end
 
               OP_WAIT: wait_remaining <= operand;
@@ -457,10 +468,10 @@ module core #(
                            (opcode == OP_ADDI || opcode == OP_SUBI ||
                             opcode == OP_ANDI || opcode == OP_ORI ||
                             opcode == OP_XORI || opcode == OP_DECJNZ) ? alu_result :
-                           (opcode == OP_GRD) ? gpio_in :
-                           (opcode == OP_SHIFTOUT) ? {1'b0, rd_val[7:1]} :
-                           (opcode == OP_SHIFTIN) ? {gpio_in[pin_idx], rd_val[7:1]} :
-                           (opcode == OP_WAITEDGE && edge_mode == 2'b11) ? cycle_cnt[7:0] :
+                            (opcode == OP_GRD) ? gpio_in :
+                            (opcode == OP_SHIFTOUT) ? (operand[3] ? {rd_val[6:0], 1'b0} : {1'b0, rd_val[7:1]}) :
+                            (opcode == OP_SHIFTIN) ? (operand[3] ? {rd_val[6:0], gpio_in[pin_idx]} : {gpio_in[pin_idx], rd_val[7:1]}) :
+                            (opcode == OP_WAITEDGE && edge_mode == 2'b11) ? cycle_cnt[7:0] :
                            (opcode == OP_WAITEDGE) ? (edge_wait_cnt + 8'd1) : 8'h00;
   assign pvfi_gpio_oe    = gpio_dir;
   assign pvfi_gpio_wdata = gpio_out;

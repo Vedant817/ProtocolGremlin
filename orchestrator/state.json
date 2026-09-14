@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-complete-verified",
+  "phase": "isa-v1-spi-verified",
   "best_commit": null,
-  "active_objective": "4-iteration novelty & verification push: (1) reprogrammable RAM + shift ops [DONE], (2) UART firmware + opcode tests [DONE], (3) trace/edge-capture novelty [DONE], (4) mutation testing + real PPA [DONE]",
+  "active_objective": "Continuous engineering loop: Iteration 5 complete (SPI Master all 4 modes + full-duplex verified). Next: Iteration 6 (I2C Master firmware with hardware open-drain primitive ODRN).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 5,
+  "iterations": 6,
   "halt": false,
-  "notes": "All 4 iterations of novelty & verification push complete! Iteration 4: scripts/mutate.py mutation testing achieved 10/10 killed (100.0% kill rate); tools/fuzzer.py and test/test_fuzz.py added constrained-random fuzzing with automated delta-debugging shrinking (11/11 tests pass in regression); real Yosys synthesis (scripts/synth.sh) established baseline PPA of 19,143 CMOS cells (37,542 GE), proving that the active processor core is only 1,402 cells (~1.99 kGE) while the synthesized flip-flop RAM occupies 92.7% of cell count. Fits competition 8x4 tile allocation."
+  "notes": "Iteration 5 complete: SHIFTOUT/SHIFTIN upgraded with MSB direction flag in operand[3] with zero gate penalty. Parameterized SPI Master firmware (tools/spi_model.py) and independent SpiSlave software receiver created. Verified Mode 0, Mode 1, Mode 2, Mode 3, full-duplex simultaneous MISO/MOSI transfer, and random frames (14/14 regression tests pass). SymbiYosys formal verification passed (20 steps). Yosys synthesis shows 19,184 cells (+41 cells)."
 }

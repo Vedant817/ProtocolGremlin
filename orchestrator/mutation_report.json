@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-09-14T21:49:25Z",
+  "timestamp": "2026-09-14T22:08:35Z",
   "total_mutants": 10,
   "killed": 10,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 46.95,
+  "campaign_time_sec": 112.52,
   "mutants": [
     {
       "id": "MUT_01_BRANCH_JZ_INVERT",
@@ -12,7 +12,7 @@
       "file": "src/core.v",
       "description": "Invert branch condition in OP_JZ (jump on !z instead of z)",
       "status": "KILLED",
-      "elapsed_sec": 5.82
+      "elapsed_sec": 13.29
     },
     {
       "id": "MUT_02_WAIT_OFF_BY_ONE",
@@ -20,7 +20,7 @@
       "file": "src/core.v",
       "description": "Off-by-one decrement in WAIT countdown (-2 instead of -1)",
       "status": "KILLED",
-      "elapsed_sec": 3.07
+      "elapsed_sec": 4.13
     },
     {
       "id": "MUT_03_ALU_ADD_CORRUPT",
@@ -28,7 +28,7 @@
       "file": "src/alu.v",
       "description": "Arithmetic bug: OP_ADD adds 1 to calculated sum",
       "status": "KILLED",
-      "elapsed_sec": 4.68
+      "elapsed_sec": 12.4
     },
     {
       "id": "MUT_04_ALU_SUB_TO_ADD",
@@ -36,7 +36,7 @@
       "file": "src/alu.v",
       "description": "Operator replacement: OP_SUB computes sum instead of diff",
       "status": "KILLED",
-      "elapsed_sec": 4.69
+      "elapsed_sec": 13.79
     },
     {
       "id": "MUT_05_RESET_PC_CORRUPT",
@@ -44,7 +44,7 @@
       "file": "src/core.v",
       "description": "Reset corruption: PC initializes to 1 instead of 0",
       "status": "KILLED",
-      "elapsed_sec": 5.32
+      "elapsed_sec": 13.96
     },
     {
       "id": "MUT_06_DECJNZ_NO_BRANCH",
@@ -52,7 +52,7 @@
       "file": "src/core.v",
       "description": "Branch condition inversion in DECJNZ loop termination",
       "status": "KILLED",
-      "elapsed_sec": 4.57
+      "elapsed_sec": 12.26
     },
     {
       "id": "MUT_07_SHIFTOUT_MSB_FIRST",
@@ -60,7 +60,7 @@
       "file": "src/core.v",
       "description": "Serial shift bug: SHIFTOUT transmits MSB instead of LSB",
       "status": "KILLED",
-      "elapsed_sec": 4.05
+      "elapsed_sec": 10.51
     },
     {
       "id": "MUT_08_GPIO_OE_INVERT",
@@ -68,7 +68,7 @@
       "file": "src/gpio.v",
       "description": "GPIO bus direction inversion: pin_oe driven inverted",
       "status": "KILLED",
-      "elapsed_sec": 5.52
+      "elapsed_sec": 12.95
     },
     {
       "id": "MUT_09_WAITEDGE_OFF_BY_ONE",
@@ -76,7 +76,7 @@
       "file": "src/core.v",
       "description": "Edge timing bug: WAITEDGE omits edge detection cycle in duration",
       "status": "KILLED",
-      "elapsed_sec": 5.6
+      "elapsed_sec": 13.04
     },
     {
       "id": "MUT_10_BOOTLOADER_REQ_IGNORE",
@@ -84,7 +84,7 @@
       "file": "src/core.v",
       "description": "Bootloader FSM bug: core ignores host serial LOAD_REQ signal",
       "status": "KILLED",
-      "elapsed_sec": 3.05
+      "elapsed_sec": 5.5
     }
   ]
 }

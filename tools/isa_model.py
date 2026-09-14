@@ -189,17 +189,28 @@ class CoreModel:
                 s.halted = True
             elif opcode == OP_SHIFTOUT:
                 pin = operand & 0x7
+                msb_mode = bool(operand & 0x8)
                 rd_val = self._reg_get(s.regs, rd)
-                s.gpio_out = (s.gpio_out & ~(1 << pin) & 0xFF) | ((rd_val & 1) << pin)
-                new_val = rd_val >> 1  # zero-fill MSB
+                if msb_mode:
+                    bit = (rd_val >> 7) & 1
+                    s.gpio_out = (s.gpio_out & ~(1 << pin) & 0xFF) | (bit << pin)
+                    new_val = (rd_val << 1) & 0xFF
+                else:
+                    bit = rd_val & 1
+                    s.gpio_out = (s.gpio_out & ~(1 << pin) & 0xFF) | (bit << pin)
+                    new_val = rd_val >> 1  # zero-fill MSB
                 self._reg_set(s.regs, rd, new_val)
                 s.z = new_val == 0
             elif opcode == OP_SHIFTIN:
                 pin = operand & 0x7
+                msb_mode = bool(operand & 0x8)
                 bit = (old_in_sync >> pin) & 1
                 rd_val = self._reg_get(s.regs, rd)
-                new_val = (bit << 7) | (rd_val >> 1)
-                self._reg_set(s.regs, rd, new_val & 0xFF)
+                if msb_mode:
+                    new_val = ((rd_val << 1) & 0xFF) | bit
+                else:
+                    new_val = ((bit << 7) | (rd_val >> 1)) & 0xFF
+                self._reg_set(s.regs, rd, new_val)
                 s.z = new_val == 0
             elif opcode == OP_WAITEDGE:
                 pin = operand & 0x7
