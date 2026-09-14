@@ -1,10 +1,12 @@
-# ISA v0
+# ISA v1
 
-Status: **bootstrap slice**, not the final competition ISA. This exists to
-prove the fetch/decode/execute/GPIO/wait pipeline end-to-end with a real
-differential test before investing in the full instruction set (shift/
-shiftout primitives, event/sync instructions, multi-lane coordination) that
-UART/SPI/I2C firmware will need. See `orchestrator/queue.md` for what's next.
+Status: **actively evolving**, not yet the final competition ISA. v0 proved
+the fetch/decode/execute/GPIO/wait pipeline end-to-end with a real
+differential test. v1 adds the two things v0 was most conspicuously missing:
+a genuinely reprogrammable program store (a serial bootloader, replacing the
+`$readmemh`-fixed ROM) and bit-serial `SHIFTOUT`/`SHIFTIN` instructions,
+which real UART/SPI-style firmware needs. See `orchestrator/queue.md` for
+what's next (event/sync instructions, multi-lane coordination).
 
 The authoritative implementations are `src/core.v` (hardware),
 `tools/isa_model.py` (independent Python reference model) and
@@ -67,9 +69,19 @@ Fixed 16-bit instruction width:
 |     16 | `JNZ`    | addr8      | `PC = addr8` if `!Z`, else `PC = PC + 1`.                           |
 |     17 | `DECJNZ` | rd, addr8  | `rd = rd - 1`; `Z` set; `PC = addr8` if `rd != 0`, else `PC + 1`.   |
 |     18 | `HALT`   | -          | Core stops fetching/executing until the next reset.                |
+|     19 | `SHIFTOUT` | rd, pin  | Drive `rd[0]` onto GPIO bit `pin` (operand[2:0]); `rd = rd >> 1` (zero-fill). `Z` set. |
+|     20 | `SHIFTIN`  | rd, pin  | `rd = {sampled bit, rd[7:1]}` (sampled bit from synchronized GPIO bit `pin`). `Z` set. |
 
-Opcodes 19-31 are reserved/illegal in v0 and currently behave as `NOP`
+Opcodes 21-31 are reserved/illegal in v1 and currently behave as `NOP`
 (documented, not asserted-against - see `docs/limitations.md`).
+
+`SHIFTOUT`/`SHIFTIN` are deliberately paired so that N back-to-back
+`SHIFTOUT`s (LSB of `rd` first) followed by N `SHIFTIN`s on the receiving
+side reconstruct the original byte exactly - see `src/core.v`'s comment at
+the `OP_SHIFTOUT`/`OP_SHIFTIN` cases for the bit-ordering proof. This is the
+same LSB-first convention UART uses, and is what makes these two
+instructions sufficient (with `WAIT` for timing) to bit-bang real byte
+oriented protocols in firmware.
 
 ## Timing model
 
@@ -94,13 +106,56 @@ v0 maps the programmable protocol GPIO bus onto Tiny Tapeout's bidirectional
 `ui_in` (dedicated inputs) and `uo_out` (dedicated outputs) are unused
 placeholders in v0 - see `docs/limitations.md`.
 
+## Bootloader protocol
+
+Program memory (`src/program_ram.v`) is a real, writable RAM. Immediately
+after reset, `src/core.v` runs a small bootloader FSM, entirely over the
+same `uio[7:0]` bus the protocol engine uses for everything else - no
+dedicated pins, no `$readmemh`. This is what makes the chip reprogrammable
+after fabrication (the actual competition requirement v0 did not meet - see
+`orchestrator/decisions.md`).
+
+Wire assignment during an active load (host-driven):
+
+- `uio[0]` - `LOAD_REQ` (level; the host must hold this at 1 for the entire
+  load, and can hold it at 0 to skip loading and run whatever program is
+  already in RAM - e.g. after a warm reset during iterative testing).
+- `uio[1]` - `LOAD_CLK` (host-driven bit clock; one rising edge per bit).
+- `uio[2]` - `LOAD_DATA` (serial data, valid while `LOAD_CLK` is asserted).
+
+Frame format: an 8-bit word count (MSB first), then that many 16-bit
+instruction words (each MSB first, matching the instruction encoding above).
+There is no checksum/integrity check in v1 - see `docs/limitations.md`.
+
+Timing: the GPIO input synchronizer (`src/gpio.v`) is a 2-flop
+synchronizer, and the bootloader FSM additionally waits for it to settle
+before sampling `LOAD_REQ` for the first time. A host must therefore:
+
+1. Assert `LOAD_REQ` (and hold `LOAD_CLK`/`LOAD_DATA` at 0) at least 3 clock
+   cycles before sending the first bit.
+2. Hold each bit's value stable, then hold `LOAD_CLK` high, then low, for at
+   least 2 clock cycles each phase, before changing to the next bit.
+
+See `test/bootload.py` for a reference implementation (used by the cocotb
+test suite itself to load every test program - there is no `$readmemh` path
+left anywhere in the test suite either).
+
+If `LOAD_REQ` drops before the full frame is received, the bootloader
+aborts (best-effort: whatever words were already written stay in RAM) and
+hands off to execution immediately - documented, not a soft/graceful error
+recovery path.
+
 ## Known gaps (tracked in `orchestrator/queue.md`)
 
-- No shift/rotate/shift-in/shift-out instructions yet - needed before real
-  UART/SPI/I2C bit-banging firmware can be written generically.
-- No event/synchronization instructions - needed for any future multi-lane
-  architecture.
+- No event/synchronization instructions yet - needed for any future
+  multi-lane architecture.
 - `JZ`/`JNZ` only test the global `Z` flag (set by the most recent
   flag-setting instruction), not an arbitrary register directly; this keeps
   the encoding simple but firmware must plan around it (e.g. via `ANDI`
   before a conditional branch).
+- The bootloader frame has no checksum/integrity check, and a checksum
+  failure/short frame is not signaled back to the host in any way.
+- `program_ram.v`'s read port is combinational, not synchronous - a
+  synthesis/PPA-mapping consideration (a real SRAM macro is typically
+  synchronous-read), not a reprogrammability one. Tracked in
+  `orchestrator/queue.md`.

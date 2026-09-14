@@ -14,12 +14,13 @@ can be implemented as firmware rather than fixed peripherals.
                  Tiny Tapeout wrapper (src/project.v)
                               |
                         src/core.v
-             (fetch / decode / execute, ISA v0)
+     (fetch / decode / execute + serial bootloader FSM, ISA v1)
                     |            |          |
-              src/alu.v   src/gpio.v   src/program_rom.v
-             (combinational   (uio bus,     (v0: readmemh-
-              ADD/SUB/AND/     2-flop        initialized,
-              OR/XOR)          input sync)   combinational read)
+              src/alu.v   src/gpio.v   src/program_ram.v
+             (combinational   (uio bus,     (writable RAM,
+              ADD/SUB/AND/     2-flop        loaded by core.v's
+              OR/XOR)          input sync)   bootloader; see
+                                              docs/isa.md)
 ```
 
 - **Single core, single lane.** The master plan raises multi-lane
@@ -64,8 +65,9 @@ differential test in `test/test.py`: the same program
 
 ## What's deliberately deferred (see `orchestrator/queue.md`)
 
-- Loadable (not $readmemh-fixed) program memory.
-- UART/SPI/I2C firmware and the ISA extensions (shift/shift-out) they need.
-- Formal verification (SymbiYosys).
+- UART/SPI/I2C firmware (ISA v1 added the `SHIFTOUT`/`SHIFTIN` primitives
+  they need, but no protocol firmware has been written yet).
+- A hardware trace/debug interface and formal verification (SymbiYosys).
 - Synthesis/PPA measurement and place-and-route.
 - Multi-lane architecture exploration.
+- Bootloader integrity checking (checksum/CRC) and error signaling.
