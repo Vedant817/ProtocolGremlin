@@ -36,6 +36,8 @@ OP_JZ = 15
 OP_JNZ = 16
 OP_DECJNZ = 17
 OP_HALT = 18
+OP_SHIFTOUT = 19
+OP_SHIFTIN = 20
 
 ADDR_WIDTH = 8
 ADDR_MASK = (1 << ADDR_WIDTH) - 1
@@ -179,7 +181,21 @@ class CoreModel:
                     next_pc = operand & ADDR_MASK
             elif opcode == OP_HALT:
                 s.halted = True
-            # else: reserved/illegal encoding behaves as NOP in v0
+            elif opcode == OP_SHIFTOUT:
+                pin = operand & 0x7
+                rd_val = self._reg_get(s.regs, rd)
+                s.gpio_out = (s.gpio_out & ~(1 << pin) & 0xFF) | ((rd_val & 1) << pin)
+                new_val = rd_val >> 1  # zero-fill MSB
+                self._reg_set(s.regs, rd, new_val)
+                s.z = new_val == 0
+            elif opcode == OP_SHIFTIN:
+                pin = operand & 0x7
+                bit = (old_in_sync >> pin) & 1
+                rd_val = self._reg_get(s.regs, rd)
+                new_val = (bit << 7) | (rd_val >> 1)
+                self._reg_set(s.regs, rd, new_val & 0xFF)
+                s.z = new_val == 0
+            # else: reserved/illegal encoding behaves as NOP in v1
 
             s.pc = next_pc
 

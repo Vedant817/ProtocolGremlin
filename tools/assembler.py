@@ -44,10 +44,14 @@ OPCODES = {
     "JNZ": 16,
     "DECJNZ": 17,
     "HALT": 18,
+    "SHIFTOUT": 19,
+    "SHIFTIN": 20,
 }
 
-# Instructions that take (rd, imm8)
-RD_IMM_OPS = {"LDI", "ADDI", "SUBI", "ANDI", "ORI", "XORI"}
+# Instructions that take (rd, imm8). SHIFTOUT/SHIFTIN's "imm8" is really a
+# 3-bit pin select (operand bits [7:3] reserved, must be 0) but the encoding
+# and assembler syntax are identical to a normal rd+imm8 instruction.
+RD_IMM_OPS = {"LDI", "ADDI", "SUBI", "ANDI", "ORI", "XORI", "SHIFTOUT", "SHIFTIN"}
 # Instructions that take (rd, rs)
 RD_RS_OPS = {"MOV"}
 # Instructions that take (imm8) only

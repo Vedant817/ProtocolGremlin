@@ -24,6 +24,20 @@ LOOP:
         WAIT   1
         GRD    R3              ; sample the (externally driven) bus into R3
 
+        GDIRI  0xFF            ; back to output for the shift-out exercise
+        LDI    R1, 0xB6        ; arbitrary byte to shift out LSB-first on pin 0
+        SHIFTOUT R1, 0
+        WAIT   1
+        SHIFTOUT R1, 0
+        WAIT   1
+        SHIFTOUT R1, 0
+
+        GDIRI  0x00            ; switch back to input for the shift-in exercise
+        WAIT   1
+        SHIFTIN R3, 2          ; sample pin 2 into R3, bit by bit
+        WAIT   1
+        SHIFTIN R3, 2
+
         JZ     DONE            ; exercised for coverage even if not taken
         JNZ    CONT
 DONE:
