@@ -4,42 +4,55 @@ Priority order within each tier is not strict; use judgement per
 `orchestrator/WARP_CYCLE_PROMPT.md` step 4 ("identify the highest-value
 bounded problem").
 
+## Done (was P0, kept for history)
+
+- ~~Replace `src/program_rom.v` with a serially loaded program RAM~~ - done:
+  `src/program_ram.v` + the `core.v` bootloader FSM, see `docs/isa.md`
+  "Bootloader protocol". No `$readmemh` remains anywhere, including tests.
+- ~~Add SHIFTOUT/SHIFTIN instructions~~ - done, ISA v1, see `docs/isa.md`.
+
 ## P0
 
-- Replace `src/program_rom.v` with a serially loaded, synchronous-read
-  program RAM (the $readmemh ROM cannot be reprogrammed after fabrication -
-  see `docs/limitations.md`). Add a corresponding "program load" mechanism
-  to the ISA (e.g. a bootstrap sequence over the GPIO bus) and a test that
-  loads a program purely through that mechanism, not via `$readmemh`.
 - Rename `tt_um_change_me_protocol_emulator` to include the real GitHub
   username, once known, in `src/project.v`, `info.yaml`, and `test/tb.v`.
-- Add SHIFT/SHIFTOUT/SHIFTIN instructions to ISA v0 (needed for generic
-  UART/SPI byte-level firmware); update `docs/isa.md`,
-  `tools/assembler.py`, `tools/isa_model.py`, and `src/core.v` together,
-  and extend the differential test to exercise them.
+- Implement UART TX firmware (bit-banged via `SHIFTOUT`+`WAIT`) and verify
+  against an independent Python UART receiver model
+  (`PROJECT_MASTER_PLAN.md` section 8.2). UART RX if time allows.
+- Add per-opcode isolated unit tests (currently only exercised indirectly
+  via `firmware/loop_demo.asm`).
 
 ## P1
 
+- Add a bootloader checksum/CRC and a way to signal a failed/short load
+  back to the host (see `docs/limitations.md`).
+- Add an RVFI-style per-cycle verification interface ("PVFI", debug-only,
+  gated by a `SIM`/`PVFI` define) and a first SymbiYosys formal harness
+  under `formal/`: "PC stays in valid range", "reset reaches a known
+  state", "WAIT/bootloader-load sequences terminate".
+- Add `WAITEDGE rd, imm8` (stall for an edge on the GPIO bus, capture
+  elapsed cycles into `rd`) plus a free-running cycle counter - a genuine
+  autobaud/timing-discovery primitive for reverse-engineering unknown
+  protocols, and something RP2040 PIO's documented total lack of runtime
+  observability cannot do. See `orchestrator/decisions.md` for the research
+  behind this.
 - Run first Yosys synthesis pass; record mapped cell count/area breakdown
   in `docs/ppa.md` and `orchestrator/metrics.json`.
-- Implement UART TX firmware (bit-banged via the GPIO bus) once shift
-  instructions exist; verify against a Python UART receiver model
-  (`PROJECT_MASTER_PLAN.md` section 8.2).
-- Add per-opcode isolated unit tests (currently only exercised indirectly
-  via `firmware/loop_demo.asm`).
 - Add a randomized instruction-stream fuzzer that runs against both the
-  RTL and `tools/isa_model.py` and reports/minimizes any mismatch.
+  RTL and `tools/isa_model.py`, with automatic shrink-on-failure.
 
 ## P2
 
-- Formal verification harness under `formal/` (SymbiYosys): start with
-  "PC stays in valid range" and "reset reaches a known state".
-- Mutation testing: deliberately invert a branch condition / off-by-one a
-  WAIT counter / etc, confirm the differential test (or a strengthened
-  version of it) catches it. Measure and record detection rate.
+- Mutation testing harness: deliberately invert a branch condition /
+  off-by-one a `WAIT` counter / wrong ALU op / dropped reset, confirm the
+  test suite catches it, and report a measured kill rate (not just
+  coverage - see `docs/verification.md` for why coverage alone is
+  insufficient evidence, citing Huang et al. 2015 and the Firefly 2025
+  mutation-testing results).
 - SPI and I2C firmware once UART is solid.
-- Explicit test coverage for reserved/illegal opcodes 19-31 (currently
+- Explicit test coverage for reserved/illegal opcodes 21-31 (currently
   silently behave as NOP, untested - see `docs/limitations.md`).
+- Convert `program_ram.v` to a synchronous-read design once real synthesis
+  data shows it matters for PPA (`docs/limitations.md`).
 
 ## P3 (research / novelty, once core protocols are solid)
 

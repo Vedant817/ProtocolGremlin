@@ -52,3 +52,79 @@
   NBA updates. Fixed with `await ReadOnly()` after each `RisingEdge` before
   reading signals - see `test/test.py`.
 - Full details: `orchestrator/experiments.jsonl` (`exp-001`).
+
+## 2026-09-14 - Novelty & verification research (grounding for the next 4 iterations)
+
+Before committing to a "novel" direction, researched real prior art rather
+than guessing:
+
+- **RP2040 PIO** (pico-sdk instruction encoding, MicroPython PIO docs, and
+  the independent `rp2040pio-docs` emulator project): 9 instructions,
+  side-set + delay bits on every instruction, autopull/autopush shift
+  registers, IRQ flags for cross-state-machine sync. Load-bearing finding:
+  the emulator project's own documentation states plainly that PIO programs
+  cannot be traced, single-stepped, or have any internal state (X/Y/ISR/OSR/
+  PC) inspected on real hardware at all - that project exists purely to work
+  around that gap. This is a genuine, citable weakness of the architecture
+  Jane Street explicitly points to as inspiration.
+- **TI PRU**: non-pipelined, single-cycle, fully deterministic; dedicated
+  R30/R31 GPIO out/in registers. Confirms the "simple, deterministic,
+  single-cycle" direction ISA v0/v1 already took is sound, not naive.
+- **riscv-formal / RVFI** (YosysHQ): the standard way to formally verify a
+  small CPU core is a dedicated per-cycle "retirement" interface consumed
+  by both a differential testbench and a SymbiYosys harness. Reusable here,
+  not previously applied (as far as this research found) to a protocol-
+  emulator/PIO-style core specifically.
+- **Mutation testing literature** (Huang et al., "Functional Testbench
+  Qualification by Mutation Analysis", VLSI Design 2015; Mantra, DAC 2023;
+  Firefly, MLCAD 2025): conventional coverage percentages routinely
+  overstate testbench quality - Firefly reports 28-67% of injected faults
+  surviving testbenches with 90-95% conventional coverage. Justifies
+  budgeting real, measured mutation-kill-rate work rather than treating
+  coverage numbers (or "the differential test passes") as sufficient
+  evidence on their own.
+
+**Resulting novelty thesis**: make the engine's internal state observable
+and capturable in a way PIO explicitly is not, and make that same mechanism
+a genuine reverse-engineering primitive (edge/timestamp capture for
+autobaud-style unknown-protocol timing discovery) - directly answering both
+Jane Street's "consider what you'd do differently" prompt and its stated
+interest in hardware debugging/reverse engineering. Verification-side:
+adopt the RVFI pattern (proven, but novel in this domain) plus measured
+mutation-kill rates. Full plan: see the plan document associated with this
+conversation (4 iterations: reprogrammability + shift ops; UART firmware;
+trace interface + edge-capture instruction; mutation testing + real PPA).
+
+## 2026-09-14 - ISA v1: reprogrammable program RAM + SHIFTOUT/SHIFTIN
+
+- Replaced `src/program_rom.v` ($readmemh, fixed at elaboration) with
+  `src/program_ram.v` (genuinely writable) plus a serial bootloader FSM
+  built into `core.v`, reusing the existing `uio` bus (no new pins). This
+  directly fixes the "must be reprogrammable after fabrication" requirement
+  that v0 did not meet. Every test, including the original differential
+  test, now loads its program exclusively through this mechanism -
+  `$readmemh` was removed from the RTL and the test suite entirely, rather
+  than keeping two parallel loading paths.
+- Deliberately kept `program_ram.v`'s read port combinational (not
+  synchronous) to avoid introducing fetch-pipeline hazards (a taken branch
+  would invalidate a speculatively-fetched next instruction) into what is
+  otherwise a simple, easy-to-verify one-instruction-per-cycle timing
+  model. This is flagged as a follow-up PPA/synthesis-mapping concern, not
+  a reprogrammability one - see `docs/limitations.md`.
+- No checksum/CRC on the bootloader frame in v1 - deliberately deferred
+  (P1 in `orchestrator/queue.md`) rather than half-implemented under time
+  pressure.
+- SHIFTOUT/SHIFTIN added with a deliberately paired bit-ordering (LSB-first
+  transmit, matching UART) so that N SHIFTOUTs followed by N SHIFTINs
+  reconstruct a byte exactly - see `docs/isa.md`.
+- **Bugs found and fixed during bring-up** (full detail:
+  `orchestrator/experiments.jsonl` `exp-002`): the GPIO input synchronizer
+  resets to 0 and takes 2 cycles to reflect a real pin value, so naively
+  sampling `LOAD_REQ` on the very first post-reset cycle always read 0 -
+  fixed with an explicit settle counter in the bootloader FSM. Separately,
+  the cocotb bootloader driver could not return at the *exact* cycle the
+  hardware handed off to normal execution (a few real instructions could
+  already retire while the driver was still in its final bit-clock pulse),
+  which broke a naive "assume PC=0" differential-test setup; fixed by
+  snapshotting the RTL's actual post-load architectural state into the
+  Python model rather than assuming a fixed cycle count.

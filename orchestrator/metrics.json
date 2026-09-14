@@ -17,8 +17,8 @@
     "mutation_detection_rate": null,
     "formal_properties_proven": 0,
     "formal_properties_bounded": 0,
-    "opcodes_exercised": 15,
-    "opcodes_total": 19
+    "opcodes_exercised": 17,
+    "opcodes_total": 21
   },
   "ppa": {
     "mapped_cells": null,
@@ -33,9 +33,11 @@
     "i2c_write_words": null
   },
   "novelty": {
+    "reprogrammable_after_fab": true,
     "multi_lane": false,
     "protocol_bridge_demo": false,
     "fault_injection_demo": false,
-    "trace_replay_demo": false
+    "trace_replay_demo": false,
+    "edge_capture_debug_primitive": false
   }
 }
