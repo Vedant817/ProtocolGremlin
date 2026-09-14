@@ -49,7 +49,8 @@ bounded problem").
   done: `tools/spi_model.py` (build_spi_master_asm + SpiSlave) + `test/test_spi.py` (Mode 0-3, full duplex, random).
 - ~~I2C firmware (START, STOP, ACK/NACK, open-drain primitive OP_GODRI/OP_GODR)~~ -
   done: `src/core.v`, `src/gpio.v`, `tools/i2c_model.py` (build_i2c_write_asm + build_i2c_read_asm + I2cSlave) + `test/test_i2c.py` (5/5 tests pass, open-drain contention prevention formally proven).
-- I2C Clock Stretching & Arbitration Detection via `WAITEDGE`.
+- ~~I2C Clock Stretching & Multi-Master Arbitration Detection via `WAITEDGE` & `GRD`~~ -
+  done: `tools/i2c_model.py` (build_i2c_write_with_stretch_asm, build_i2c_write_with_arbitration_asm) + `test/test_i2c.py` (22/22 regression pass, stretch absorbed, arbitration loss cleanly aborted).
 - Bootloader CRC-8 checksum addition to detect corrupted/truncated frames.
 - UART RX firmware with start-bit edge synchronization via `WAITEDGE`.
 - Convert `program_ram.v` to a synchronous-read design once real synthesis

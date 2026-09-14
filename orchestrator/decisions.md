@@ -284,3 +284,27 @@ mutation-kill rates.
   - Mutation Testing: Added `MUT_11_OPEN_DRAIN_DRIVE_HIGH`. Tested against the expanded suite: **11/11 mutants killed (100.0% kill rate)** in 141.45s.
   - Yosys Synthesis: Mapped 19,243 CMOS cells (+59 cells over Iteration 5 baseline, 37,736 GE total). Core logic is only 1,486 cells (~2.1 kGE), maintaining 92.3% memory dominance and zero timing violations.
 
+## 2026-09-15 - Iteration 7: I2C Clock Stretching Synchronization & Multi-Master Arbitration Loss Detection via WAITEDGE
+
+- **I2C Clock Stretching Synchronization (`build_i2c_write_with_stretch_asm`):**
+  - In real I2C peripherals (e.g., EEPROMs, microcontrollers, sensor ADC conversions), slaves stretch SCL LOW to hold off the master while internal processing completes.
+  - Rather than relying on fixed delay cycles or software polling loops that introduce timing jitter and eat code memory, our firmware executes:
+    `WAITEDGE R3, (0x08 | scl_pin)`
+    immediately after releasing SCL for the ACK pulse.
+  - Hardware Execution: The core stalls in hardware while `gpio_in[scl_pin] == 0`. When the slave releases SCL, the rising edge releases the stall, advances the PC, and writes the measured stretch duration (in cycles) directly into `R3`.
+  - Proved that `R3` is preserved across the transaction by ensuring line toggle routines use `R2`, allowing host software to inspect the exact slave response latency.
+- **Multi-Master Arbitration Loss Detection (`build_i2c_write_with_arbitration_asm`):**
+  - Per NXP UM10204 Section 3.1.8, when multiple masters drive the open-drain bus simultaneously, any master that outputs a '1' (releases SDA) but reads back a '0' (due to a competing master pulling SDA low) has lost arbitration.
+  - Implementation: When transmitting any bit with value 1, the firmware clocks SCL HIGH, waits 2 cycles for the GPIO synchronizer, reads back the bus with `GRD R1`, checks the bit with `ANDI R1, (1 << sda_pin)`, and branches with `JZ arb_lost`.
+  - Atomic Collision Abort: In the `arb_lost` handler, the core immediately issues `GWRI 0xFF` (releasing both SDA and SCL to high-Z so the winning master can proceed uncorrupted), loads status code `0xEE` into `R0`, and halts without emitting a STOP condition.
+- **Verification (`test/test_i2c.py`):**
+  - Expanded `_run_i2c_transaction` to factor `slave.slave_drive_scl_low` into `bus_scl` and accept an optional `interfering_master_fn`.
+  - `test_i2c_clock_stretching`: Slave stretches SCL for 20 cycles after address reception. Master absorbs the stretch without timing violations; `R3 = 15` cycles measured; slave receives payload `[0x42]` with ACK.
+  - `test_i2c_arbitration_loss_detection`: An independent `InterferingMaster` drives SDA low on pulse 2 (address bit 6). DUT instantly detects collision, releases bus, and halts with `R0 = 0xEE`, leaving the slave unaddressed.
+  - `test_i2c_arbitration_win_normal`: Without interference, DUT wins arbitration cleanly, sets `R0 = 0x00`, and slave receives payload `[0x55]`.
+  - Regression Suite: **22/22 tests passing (100.0%)** in 15.13s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof fully passed (0 violations) in 52s.
+  - Mutation Testing: **11/11 mutants killed (100.0% kill rate)** in 157.45s.
+  - Yosys Synthesis: Unchanged at 19,243 CMOS cells (37,736 GE). Core logic remains 1,486 cells (~2.1 kGE), demonstrating zero silicon area overhead for clock stretching and multi-master arbitration capabilities.
+
