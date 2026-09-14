@@ -1,0 +1,61 @@
+# Tiny Tapeout project information
+project:
+  title:        "Programmable Protocol Emulator"      # Project title
+  author:       ""      # TODO: fill in before submission
+  discord:      ""      # TODO: fill in before submission (optional)
+  description:  "Small deterministic programmable protocol-processing engine (ISA v0 bootstrap; UART/SPI/I2C firmware to follow)"
+  language:     "Verilog" # other examples include SystemVerilog, Amaranth, VHDL, etc
+  clock_hz:     10000000 # 10 MHz nominal target for v0; revisit after PPA/STA
+
+  # How many tiles your design occupies? A single tile is about 167x108 uM.
+  tiles: "8x4"          # Jane Street competition maximum allocation
+
+  # Your top module name must start with "tt_um_". Make it unique by including your github username:
+  # TODO: replace `change_me` with the actual GitHub username before submission (see orchestrator/queue.md).
+  top_module:  "tt_um_change_me_protocol_emulator"
+
+  # List your project's source files here.
+  # Source files must be in ./src and you must list each source file separately, one per line.
+  # Don't forget to also update `PROJECT_SOURCES` in test/Makefile.
+  source_files:
+    - "project.v"
+    - "core.v"
+    - "alu.v"
+    - "gpio.v"
+    - "program_rom.v"
+
+# The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
+# This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
+pinout:
+  # Inputs (reserved for future use: auxiliary/event inputs, second lane, etc. - see docs/limitations.md)
+  ui[0]: ""
+  ui[1]: ""
+  ui[2]: ""
+  ui[3]: ""
+  ui[4]: ""
+  ui[5]: ""
+  ui[6]: ""
+  ui[7]: ""
+
+  # Outputs (reserved for future use: debug/trace or heartbeat - see docs/limitations.md)
+  uo[0]: ""
+  uo[1]: ""
+  uo[2]: ""
+  uo[3]: ""
+  uo[4]: ""
+  uo[5]: ""
+  uo[6]: ""
+  uo[7]: ""
+
+  # Bidirectional pins - the programmable protocol GPIO bus (GDIR/GWR/GRD instructions)
+  uio[0]: "GPIO0"
+  uio[1]: "GPIO1"
+  uio[2]: "GPIO2"
+  uio[3]: "GPIO3"
+  uio[4]: "GPIO4"
+  uio[5]: "GPIO5"
+  uio[6]: "GPIO6"
+  uio[7]: "GPIO7"
+
+# Do not change!
+yaml_version: 6
