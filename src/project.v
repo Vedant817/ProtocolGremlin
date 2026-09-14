@@ -28,17 +28,22 @@ module tt_um_change_me_protocol_emulator (
     input  wire        rst_n     // reset_n - low to reset
 );
 
+  wire boot_done;
+  wire boot_err;
+
   core #(
       .ADDR_WIDTH(8)
   ) u_core (
-      .clk    (clk),
-      .rst_n  (rst_n),
-      .uio_out(uio_out),
-      .uio_oe (uio_oe),
-      .uio_in (uio_in)
+      .clk      (clk),
+      .rst_n    (rst_n),
+      .uio_out  (uio_out),
+      .uio_oe   (uio_oe),
+      .uio_in   (uio_in),
+      .boot_done(boot_done),
+      .boot_err (boot_err)
   );
 
-  assign uo_out = 8'h00;
+  assign uo_out = {6'b000000, boot_err, boot_done};
 
   // List all unused inputs to prevent warnings
   wire _unused = &{ena, ui_in, 1'b0};

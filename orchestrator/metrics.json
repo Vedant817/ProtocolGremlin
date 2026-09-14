@@ -1,7 +1,7 @@
 {
   "correctness": {
-    "rtl_tests_passed": 22,
-    "rtl_tests_total": 22,
+    "rtl_tests_passed": 27,
+    "rtl_tests_total": 27,
     "gate_tests_passed": 0,
     "gate_tests_total": 0
   },
@@ -11,24 +11,25 @@
     "spi_modes_passed": 4,
     "i2c_master": true,
     "i2c_clock_stretching": true,
-    "i2c_multi_master_arbitration": true
+    "i2c_multi_master_arbitration": true,
+    "bootloader_crc8_integrity": true
   },
   "verification": {
     "randomized_iterations": 10,
     "mutation_detection_rate": 1.0,
-    "formal_properties_proven": 8,
+    "formal_properties_proven": 9,
     "formal_properties_bounded": 20,
     "opcodes_exercised": 24,
     "opcodes_total": 24
   },
   "ppa": {
-    "mapped_cells": 19243,
-    "premap_cells": 14185,
-    "sequential_dff_cells": 4251,
-    "combinational_gate_cells": 14992,
-    "gate_equivalents_ge": 37736,
-    "core_logic_cells": 1486,
-    "core_logic_ge": 2110,
+    "mapped_cells": 19291,
+    "premap_cells": 14233,
+    "sequential_dff_cells": 4262,
+    "combinational_gate_cells": 15029,
+    "gate_equivalents_ge": 37832,
+    "core_logic_cells": 1580,
+    "core_logic_ge": 2243,
     "worst_slack": null,
     "target_clock_hz": 10000000,
     "route_status": "unrouted (pre-GDS)"

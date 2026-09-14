@@ -18,8 +18,10 @@ bounded problem").
 
 ## P1
 
-- Add a bootloader checksum/CRC and a way to signal a failed/short load
-  back to the host (see `docs/limitations.md`).
+- ~~Add a bootloader checksum/CRC and a way to signal a failed/short load
+  back to the host (see `docs/limitations.md`)~~ - done: hardware CRC-8 (poly 0x07)
+  accumulator in `src/core.v`, `uo_out[1:0]` status reporting, permanent halt on mismatch,
+  `test/test_bootload.py` (5/5 tests), SymbiYosys formal proof.
 - ~~Add an RVFI-style per-cycle verification interface ("PVFI", debug-only,
   gated by a `SIM`/`PVFI` define) and a first SymbiYosys formal harness
   under `formal/`: "PC stays in valid range", "reset reaches a known
@@ -51,7 +53,8 @@ bounded problem").
   done: `src/core.v`, `src/gpio.v`, `tools/i2c_model.py` (build_i2c_write_asm + build_i2c_read_asm + I2cSlave) + `test/test_i2c.py` (5/5 tests pass, open-drain contention prevention formally proven).
 - ~~I2C Clock Stretching & Multi-Master Arbitration Detection via `WAITEDGE` & `GRD`~~ -
   done: `tools/i2c_model.py` (build_i2c_write_with_stretch_asm, build_i2c_write_with_arbitration_asm) + `test/test_i2c.py` (22/22 regression pass, stretch absorbed, arbitration loss cleanly aborted).
-- Bootloader CRC-8 checksum addition to detect corrupted/truncated frames.
+- ~~Bootloader CRC-8 checksum addition to detect corrupted/truncated frames~~ -
+  done: on-chip hardware CRC-8 accumulator, `test/test_bootload.py` (5/5 tests), SymbiYosys proven, 12/12 mutants killed.
 - UART RX firmware with start-bit edge synchronization via `WAITEDGE`.
 - Convert `program_ram.v` to a synchronous-read design once real synthesis
   data shows it matters for PPA (`docs/limitations.md`).

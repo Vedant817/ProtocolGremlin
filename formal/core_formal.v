@@ -36,6 +36,8 @@ module core_formal (
   wire [7:0]  pvfi_gpio_rdata;
   wire        pvfi_halted;
   wire [31:0] pvfi_cycle;
+  wire        boot_done;
+  wire        boot_err;
 
   core #(
       .ADDR_WIDTH(8)
@@ -45,6 +47,8 @@ module core_formal (
       .uio_out        (uio_out),
       .uio_oe         (uio_oe),
       .uio_in         (uio_in),
+      .boot_done      (boot_done),
+      .boot_err       (boot_err),
       .pvfi_valid     (pvfi_valid),
       .pvfi_order     (pvfi_order),
       .pvfi_insn      (pvfi_insn),
@@ -87,6 +91,12 @@ module core_formal (
         if ($past(pvfi_valid)) begin
           assert(pvfi_order == $past(pvfi_order) + 32'd1);
         end
+      end
+
+      // Invariant 4: Bootloader integrity protection (corrupted code never executes)
+      if (boot_done && boot_err) begin
+        assert(pvfi_halted);
+        assert(!pvfi_valid);
       end
     end
   end

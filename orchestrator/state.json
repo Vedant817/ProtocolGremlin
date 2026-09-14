@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-i2c-stretch-arbitration-verified",
+  "phase": "isa-v1-bootloader-crc8-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 7 complete (I2C Clock Stretching Synchronization & Multi-Master Arbitration Loss Detection). Next: Iteration 8 (Bootloader CRC-8 checksum addition and error reporting).",
+  "active_objective": "Continuous engineering loop: Iteration 8 complete (Bootloader Hardware CRC-8 Integrity Checking & Error Reporting). Next: Iteration 9 (UART RX Firmware with WAITEDGE start-bit synchronization).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 8,
+  "iterations": 9,
   "halt": false,
-  "notes": "Iteration 7 complete: Added build_i2c_write_with_stretch_asm() using WAITEDGE to absorb arbitrary slave clock stretching and measure wait duration into R3. Added build_i2c_write_with_arbitration_asm() with GRD line verification, immediate tri-state bus release (GWRI 0xFF), and 0xEE error abort on collision. Added 3 cocotb test cases in test/test_i2c.py. All 22 regression tests pass cleanly (100%). SymbiYosys formal BMC 20 steps PASS (0 violations). 11/11 mutants killed (100.0% kill rate). Synthesis: 19,243 mapped CMOS cells (zero area overhead)."
+  "notes": "Iteration 8 complete: Added hardware CRC-8 accumulator (poly 0x07) and LD_CRC state in src/core.v. Exposed boot_done (uo_out[0]) and boot_err (uo_out[1]) on Tiny Tapeout dedicated outputs in src/project.v. Hardened fail-safe: any CRC mismatch or premature LOAD_REQ deassertion locks the core in halt, permanently preventing corrupted code execution. Added test/test_bootload.py (5/5 tests: clean load, inverted CRC rejection, single-bit corruption, truncated load, warm boot skip). All 27 regression tests pass (100%). SymbiYosys formal verification passed (assert pvfi_halted && !pvfi_valid on boot_err). 12/12 mutants killed (100.0% kill rate). Synthesis: 19,291 CMOS cells (+48 cells)."
 }

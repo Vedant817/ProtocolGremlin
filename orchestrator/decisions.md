@@ -305,6 +305,31 @@ mutation-kill rates.
   - Regression Suite: **22/22 tests passing (100.0%)** in 15.13s.
 - **Formal Verification, Mutation & PPA:**
   - SymbiYosys: 20-step Z3 BMC proof fully passed (0 violations) in 52s.
-  - Mutation Testing: **11/11 mutants killed (100.0% kill rate)** in 157.45s.
   - Yosys Synthesis: Unchanged at 19,243 CMOS cells (37,736 GE). Core logic remains 1,486 cells (~2.1 kGE), demonstrating zero silicon area overhead for clock stretching and multi-master arbitration capabilities.
+
+## 2026-09-15 - Iteration 8: Bootloader Hardware CRC-8 Integrity Checking & Error Reporting
+
+- **Motivation & Quality Rule:**
+  - In `docs/limitations.md`, limitation #2 noted that the bootloader frame had no integrity checking, allowing corrupted or truncated programs to run blindly.
+  - For a high-reliability competition ASIC (and real silicon test chips), corrupted code execution must be provably eliminated before instruction fetch can begin.
+- **Hardware Architecture (`src/core.v`):**
+  - Integrated an on-chip CRC-8 accumulator implementing standard polynomial $P(x) = x^8 + x^2 + x + 1$ (poly `0x07`, init `0x00`).
+  - Added new bootloader state `LD_CRC` (state 3) which shifts in the expected 8-bit checksum after all program words have been written to RAM.
+  - Added hardware status outputs: `boot_done` and `boot_err`.
+  - In `src/project.v`, wired `assign uo_out = {6'b000000, boot_err, boot_done};` to Tiny Tapeout dedicated output pins.
+  - **Fail-Safe Operation:** If the received CRC does not match the accumulated CRC, or if `LOAD_REQ` drops prematurely before completing the frame, `boot_err <= 1'b1`, `boot_done <= 1'b1`, and `halted <= 1'b1` permanently halt the core. Instruction execution is blocked from ever starting.
+- **Verification (`test/test_bootload.py` & `test/bootload.py`):**
+  - Updated `test/bootload.py` with `compute_crc8()` to automatically append CRC-8 to all program loads across all test suites.
+  - Created `test/test_bootload.py` with 5 targeted test cases:
+    1. Valid CRC-8 load: verified clean execution to HALT, `uo_out == 0x01` (`boot_done=1`, `boot_err=0`), `R0=0x42`, `R1=0x99`.
+    2. Corrupted (inverted) CRC: verified `uo_out == 0x03` (`boot_done=1`, `boot_err=1`), core halted, PC=0, zero instructions executed.
+    3. Single-bit corrupted payload: verified CRC mismatch detection, `uo_out == 0x03`, core halted.
+    4. Truncated frame (early `LOAD_REQ` drop): verified immediate abort, `uo_out == 0x03`, core halted.
+    5. Warm boot skip (`LOAD_REQ=0` at reset): verified instant bypass into `LD_DONE` with `uo_out == 0x01`.
+  - Regression Suite: **27/27 tests passing (100.0%)** in 15.29s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: Added formal invariant `if (boot_done && boot_err) begin assert(pvfi_halted); assert(!pvfi_valid); end`. Formally proved over 20 steps with Z3 (PASS, 0 violations).
+  - Mutation Testing: Added `MUT_12_BOOTLOADER_CRC_BYPASS`. Evaluated against the entire suite: **12/12 mutants killed (100.0% kill rate)** in 180.59s.
+  - Yosys Synthesis: Mapped 19,291 CMOS cells (+48 cells over Iteration 7 baseline, 37,832 GE total). Active processor core logic is 1,580 cells (~2.2 kGE).
+
 

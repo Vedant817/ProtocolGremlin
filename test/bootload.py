@@ -52,14 +52,41 @@ async def _send_bit(dut, uio_val: int, bit: int) -> int:
     return uio_val
 
 
-async def bootload(dut, words: list[int]) -> None:
+def compute_crc8(words: list[int]) -> int:
+    """
+    Compute standard CRC-8 (poly 0x07, init 0x00) over the bootloader frame:
+    1 byte word count + 2 bytes per instruction word (MSB first).
+    """
+    crc = 0
+    count = len(words) & 0xFF
+    for b in range(7, -1, -1):
+        bit = (count >> b) & 1
+        msb = (crc >> 7) & 1
+        crc = (((crc << 1) ^ 0x07) if (msb ^ bit) else (crc << 1)) & 0xFF
+
+    for word in words:
+        for b in range(15, -1, -1):
+            bit = (word >> b) & 1
+            msb = (crc >> 7) & 1
+            crc = (((crc << 1) ^ 0x07) if (msb ^ bit) else (crc << 1)) & 0xFF
+
+    return crc
+
+
+async def bootload(
+    dut,
+    words: list[int],
+    corrupt_crc: bool = False,
+    abort_early_after_words: int = -1,
+) -> None:
     """Load `words` (a list of 16-bit instruction words) into the core's
-    program RAM via the serial bootloader, then let it settle into normal
-    execution (PC=0). Must be called right after releasing rst_n, before any
-    other clock edges elapse, and before anything else drives `uio_in`.
+    program RAM via the serial bootloader, accompanied by an 8-bit CRC-8 checksum,
+    then let it settle into normal execution (PC=0). Must be called right after
+    releasing rst_n, before any other clock edges elapse, and before anything
+    else drives `uio_in`.
     """
     if not (0 <= len(words) <= 255):
-        raise ValueError("bootloader v1 frame supports at most 255 words")
+        raise ValueError("bootloader frame supports at most 255 words")
 
     uio_val = 1 << LOAD_REQ_BIT
     dut.uio_in.value = uio_val
@@ -71,11 +98,28 @@ async def bootload(dut, words: list[int]) -> None:
     for bit_index in range(7, -1, -1):
         uio_val = await _send_bit(dut, uio_val, (count >> bit_index) & 1)
 
-    for word in words:
+    for word_idx, word in enumerate(words):
+        if abort_early_after_words >= 0 and word_idx >= abort_early_after_words:
+            # Drop LOAD_REQ early to simulate truncated frame
+            uio_val &= ~(1 << LOAD_REQ_BIT) & 0xFF
+            dut.uio_in.value = uio_val
+            await RisingEdge(dut.clk)
+            await RisingEdge(dut.clk)
+            return
+
         for bit_index in range(15, -1, -1):
             uio_val = await _send_bit(dut, uio_val, (word >> bit_index) & 1)
+
+    # Calculate and send CRC-8 checksum
+    crc = compute_crc8(words)
+    if corrupt_crc:
+        crc ^= 0xFF  # Invert bits to induce CRC checksum error
+
+    for bit_index in range(7, -1, -1):
+        uio_val = await _send_bit(dut, uio_val, (crc >> bit_index) & 1)
 
     uio_val &= ~(1 << LOAD_REQ_BIT) & 0xFF
     dut.uio_in.value = uio_val
     await RisingEdge(dut.clk)
     await RisingEdge(dut.clk)
+

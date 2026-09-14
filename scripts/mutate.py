@@ -113,6 +113,14 @@ MUTANTS = [
         "replacement": "assign pin_out = out_val;",
         "description": "Open-drain electrical bug: pin_out actively drives high in open-drain mode",
     },
+    {
+        "id": "MUT_12_BOOTLOADER_CRC_BYPASS",
+        "category": "System / Security",
+        "file": "src/core.v",
+        "target": "if ({ld_sreg[6:0], gpio_in[LOAD_DATA_BIT]} == ld_crc) begin",
+        "replacement": "if (1'b1) begin",
+        "description": "Bootloader security bug: core accepts corrupted programs by bypassing CRC-8 verification",
+    },
 ]
 
 

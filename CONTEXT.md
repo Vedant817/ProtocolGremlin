@@ -17,35 +17,38 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 
 ## Current status
 
-- **Phase:** ISA v1 complete — Iterations 1–7 complete (I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
+- **Phase:** ISA v1 complete — Iterations 1–8 complete (Bootloader CRC-8 Hardware Protection, I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
 - **What exists:**
   1. **Core:** 24 opcodes, 4 registers, bidirectional GPIO bus on `uio[7:0]`,
      `SHIFTOUT`/`SHIFTIN` with MSB/LSB direction select (`imm8[3]`), `WAITEDGE`
      hardware edge-detect and cycle-capture timing discovery backed by a 32-bit cycle counter,
      and `GODRI`/`GODR` hardware open-drain primitives for contention-free open-collector buses.
   2. **Reprogrammability:** On-chip serial bootloader FSM writing to a true
-     writable program RAM (`src/program_ram.v`) over `uio[0:2]`. No `$readmemh`
-     anywhere in the RTL or testbench.
+     writable program RAM (`src/program_ram.v`) over `uio[0:2]`, protected by
+     hardware CRC-8 frame integrity verification (poly 0x07, init 0x00) with
+     dedicated hardware status pins (`uo_out[0]` boot_done, `uo_out[1]` boot_err)
+     and fail-safe permanent halt locking on corruption. Zero `$readmemh` in design.
   3. **Formal Trace Port:** PVFI (Protocol-engine Verification Formal Interface)
      RVFI-style per-cycle retirement bus gated under `ifdef PVFI (zero silicon overhead).
   4. **Formal Harness:** SymbiYosys (`formal/core.sby`) with Z3 SMT solver proving
      reset convergence, PC bounds, WAIT termination, halt permanence, counter
-     monotonicity, PVFI interface correctness, and open-drain electrical isolation (20 steps, 0 violations).
+     monotonicity, PVFI interface correctness, open-drain electrical isolation,
+     and bootloader error locking invariants (20 steps, 0 violations).
   5. **Firmware & Decoders:** Parameterized bit-banged UART TX (`tools/uart_model.py`),
      full-duplex SPI Master supporting all 4 modes ($CPOL \in \{0,1\}, CPHA \in \{0,1\}$) (`tools/spi_model.py`),
      and I2C Master write/read transactions with compact `DECJNZ` loops (`tools/i2c_model.py`),
      including dynamic clock-stretching absorption (`WAITEDGE`) and multi-master arbitration loss detection (`GRD`),
      paired with independent `UartReceiver`, `SpiSlave`, and `I2cSlave` verification models.
-  6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 11
-     architectural fault categories, measuring **100.0% kill rate (11/11 killed)**
+  6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 12
+     architectural fault categories, measuring **100.0% kill rate (12/12 killed)**
      (citing Huang et al. 2015, Firefly 2025).
   7. **Constrained-Random Fuzzing:** Automated instruction fuzzer (`tools/fuzzer.py`)
      with delta-debugging program shrinker, verified in `test/test_fuzz.py`.
   8. **Real PPA Baseline:** Mapped with Yosys 0.69+ (`scripts/synth.sh`), measuring
-     19,243 CMOS cells (37,736 GE). Active processor logic is only 1,486 cells
-     (~2.1 kGE) with 92.3% of cells in the synthesized flip-flop RAM matrix.
+     19,291 CMOS cells (37,832 GE). Active processor logic is only 1,580 cells
+     (~2.2 kGE) with 91.8% of cells in the synthesized flip-flop RAM matrix.
      Fits the 8x4 competition tile footprint with >80 ns timing slack at 10 MHz.
-- **What's verified:** 22/22 test suites pass cleanly via `scripts/regress.sh`:
+- **What's verified:** 27/27 test suites pass cleanly via `scripts/regress.sh`:
   (1) cycle-by-cycle differential test (`test/test.py`), (2) UART TX edge-case
   verification (`0x00`, `0xFF`, `0x55`, `0xAA` at 4, 8, 16 cycles/bit),
   (3) UART TX pseudorandom frames, (4) isolated ALU/register unit tests,
@@ -64,7 +67,12 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
   (19) I2C electrical open-drain contention prevention proof,
   (20) I2C slave clock stretching absorption via WAITEDGE with latency capture,
   (21) I2C multi-master arbitration loss detection and atomic bus release,
-  (22) I2C clean arbitration win path.
+  (22) I2C clean arbitration win path,
+  (23) clean bootload with valid CRC-8,
+  (24) bootloader corrupted CRC rejection and halt lock,
+  (25) single-bit payload bitflip corruption rejection,
+  (26) premature LOAD_REQ deassertion abort detection,
+  (27) warm-boot skip without recalculating CRC.
 - **Git:** Sequence of small, reviewable commits (`git log`).
 
 ## Repository map
@@ -73,7 +81,7 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 src/            RTL: project.v (TT wrapper), core.v, alu.v, gpio.v, program_ram.v
 firmware/       Assembly programs (loop_demo.asm)
 tools/          assembler.py, isa_model.py, uart_model.py, spi_model.py, i2c_model.py, fuzzer.py
-test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz, test_spi, test_i2c)
+test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz, test_spi, test_i2c, test_bootload)
 formal/         SymbiYosys formal harness (core.sby, core_formal.v)
 scripts/        setup_env.sh, regress.sh, mutate.py, synth.sh, synth.ys
 docs/           architecture, ISA, verification, toolchain, PPA, limitations
@@ -84,9 +92,9 @@ orchestrator/   Durable state (decisions.md, queue.md, metrics.json, experiments
 
 ```bash
 bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
-bash scripts/regress.sh     # runs all 22 cocotb regression tests (~15s)
+bash scripts/regress.sh     # runs all 27 cocotb regression tests (~15s)
 sby -f formal/core.sby      # runs SymbiYosys formal verification with Z3
-python3 scripts/mutate.py   # runs RTL mutation testing campaign (11/11 killed)
+python3 scripts/mutate.py   # runs RTL mutation testing campaign (12/12 killed)
 bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 ```
 
@@ -95,19 +103,19 @@ bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 - Built on the real `TinyTapeout/ttihp-verilog-template` (`cmos5l` branch).
 - No sudo/root required; toolchain runs from Miniforge/conda-forge.
 - Programmable protocol GPIO mapped to bidirectional `uio[7:0]`.
-- Genuinely reprogrammable program RAM loaded via serial bootloader.
+- Genuinely reprogrammable program RAM loaded via serial bootloader with CRC-8 frame integrity protection.
 - Multi-tiered verification: differential cycle-by-cycle testing, SymbiYosys formal
   safety proofs, independent protocol decoders, 100% mutation kill rate, and
   constrained-random fuzzing with automated shrinking.
-- Synthesized PPA measured: active core is 1,486 cells (~2.1 kGE), RAM is 17,757 cells.
+- Synthesized PPA measured: active core is 1,580 cells (~2.2 kGE), RAM is 17,757 cells.
 
 ## What to work on next
 
 Full prioritized backlog: `orchestrator/queue.md`. Entering continuous loop:
 
-1. Iteration 8: Bootloader CRC-8 frame checksum and error reporting.
-2. Iteration 9: UART RX firmware with start-bit synchronization using `WAITEDGE`.
-3. Iteration 10+: 1-Wire, JTAG TAP, SWD line reset, Dual-lane architecture (`core_dual.v`).
+1. Iteration 9: UART RX firmware with start-bit synchronization using `WAITEDGE` and independent transmitter.
+2. Iteration 10: 1-Wire Master Protocol Engine (Dallas DS18B20 Timing) with presence pulse discovery.
+3. Iteration 11+: JTAG TAP controller, SWD line reset, Manchester biphase encoding, Dual-lane architecture (`core_dual.v`).
 
 ## Keeping this file current
 

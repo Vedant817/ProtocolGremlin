@@ -36,7 +36,9 @@ module core #(
     input  wire       rst_n,
     output wire [7:0] uio_out,
     output wire [7:0] uio_oe,
-    input  wire [7:0] uio_in
+    input  wire [7:0] uio_in,
+    output reg        boot_done,
+    output reg        boot_err
 `ifdef PVFI
     ,
     output wire        pvfi_valid,
@@ -95,7 +97,8 @@ module core #(
   localparam [2:0] LD_WAIT  = 3'd0;  // settling + sampling LOAD_REQ
   localparam [2:0] LD_COUNT = 3'd1;  // shifting in the 8-bit word count
   localparam [2:0] LD_WORD  = 3'd2;  // shifting in N x 16-bit program words
-  localparam [2:0] LD_DONE  = 3'd3;  // bootloader finished; normal execution
+  localparam [2:0] LD_CRC   = 3'd3;  // shifting in 8-bit CRC-8 checksum
+  localparam [2:0] LD_DONE  = 3'd4;  // bootloader finished; normal execution
 
   localparam LOAD_REQ_BIT  = 0;
   localparam LOAD_CLK_BIT  = 1;
@@ -126,6 +129,18 @@ module core #(
   reg [7:0] ld_word_count;
   reg [7:0] ld_word_idx;
   reg ld_clk_prev;
+  reg [7:0] ld_crc;
+
+  function [7:0] crc8_step;
+    input [7:0] c;
+    input       b;
+    begin
+      if (c[7] ^ b)
+        crc8_step = {c[6:0], 1'b0} ^ 8'h07;
+      else
+        crc8_step = {c[6:0], 1'b0};
+    end
+  endfunction
 
   wire ld_clk_rise = gpio_in[LOAD_CLK_BIT] && !ld_clk_prev;
 
@@ -249,6 +264,9 @@ module core #(
       ld_word_count  <= 8'h00;
       ld_word_idx    <= 8'h00;
       ld_clk_prev    <= 1'b0;
+      ld_crc         <= 8'h00;
+      boot_done      <= 1'b0;
+      boot_err       <= 1'b0;
     end else begin
       cycle_cnt    <= cycle_cnt + 32'd1;
       gpio_in_prev <= gpio_in;
@@ -267,23 +285,37 @@ module core #(
             ld_state  <= LD_COUNT;
             ld_sreg   <= 16'h0000;
             ld_bitcnt <= 5'd0;
+            ld_crc    <= 8'h00;
+            boot_done <= 1'b0;
+            boot_err  <= 1'b0;
           end else begin
-            ld_state <= LD_DONE;
+            boot_done <= 1'b1;
+            boot_err  <= 1'b0;
+            ld_state  <= LD_DONE;
           end
         end
 
         // -------------------------------------------------------------
         // LD_COUNT: shift in an 8-bit word count, MSB first, one bit per
-        // detected LOAD_CLK rising edge.
+        // detected LOAD_CLK rising edge. Accumulate into running CRC-8.
         // -------------------------------------------------------------
         LD_COUNT: begin
           if (!gpio_in[LOAD_REQ_BIT]) begin
-            ld_state <= LD_DONE;  // host aborted the load
+            boot_err  <= 1'b1;
+            boot_done <= 1'b1;
+            halted    <= 1'b1;
+            ld_state  <= LD_DONE;
           end else if (ld_clk_rise) begin
+            ld_crc <= crc8_step(ld_crc, gpio_in[LOAD_DATA_BIT]);
             if (ld_bitcnt == 5'd7) begin
               ld_word_count <= {ld_sreg[6:0], gpio_in[LOAD_DATA_BIT]};
               ld_bitcnt     <= 5'd0;
-              ld_state      <= LD_WORD;
+              ld_word_idx   <= 8'd0;
+              if ({ld_sreg[6:0], gpio_in[LOAD_DATA_BIT]} == 8'd0) begin
+                ld_state <= LD_CRC;
+              end else begin
+                ld_state <= LD_WORD;
+              end
             end else begin
               ld_sreg   <= {ld_sreg[14:0], gpio_in[LOAD_DATA_BIT]};
               ld_bitcnt <= ld_bitcnt + 5'd1;
@@ -295,17 +327,52 @@ module core #(
         // LD_WORD: shift in ld_word_count x 16-bit words, MSB first.
         // ram_we/ram_waddr/ram_wdata (combinational, above) perform the
         // actual write in the same cycle this reaches bit 15.
+        // Accumulate into running CRC-8.
         // -------------------------------------------------------------
         LD_WORD: begin
-          if (ld_word_idx == ld_word_count) begin
-            ld_state <= LD_DONE;  // word_count == 0: nothing to load
-          end else if (!gpio_in[LOAD_REQ_BIT]) begin
-            ld_state <= LD_DONE;  // host aborted the load (best-effort)
+          if (!gpio_in[LOAD_REQ_BIT]) begin
+            boot_err  <= 1'b1;
+            boot_done <= 1'b1;
+            halted    <= 1'b1;
+            ld_state  <= LD_DONE;
           end else if (ld_clk_rise) begin
+            ld_crc <= crc8_step(ld_crc, gpio_in[LOAD_DATA_BIT]);
             if (ld_bitcnt == 5'd15) begin
               ld_word_idx <= ld_word_idx + 8'd1;
               ld_bitcnt   <= 5'd0;
-              if (ld_word_idx + 8'd1 == ld_word_count) ld_state <= LD_DONE;
+              if (ld_word_idx + 8'd1 == ld_word_count) begin
+                ld_state <= LD_CRC;
+              end
+            end else begin
+              ld_sreg   <= {ld_sreg[14:0], gpio_in[LOAD_DATA_BIT]};
+              ld_bitcnt <= ld_bitcnt + 5'd1;
+            end
+          end
+        end
+
+        // -------------------------------------------------------------
+        // LD_CRC: shift in expected 8-bit CRC-8 checksum, MSB first.
+        // If checksum matches ld_crc, boot succeeds. If mismatch,
+        // boot_err is asserted and the core is permanently halted.
+        // -------------------------------------------------------------
+        LD_CRC: begin
+          if (!gpio_in[LOAD_REQ_BIT]) begin
+            boot_err  <= 1'b1;
+            boot_done <= 1'b1;
+            halted    <= 1'b1;
+            ld_state  <= LD_DONE;
+          end else if (ld_clk_rise) begin
+            if (ld_bitcnt == 5'd7) begin
+              if ({ld_sreg[6:0], gpio_in[LOAD_DATA_BIT]} == ld_crc) begin
+                boot_err  <= 1'b0;
+                boot_done <= 1'b1;
+                ld_state  <= LD_DONE;
+              end else begin
+                boot_err  <= 1'b1;
+                boot_done <= 1'b1;
+                halted    <= 1'b1;
+                ld_state  <= LD_DONE;
+              end
             end else begin
               ld_sreg   <= {ld_sreg[14:0], gpio_in[LOAD_DATA_BIT]};
               ld_bitcnt <= ld_bitcnt + 5'd1;

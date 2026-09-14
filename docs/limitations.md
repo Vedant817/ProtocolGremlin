@@ -17,13 +17,16 @@ checksum/error signaling on the load frame, and the RAM's read port is
 still combinational rather than synchronous (a PPA/synthesis-mapping
 concern, not a reprogrammability one).
 
-## Bootloader has no integrity checking
+## ~~Bootloader has no integrity checking~~ (fixed in Iteration 8)
 
-The v1 serial bootloader frame (`docs/isa.md` "Bootloader protocol") has no
-checksum or CRC. A corrupted or truncated load currently just runs whatever
-ended up in RAM, with no error reported back to the host. Deliberately
-scoped out of the v1 bootstrap to keep it reviewable - see
-`orchestrator/queue.md`.
+The serial bootloader frame now computes and verifies an on-chip hardware
+CRC-8 checksum ($P(x) = x^8 + x^2 + x + 1$, poly `0x07`, init `0x00`) over
+the 8-bit word count and all 16-bit program words. If the checksum mismatches
+or if the host deasserts `LOAD_REQ` prematurely, the hardware asserts
+`boot_err = 1` on `uo_out[1]`, asserts `boot_done = 1` on `uo_out[0]`
+(`uo_out = 0x03`), and permanently halts the core without executing corrupted
+code. Formal invariant verified in SymbiYosys; 5/5 unit tests in
+`test/test_bootload.py`.
 
 ## `program_ram.v` read port is combinational
 

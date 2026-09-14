@@ -141,9 +141,21 @@ Wire assignment during an active load (host-driven):
 - `uio[1]` - `LOAD_CLK` (host-driven bit clock; one rising edge per bit).
 - `uio[2]` - `LOAD_DATA` (serial data, valid while `LOAD_CLK` is asserted).
 
-Frame format: an 8-bit word count (MSB first), then that many 16-bit
-instruction words (each MSB first, matching the instruction encoding above).
-There is no checksum/integrity check in v1 - see `docs/limitations.md`.
+Frame format:
+1. 8-bit word count `N` (MSB first).
+2. `N` x 16-bit instruction words (each MSB first, high byte then low byte).
+3. 8-bit CRC-8 checksum (MSB first), computed using standard polynomial
+   $P(x) = x^8 + x^2 + x + 1$ (`0x07`, init `0x00`) over the 1-byte word count
+   and all $2 \times N$ instruction word bytes.
+
+Hardware status signals (`uo_out[7:0]`):
+- `uo_out[0]` - `boot_done`: 1 when bootloader FSM has finished (either valid load,
+  error abort, or warm boot skip).
+- `uo_out[1]` - `boot_err`: 1 if a CRC mismatch occurred or if `LOAD_REQ` was
+  prematurely dropped (truncated load). When `boot_err == 1`, the core is
+  permanently halted and execution never begins, provably preventing corrupted
+  code execution.
+- `uo_out[7:2]` - reserved (driven to 0).
 
 Timing: the GPIO input synchronizer (`src/gpio.v`) is a 2-flop
 synchronizer, and the bootloader FSM additionally waits for it to settle
@@ -155,13 +167,10 @@ before sampling `LOAD_REQ` for the first time. A host must therefore:
    least 2 clock cycles each phase, before changing to the next bit.
 
 See `test/bootload.py` for a reference implementation (used by the cocotb
-test suite itself to load every test program - there is no `$readmemh` path
-left anywhere in the test suite either).
+test suite itself to load every test program).
 
 If `LOAD_REQ` drops before the full frame is received, the bootloader
-aborts (best-effort: whatever words were already written stay in RAM) and
-hands off to execution immediately - documented, not a soft/graceful error
-recovery path.
+aborts immediately, asserts `boot_err = 1`, and permanently halts the core.
 
 ## Known gaps (tracked in `orchestrator/queue.md`)
 
@@ -171,8 +180,6 @@ recovery path.
   flag-setting instruction), not an arbitrary register directly; this keeps
   the encoding simple but firmware must plan around it (e.g. via `ANDI`
   before a conditional branch).
-- The bootloader frame has no checksum/integrity check, and a checksum
-  failure/short frame is not signaled back to the host in any way.
 - `program_ram.v`'s read port is combinational, not synchronous - a
   synthesis/PPA-mapping consideration (a real SRAM macro is typically
   synchronous-read), not a reprogrammability one. Tracked in
