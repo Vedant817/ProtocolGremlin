@@ -29,8 +29,7 @@ module tt_um_change_me_protocol_emulator (
 );
 
   core #(
-      .ADDR_WIDTH(8),
-      .INIT_FILE ("program.hex")
+      .ADDR_WIDTH(8)
   ) u_core (
       .clk    (clk),
       .rst_n  (rst_n),
