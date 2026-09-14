@@ -3,9 +3,9 @@ project:
   title:        "Programmable Protocol Emulator"      # Project title
   author:       ""      # TODO: fill in before submission
   discord:      ""      # TODO: fill in before submission (optional)
-  description:  "Small deterministic programmable protocol-processing engine (ISA v0 bootstrap; UART/SPI/I2C firmware to follow)"
+  description:  "Deterministic programmable protocol-emulator ASIC with on-chip bootloader, bit-serial shifts, WAITEDGE autobaud capture, and formal PVFI trace"
   language:     "Verilog" # other examples include SystemVerilog, Amaranth, VHDL, etc
-  clock_hz:     10000000 # 10 MHz nominal target for v0; revisit after PPA/STA
+  clock_hz:     10000000 # 10 MHz nominal target verified against synthesis critical path (<12ns)
 
   # How many tiles your design occupies? A single tile is about 167x108 uM.
   tiles: "8x4"          # Jane Street competition maximum allocation

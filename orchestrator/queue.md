@@ -32,19 +32,19 @@ bounded problem").
   protocols, and something RP2040 PIO's documented total lack of runtime
   observability cannot do~~ - done: `src/core.v` opcode 21, 32-bit cycle counter,
   `test/test_waitedge.py` pulse-width measurement to single-cycle precision.
-- Run first Yosys synthesis pass; record mapped cell count/area breakdown
-  in `docs/ppa.md` and `orchestrator/metrics.json`.
-- Add a randomized instruction-stream fuzzer that runs against both the
-  RTL and `tools/isa_model.py`, with automatic shrink-on-failure.
+- ~~Run first Yosys synthesis pass; record mapped cell count/area breakdown
+  in `docs/ppa.md` and `orchestrator/metrics.json`~~ - done: `scripts/synth.sh` +
+  `scripts/synth.ys`, mapped 19,143 CMOS cells (37,542 GE), 1,402 cells in active processor core.
+- ~~Add a randomized instruction-stream fuzzer that runs against both the
+  RTL and `tools/isa_model.py`, with automatic shrink-on-failure~~ - done:
+  `tools/fuzzer.py` + `test/test_fuzz.py`, automated 1-minimization shrinker.
 
 ## P2
 
-- Mutation testing harness: deliberately invert a branch condition /
+- ~~Mutation testing harness: deliberately invert a branch condition /
   off-by-one a `WAIT` counter / wrong ALU op / dropped reset, confirm the
-  test suite catches it, and report a measured kill rate (not just
-  coverage - see `docs/verification.md` for why coverage alone is
-  insufficient evidence, citing Huang et al. 2015 and the Firefly 2025
-  mutation-testing results).
+  test suite catches it, and report a measured kill rate~~ - done:
+  `scripts/mutate.py`, 10/10 mutants killed (100.0% kill rate) in 46.95s.
 - SPI and I2C firmware once UART is solid.
 - Explicit test coverage for reserved/illegal opcodes 21-31 (currently
   silently behave as NOP, untested - see `docs/limitations.md`).

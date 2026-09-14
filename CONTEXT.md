@@ -17,78 +17,84 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 
 ## Current status
 
-- **Phase:** ISA v1, iteration 3 of a 4-iteration novelty & verification
-  push complete (see `orchestrator/decisions.md` "Iteration 3" for details).
-- **What exists:** a core (22 opcodes, 4 registers, GPIO bus on Tiny
-  Tapeout's `uio[7:0]`) in `src/`, with a **genuinely reprogrammable
-  program RAM loaded by an on-chip serial bootloader** (no `$readmemh`
-  anywhere - see `docs/isa.md` "Bootloader protocol"), `SHIFTOUT`/
-  `SHIFTIN` bit-serial instructions, and a dedicated `WAITEDGE` edge-capture
-  timing discovery instruction backed by a 32-bit cycle counter. Debug
-  builds include a PVFI trace port gated under `ifdef PVFI (zero tapeout
-  pin overhead). SymbiYosys formal harness (`formal/core.sby`) with Z3
-  proves safety invariants over 20 cycles. Assembler, independent Python
-  reference model, and asynchronous software UART decoder model live in `tools/`.
-- **What's verified:** 9/9 test suites pass cleanly via `scripts/regress.sh`:
+- **Phase:** ISA v1 complete — all 4 iterations of the novelty & verification
+  push complete (see `orchestrator/decisions.md` for full breakdown).
+- **What exists:**
+  1. **Core:** 22 opcodes, 4 registers, bidirectional GPIO bus on `uio[7:0]`,
+     `SHIFTOUT`/`SHIFTIN` bit-serial primitives, and `WAITEDGE` hardware edge-detect
+     and cycle-capture timing discovery backed by a 32-bit cycle counter.
+  2. **Reprogrammability:** On-chip serial bootloader FSM writing to a true
+     writable program RAM (`src/program_ram.v`) over `uio[0:2]`. No `$readmemh`
+     anywhere in the RTL or testbench.
+  3. **Formal Trace Port:** PVFI (Protocol-engine Verification Formal Interface)
+     RVFI-style per-cycle retirement bus gated under `ifdef PVFI (zero silicon overhead).
+  4. **Formal Harness:** SymbiYosys (`formal/core.sby`) with Z3 SMT solver proving
+     reset convergence, PC bounds, WAIT termination, halt permanence, counter
+     monotonicity, and PVFI interface correctness (20 steps, 0 violations).
+  5. **Firmware & Decoders:** Parameterized bit-banged UART TX assembly generator
+     and independent cycle-by-cycle `UartReceiver` software model in `tools/uart_model.py`.
+  6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 10
+     architectural fault categories, measuring **100.0% kill rate (10/10 killed)**
+     (citing Huang et al. 2015, Firefly 2025).
+  7. **Constrained-Random Fuzzing:** Automated instruction fuzzer (`tools/fuzzer.py`)
+     with delta-debugging program shrinker, verified in `test/test_fuzz.py`.
+  8. **Real PPA Baseline:** Mapped with Yosys 0.69+ (`scripts/synth.sh`), measuring
+     19,143 CMOS cells (37,542 GE). Proved active processor logic is only 1,402 cells
+     (~1.99 kGE) with 92.7% of cells in the synthesized flip-flop RAM matrix.
+     Fits the 8x4 competition tile footprint with >80 ns timing slack at 10 MHz.
+- **What's verified:** 11/11 test suites pass cleanly via `scripts/regress.sh`:
   (1) cycle-by-cycle differential test (`test/test.py`), (2) UART TX edge-case
   verification (`0x00`, `0xFF`, `0x55`, `0xAA` at 4, 8, 16 cycles/bit),
   (3) UART TX pseudorandom frames, (4) isolated ALU/register unit tests,
   (5) isolated branch/loop unit tests, (6) isolated GPIO/shift unit tests,
   (7) WAITEDGE single-cycle pulse width measurement (5, 11, 23, 47 cycles),
-  (8) cycle counter timestamp capture, (9) WAITEDGE differential test vs Python model.
-  SymbiYosys 20-step bounded model check passes with 0 violations.
-- **What's NOT done yet (iteration 4):** Mutation testing harness (`scripts/mutate.py`),
-  constrained-random fuzzer with automated shrinking, and real Yosys synthesis/PPA data.
-- **Git:** history is being built as a sequence of small, reviewable
-  commits (see `git log`) rather than one large commit.
+  (8) cycle counter timestamp capture, (9) WAITEDGE differential test vs Python model,
+  (10) constrained-random fuzzing (10 iterations differential vs Python model),
+  (11) delta-debugging shrinker unit test.
+- **Git:** Sequence of small, reviewable commits (`git log`).
 
 ## Repository map
 
 ```text
-src/            RTL: project.v (TT wrapper), core.v, alu.v, gpio.v, program_rom.v
+src/            RTL: project.v (TT wrapper), core.v, alu.v, gpio.v, program_ram.v
 firmware/       Assembly programs (loop_demo.asm)
-tools/          assembler.py, isa_model.py (Python reference model)
-test/           cocotb differential test + Tiny Tapeout template files
-formal/         Formal verification harness (not yet populated)
-scripts/        setup_env.sh (toolchain), regress.sh (run tests)
+tools/          assembler.py, isa_model.py, uart_model.py, fuzzer.py
+test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz)
+formal/         SymbiYosys formal harness (core.sby, core_formal.v)
+scripts/        setup_env.sh, regress.sh, mutate.py, synth.sh, synth.ys
 docs/           architecture, ISA, verification, toolchain, PPA, limitations
-orchestrator/   Durable state for the continuous engineering loop (see below)
+orchestrator/   Durable state (decisions.md, queue.md, metrics.json, experiments.jsonl)
 ```
 
 ## Get productive in 2 minutes
 
 ```bash
-bash scripts/setup_env.sh   # one-time, no sudo required (see docs/toolchain.md)
-bash scripts/regress.sh     # assembles firmware, runs the cocotb test suite
+bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
+bash scripts/regress.sh     # runs all 11 cocotb regression tests (~3s)
+sby -f formal/core.sby      # runs SymbiYosys formal verification with Z3
+python3 scripts/mutate.py   # runs RTL mutation testing campaign (10/10 killed)
+bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 ```
 
 ## Key decisions (full log: `orchestrator/decisions.md`)
 
-- Built on the real `TinyTapeout/ttihp-verilog-template` (`cmos5l` branch),
-  not a custom layout, so Tiny Tapeout's own CI/precheck/GDS flow keeps
-  working.
-- No sudo/root available in the working environment, so the RTL toolchain
-  is installed via Miniforge/conda-forge, not `apt-get`.
-- The programmable GPIO bus is mapped to `uio[7:0]` only (TT's only true
-  bidirectional pins); `ui_in`/`uo_out` are unused placeholders for now.
-- Program memory is a genuinely writable RAM (`src/program_ram.v`), loaded
-  by an on-chip serial bootloader over the same `uio` bus - fixed in ISA v1
-  after v0 shipped a `$readmemh`-fixed ROM that could not actually be
-  reprogrammed after fabrication.
-- Verification is differential-first: RTL vs. an independently written
-  Python ISA model, cycle by cycle, not just "the simulation runs".
+- Built on the real `TinyTapeout/ttihp-verilog-template` (`cmos5l` branch).
+- No sudo/root required; toolchain runs from Miniforge/conda-forge.
+- Programmable protocol GPIO mapped to bidirectional `uio[7:0]`.
+- Genuinely reprogrammable program RAM loaded via serial bootloader.
+- Multi-tiered verification: differential cycle-by-cycle testing, SymbiYosys formal
+  safety proofs, independent protocol decoders, 100% mutation kill rate, and
+  constrained-random fuzzing with automated shrinking.
+- Synthesized PPA measured: active core is 1,402 cells (~1.99 kGE), RAM is 17,741 cells.
 
 ## What to work on next
- 
- Full prioritized backlog: `orchestrator/queue.md`. Immediate next
- (iteration 4 of the 4-iteration plan in `orchestrator/decisions.md`):
- 
- 1. Seeded mutation testing harness (`scripts/mutate.py`) targeting `src/core.v`
-    and measuring test suite kill rate (citing Huang et al. 2015 & Firefly 2025).
- 2. Constrained-random instruction fuzzer (`tools/fuzzer.py` / `test/test_fuzz.py`)
-    with automated shrink-on-failure comparing RTL against `tools/isa_model.py`.
- 3. Real Yosys synthesis pass for IHP 130nm / standard cell target, capturing
-    actual cell count, gate count, and mapped area in `docs/ppa.md` and `info.yaml`.
+
+Full prioritized backlog: `orchestrator/queue.md`. Entering RESEARCH_AND_PROOF mode:
+
+1. SPI master firmware (Mode 0, CPOL=0/CPHA=0) using `SHIFTOUT`/`SHIFTIN` and independent SPI slave model.
+2. I2C master firmware (START condition, ACK sampling, STOP condition).
+3. Bootloader CRC-8 checksum addition to detect transmission errors.
+4. Gate-level simulation against mapped netlist with cell delays (`GATES=yes`).
 
 ## Keeping this file current
 

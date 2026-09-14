@@ -1,0 +1,24 @@
+# Yosys synthesis script for Jane Street Protocol Emulator ASIC
+# Target: Generic CMOS standard cell mapping / IHP 130nm reference
+
+# Read sources
+read_verilog src/project.v
+read_verilog src/core.v
+read_verilog src/alu.v
+read_verilog src/gpio.v
+read_verilog src/program_ram.v
+
+# Elaborate and synthesize top module
+synth -top tt_um_change_me_protocol_emulator
+
+# Design check (verify no inferred latches or combinatorial loops)
+check
+
+# Print hierarchical pre-mapping cell statistics
+stat
+
+# Technology mapping to standard CMOS gates (NAND, NOR, NOT, DFF)
+abc -g cmos2
+
+# Print post-mapping CMOS cell statistics
+stat

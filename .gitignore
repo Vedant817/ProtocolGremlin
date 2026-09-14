@@ -24,3 +24,4 @@ Thumbs.db
 # Autonomous loop control
 /HALT
 orchestrator/logs/*.log
+orchestrator/*.log

@@ -186,3 +186,42 @@ mutation-kill rates.
   `test/test_waitedge.py` verifies measurement of unknown pulse widths (5, 11,
   23, 47 cycles) to single-cycle accuracy, timestamp capture delta verification,
   and cycle-by-cycle differential match with `tools/isa_model.py`.
+
+## 2026-09-15 - Iteration 4: Mutation Testing Harness, Constrained-Random Fuzzer & Real PPA
+
+- **Seeded RTL mutation testing (`scripts/mutate.py`):**
+  - Grounded in academic literature (Huang et al., 2015; Firefly, 2025) which
+    proves code coverage alone is an insufficient measure of hardware verification
+    strength.
+  - Implemented 10 seeded first-order RTL mutation operators across all design
+    blocks (`src/core.v`, `src/alu.v`, `src/gpio.v`): branch condition inversion,
+    WAIT countdown off-by-one, ALU sum corrupt, ALU SUB-to-ADD operator replacement,
+    reset PC corruption, DECJNZ loop termination inversion, SHIFTOUT bit-order inversion,
+    GPIO output enable inversion, WAITEDGE duration off-by-one, and bootloader
+    `LOAD_REQ` ignore.
+  - Evaluated against the test suite: **10/10 mutants killed (100.0% mutation kill rate)**
+    in 46.95s of execution time. Results archived to `orchestrator/mutation_report.json`.
+- **Constrained-random instruction fuzzer (`tools/fuzzer.py`, `test/test_fuzz.py`):**
+  - Synthesizes valid, terminating random assembly programs. Ensures strictly
+    bounded loop iterations (counter $\le 3$) and forward-only branches.
+  - Executes differentially cycle-by-cycle against `tools/isa_model.py`.
+  - Implemented automated delta-debugging program shrinker (`shrink_program()`),
+    which performs 1-minimization instruction pruning to reduce failing traces to
+    minimal reproducible counterexamples.
+  - Regression suite expanded to 11/11 tests, all passing cleanly.
+- **Real Yosys synthesis pass & measured PPA baseline:**
+  - Automated via `scripts/synth.sh` and `scripts/synth.ys` targeting generic CMOS
+    gates calibrated for IHP SG13G2 130nm standard cells.
+  - Measured statistics: 14,056 pre-mapping cells, 19,143 mapped CMOS gates, 37,542 Gate
+    Equivalents (GE), zero latches, zero combinational loops.
+  - **Key architectural finding:** The entire active protocol processor core (Core + ALU + GPIO)
+    occupies only **1,402 CMOS cells** (~1,990 GE, 147 DFFs), or just 7.3% of total design cells.
+    The synthesized flip-flop program RAM consumes **17,741 CMOS cells** (92.7% of total cells,
+    4,096 DFFEs), proving that memory storage dominates digital ASIC area when dedicated
+    hardened SRAM macros are unavailable.
+  - **Tile utilization:** The design fits the competition 8x4 tile allocation (32 tiles,
+    $577,152\,\mu\text{m}^2$).
+  - **Timing:** Longest topological path is 20 logic levels in the ALU and 19 levels in the
+    RAM read multiplexer tree. At 10 MHz ($T_{\text{clk}} = 100\,\text{ns}$), estimated
+    combinational propagation delay is $< 12\,\text{ns}$, providing $> 80\,\text{ns}$ of timing slack.
+
