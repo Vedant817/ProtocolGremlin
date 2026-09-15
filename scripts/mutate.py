@@ -161,6 +161,14 @@ MUTANTS = [
         "replacement": "OP_GDIRI: gpio_dir <= ~operand;",
         "description": "GPIO direction bug: GDIRI inverts direction mask (inputs become outputs and vice versa)",
     },
+    {
+        "id": "MUT_18_SHIFTIN_MSB_INVERT",
+        "category": "Protocol / Bit-Serial",
+        "file": "src/core.v",
+        "target": "write_rd(rd_idx, {rd_val[6:0], gpio_in[pin_idx]});",
+        "replacement": "write_rd(rd_idx, {rd_val[6:0], ~gpio_in[pin_idx]});",
+        "description": "Shift input bug: SHIFTIN MSB mode inverts incoming pin data bit",
+    },
 ]
 
 

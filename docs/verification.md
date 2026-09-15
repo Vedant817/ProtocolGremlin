@@ -105,9 +105,10 @@ injects seeded, first-order architectural faults across all major RTL modules
 | `MUT_15_WAITEDGE_POLARITY_INVERT` | Timing / Edge-Detect | WAITEDGE bug: falling edge mode triggers on rising edge | **KILLED** | 24.82s |
 | `MUT_16_ALU_XOR_TO_OR` | Core / Arithmetic | ALU logic bug: XOR computes OR instead of XOR | **KILLED** | 37.22s |
 | `MUT_17_GDIRI_INVERT` | Interface / Tri-state | GPIO direction bug: GDIRI inverts direction mask | **KILLED** | 37.86s |
+| `MUT_18_SHIFTIN_MSB_INVERT` | Protocol / Bit-Serial | Shift input bug: SHIFTIN MSB mode inverts incoming pin data bit | **KILLED** | 41.01s |
 
-- **Empirical Mutation Kill Rate: 17/17 (100.0%)**
-- Total campaign duration: ~6 minutes
+- **Empirical Mutation Kill Rate: 18/18 (100.0%)**
+- Total campaign duration: ~11 minutes
 - Result log: `orchestrator/mutation_report.json`
 
 ### 7. Independent Protocol Verification Engines
@@ -119,6 +120,7 @@ The test suite pairs firmware with independent cycle-accurate Python simulation 
 - **PS/2 Keyboard/Mouse (`tools/ps2_model.py`, `test/test_ps2.py`):** 11-bit odd-parity verified scan code reception, parity/framing error detection, host RTS transmit, and device ACK sampling against `PS2Device`.
 - **JTAG IEEE 1149.1 (`tools/jtag_model.py`, `test/test_jtag.py`):** 16-state TAP controller navigation, single-pass 32-bit IDCODE readout into `R0..R3`, and 1-cycle BYPASS shift verification against `JtagTarget`.
 - **ARM SWD (`tools/swd_model.py`, `test/test_swd.py`):** Line reset, JTAG-to-SWD 0x79E7 switching, packet request header with even parity, 3-bit ACK, 32-bit DPIDR readout into `R0..R3`, and dynamic tri-state contention avoidance against `SwdTarget`.
+- **Manchester Biphase-L (`tools/manchester_model.py`, `test/test_manchester.py`):** IEEE 802.3 / MIL-STD-1553 self-clocking transmitter with zero jitter, edge-synchronized receiver via `WAITEDGE` and `SHIFTIN MSB`, and biphase violation detection against `ManchesterDecoder`.
 
 ### 8. Constrained-Random Instruction Fuzzing with Shrinking (`tools/fuzzer.py`, `test/test_fuzz.py`)
 To discover corner cases not anticipated by hand-written tests, `tools/fuzzer.py`
@@ -131,9 +133,9 @@ generates legal, randomized programs with bounded loops and forward branches.
 
 ```bash
 bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
-bash scripts/regress.sh     # runs the complete regression suite (51/51 tests pass)
+bash scripts/regress.sh     # runs the complete regression suite (57/57 tests pass)
 sby -f formal/core.sby      # runs the SymbiYosys formal proof with Z3 (20 steps pass)
-python3 scripts/mutate.py   # runs the seeded RTL mutation testing campaign (17/17 killed)
+python3 scripts/mutate.py   # runs the seeded RTL mutation testing campaign (18/18 killed)
 bash scripts/synth.sh       # runs Yosys synthesis and logs area/cell metrics
 ```
 

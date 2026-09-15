@@ -476,3 +476,36 @@ mutation-kill rates.
   - SymbiYosys: 20-step Z3 BMC proof verified in 72s (PASS, 0 violations).
   - Mutation Testing: Added `MUT_17_GDIRI_INVERT`. Evaluated and killed in 37.86s. Cumulative mutation score: **17/17 mutants killed (100.0% kill rate)**.
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
+
+## 2026-09-15 - Iteration 14: Manchester Biphase-L (IEEE 802.3 / MIL-STD-1553) Encoder & Decoder Engine
+
+- **Motivation & Protocol Overview:**
+  - Manchester Biphase-L is the quintessential self-clocking binary line code, standard in IEEE 802.3 10BASE-T Ethernet, MIL-STD-1553 avionics data bus, and RFID transponders.
+  - Unlike NRZ asynchronous serial lines that require high-precision local baud-rate oscillators, Manchester guarantees a transition at the midpoint of every bit cell, providing continuous Clock and Data Recovery (CDR) directly from the data stream.
+  - IEEE 802.3 convention:
+    - Logic '0': Low-to-High transition at mid-bit (level 0 in first half, level 1 in second half).
+    - Logic '1': High-to-Low transition at mid-bit (level 1 in first half, level 0 in second half).
+  - Robust error detection: Any bit cell failing to invert between its first and second half is an illegal biphase violation, allowing immediate hardware framing fault detection without waiting for frame checksums.
+- **Novelty Highlight (Direct Shift Synergy & Zero-Jitter Half-Bit Timing):**
+  - **Single-Cycle MSB Shift Synergy:** In IEEE 802.3 Manchester encoding, the logic level during the first half of a bit cell directly equals the bit value. By synchronizing to the mid-bit falling edge of a start bit '1' via `WAITEDGE`, the core strides directly to the center of each bit's first half and executes `SHIFTIN R0, pin, MSB`, shifting `R0` left by 1 and capturing the exact bit value in a single instruction.
+  - **Zero-Jitter Half-Bit Synthesis:** `build_manchester_tx_asm` synthesizes completely symmetric half-bit symbols by pairing `GWRI` with `WAIT (half_period - 2)`. This generates exact, jitter-free durations (4 clock cycles per half-bit) with a 50.0% duty cycle, completely eliminating line jitter.
+  - **Idle Settling Guard:** Included an initial 4-cycle idle low period post-bootload in `build_manchester_tx_asm`, ensuring the receiver or testbench cleanly captures the start bit's rising edge regardless of host bootload timing.
+- **Firmware & Models (`tools/manchester_model.py`):**
+  - `ManchesterDecoder`: Independent cycle-accurate Python reference decoder that tracks transitions, samples half-bit symbols at midpoint intervals, decodes 8-bit bytes, and detects biphase violations.
+  - `ManchesterTransmitter`: Independent stimulus generator for driving Manchester frames with configurable half-period and biphase violation injection into the ASIC receiver.
+  - `build_manchester_tx_asm(data_byte, half_period=4, pin=4)`: Firmware emitting idle low settling, IEEE 802.3 start bit '1' ([1, 0]), 8 data bits (MSB-first), and return to idle low.
+  - `build_manchester_rx_asm(half_period=8, pin=4)`: Firmware synchronizing to start bit falling edge via `WAITEDGE`, waiting to bit 0 first-half center, and shifting 8 bits into `R0` via `SHIFTIN R0, pin, MSB`.
+- **Verification (`test/test_manchester.py`):**
+  - Added 6 cocotb test cases:
+    1. `test_manchester_tx_waveform`: Verified transmitter emits exact 4-cycle half-bits with 50% duty cycle, decoded and validated against `ManchesterDecoder` with zero biphase violations.
+    2. `test_manchester_tx_patterns`: Verified characteristic test patterns (`0x00`, `0xFF`, `0x55`, `0xAA`, `0x3C`) with 100% symbol validity.
+    3. `test_manchester_rx_standard`: Transmitted standard test bytes (`0x55`, `0xAA`, `0xA5`, `0x00`, `0xFF`) from `ManchesterTransmitter` and verified decoded byte in `R0`.
+    4. `test_manchester_rx_sweep`: Swept pseudorandom and edge-case byte patterns (`0x12`, `0x34`, `0x7E`, `0x81`, `0xC3`, `0xE7`, `0x5A`, `0xF0`), achieving 100% byte fidelity.
+    5. `test_manchester_violation_detection_model`: Injected biphase violations (consecutive identical half-bits) and verified detection by `ManchesterDecoder`.
+    6. `test_manchester_direction_safety`: Verified electrical pin safety: strictly input (`uio_oe == 0x00`) in RX mode, strictly single-pin output (`uio_oe == 0x10`) in TX mode.
+  - Regression Suite: **57/57 tests passing (100.0%)** across 13 test suites in 42.62s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified in 67s (PASS, 0 violations).
+  - Mutation Testing: Added `MUT_18_SHIFTIN_MSB_INVERT`. Evaluated and killed in 41.01s. Cumulative mutation score: **18/18 mutants killed (100.0% kill rate)** in 673.94s.
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
+

@@ -17,7 +17,7 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 
 ## Current status
 
-- **Phase:** ISA v1 complete — Iterations 1–13 complete (ARM SWD Interface Engine & DPIDR Readout, JTAG IEEE 1149.1 TAP Controller Engine with 32-bit IDCODE Readout & BYPASS Verification, PS/2 Bidirectional Host Controller Engine, Dallas 1-Wire Master with Single-Cycle Presence Pulse Discovery, Zero-Jitter UART RX with WAITEDGE, Bootloader CRC-8 Hardware Protection, I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART TX, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
+- **Phase:** ISA v1 complete — Iterations 1–14 complete (Manchester Biphase-L IEEE 802.3 / MIL-STD-1553 Encoder & Decoder Engine, ARM SWD Interface Engine & DPIDR Readout, JTAG IEEE 1149.1 TAP Controller Engine with 32-bit IDCODE Readout & BYPASS Verification, PS/2 Bidirectional Host Controller Engine, Dallas 1-Wire Master with Single-Cycle Presence Pulse Discovery, Zero-Jitter UART RX with WAITEDGE, Bootloader CRC-8 Hardware Protection, I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART TX, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
 - **What exists:**
   1. **Core:** 24 opcodes, 4 registers, bidirectional GPIO bus on `uio[7:0]`,
      `SHIFTOUT`/`SHIFTIN` with MSB/LSB direction select (`imm8[3]`), `WAITEDGE`
@@ -41,10 +41,11 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
      Dallas 1-Wire Master protocol engine with single-cycle presence pulse width measurement and read/write timeslots (`tools/onewire_model.py`),
      PS/2 Bidirectional Host Controller engine with dynamic odd-parity accumulation and RTS transmission (`tools/ps2_model.py`),
      JTAG IEEE 1149.1 TAP Controller engine with 32-bit IDCODE readout and BYPASS verification (`tools/jtag_model.py`),
-     and ARM SWD Interface engine with JTAG-to-SWD switching and DPIDR readout (`tools/swd_model.py`),
-     paired with independent `UartReceiver`, `UartTransmitter`, `SpiSlave`, `I2cSlave`, `OneWireSlave`, `PS2Device`, `JtagTarget`, and `SwdTarget` verification models.
-  6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 17
-     architectural fault categories, measuring **100.0% kill rate (17/17 killed)**
+     ARM SWD Interface engine with JTAG-to-SWD switching and DPIDR readout (`tools/swd_model.py`),
+     and Manchester Biphase-L encoder/decoder engine with jitter-free half-bit timing and direct shift accumulation (`tools/manchester_model.py`),
+     paired with independent `UartReceiver`, `UartTransmitter`, `SpiSlave`, `I2cSlave`, `OneWireSlave`, `PS2Device`, `JtagTarget`, `SwdTarget`, and `ManchesterDecoder` verification models.
+  6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 18
+     architectural fault categories, measuring **100.0% kill rate (18/18 killed)**
      (citing Huang et al. 2015, Firefly 2025).
   7. **Constrained-Random Fuzzing:** Automated instruction fuzzer (`tools/fuzzer.py`)
      with delta-debugging program shrinker, verified in `test/test_fuzz.py`.
@@ -52,7 +53,7 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
      19,291 CMOS cells (37,832 GE). Active processor logic is only 1,580 cells
      (~2.2 kGE) with 91.8% of cells in the synthesized flip-flop RAM matrix.
      Fits the 8x4 competition tile footprint with >80 ns timing slack at 10 MHz.
-- **What's verified:** 51/51 test suites pass cleanly via `scripts/regress.sh`:
+- **What's verified:** 57/57 test suites pass cleanly via `scripts/regress.sh`:
   (1) cycle-by-cycle differential test (`test/test.py`),
   (2) UART TX edge-case verification (`0x00`, `0xFF`, `0x55`, `0xAA` at 4, 8, 16 cycles/bit),
   (3) UART TX pseudorandom frames,
@@ -103,7 +104,13 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
   (48) ARM SWD standard DPIDR 0x0BA01477 readout into R0..R3 with ACK OK,
   (49) ARM SWD multi-target Cortex identity sweep (Cortex-M7, M33, M4+ETM, M23),
   (50) ARM SWD target non-OK ACK handling (WAIT and FAULT),
-  (51) ARM SWD physical pin direction and dynamic tri-state electrical contention safety.
+  (51) ARM SWD physical pin direction and dynamic tri-state electrical contention safety,
+  (52) Manchester Biphase-L TX waveform fidelity (exact 4-cycle half-bits, 50% duty cycle, zero biphase violations),
+  (53) Manchester Biphase-L TX pattern sweep (0x00, 0xFF, 0x55, 0xAA, 0x3C),
+  (54) Manchester Biphase-L RX standard byte reception (0x55, 0xAA, 0xA5, 0x00, 0xFF) into R0,
+  (55) Manchester Biphase-L RX pseudorandom pattern sweep across 8 test vectors,
+  (56) Manchester Biphase-L independent reference decoder biphase violation detection,
+  (57) Manchester Biphase-L physical pin direction electrical safety.
 - **Git:** Sequence of small, reviewable commits (`git log`).
 
 ## Repository map
@@ -111,8 +118,8 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 ```text
 src/            RTL: project.v (TT wrapper), core.v, alu.v, gpio.v, program_ram.v
 firmware/       Assembly programs (loop_demo.asm)
-tools/          assembler.py, isa_model.py, uart_model.py, spi_model.py, i2c_model.py, onewire_model.py, ps2_model.py, jtag_model.py, swd_model.py, fuzzer.py
-test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz, test_spi, test_i2c, test_bootload, test_onewire, test_ps2, test_jtag, test_swd)
+tools/          assembler.py, isa_model.py, uart_model.py, spi_model.py, i2c_model.py, onewire_model.py, ps2_model.py, jtag_model.py, swd_model.py, manchester_model.py, fuzzer.py
+test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz, test_spi, test_i2c, test_bootload, test_onewire, test_ps2, test_jtag, test_swd, test_manchester)
 formal/         SymbiYosys formal harness (core.sby, core_formal.v)
 scripts/        setup_env.sh, regress.sh, mutate.py, synth.sh, synth.ys
 docs/           architecture, ISA, verification, toolchain, PPA, limitations
@@ -123,9 +130,9 @@ orchestrator/   Durable state (decisions.md, queue.md, metrics.json, experiments
 
 ```bash
 bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
-bash scripts/regress.sh     # runs all 51 cocotb regression tests (~40s)
+bash scripts/regress.sh     # runs all 57 cocotb regression tests (~42s)
 sby -f formal/core.sby      # runs SymbiYosys formal verification with Z3
-python3 scripts/mutate.py   # runs RTL mutation testing campaign (17/17 killed)
+python3 scripts/mutate.py   # runs RTL mutation testing campaign (18/18 killed)
 bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 ```
 
@@ -144,9 +151,9 @@ bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 
 Full prioritized backlog: `orchestrator/queue.md`. Entering continuous loop:
 
-1. Iteration 14: Manchester Biphase-L (IEEE 802.3 / MIL-STD-1553) Encoder & Decoder Engine.
-2. Iteration 15: CAN Bus Physical-Layer Controller (Dominant/Recessive Bit Timing & Stuffing).
-3. Iteration 16+: DMX512 Lighting Protocol Engine, Synchronous Program RAM Upgrade, Pure Firmware Autobaud Rate Auto-Discovery Engine, Dual-lane architecture (`core_dual.v`).
+1. Iteration 15: CAN Bus Physical-Layer Controller (Dominant/Recessive Bit Timing & Stuffing, Arbitration via `GRD`).
+2. Iteration 16: DMX512 Stage Lighting Protocol Engine (Break >= 88us, MAB, Start Code 0x00, 512-slot reception).
+3. Iteration 17+: Synchronous Program RAM Upgrade, Autobaud Engine, Dual-lane architecture (`core_dual.v`).
 
 ## Keeping this file current
 

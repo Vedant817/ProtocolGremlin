@@ -62,9 +62,10 @@ bounded problem").
 - ~~PS/2 Bidirectional Host Controller (device clock edge sync on falling clock, 11-bit odd-parity verified frame reception and host-to-device inhibit/send via open-drain and `WAITEDGE`)~~ -
 - ~~JTAG TAP Controller Engine (TMS state machine: Test-Logic-Reset, Run-Test/Idle, Shift-DR, Shift-IR, BYPASS and IDCODE readout)~~ -
 - ~~ARM SWD (Serial Wire Debug) Interface Engine (Line Reset sequence 50+ clocks high, JTAG-to-SWD switching, turnaround bits, SWD header and ACK readout)~~ -
-  done: `tools/swd_model.py` (SwdTarget + build_swd_read_dpidr_asm + build_swd_switch_sequence_asm) + `test/test_swd.py` (51/51 regression pass, 32-bit DPIDR into R0..R3, Cortex sweep, WAIT/FAULT handling, 17/17 mutants killed).
-- Manchester Biphase-L (IEEE 802.3 / MIL-STD-1553) Encoder & Decoder Engine.
-- CAN Bus Physical-Layer Controller (Dominant/Recessive Bit Timing & Stuffing).
+- ~~Manchester Biphase-L (IEEE 802.3 / MIL-STD-1553) Encoder & Decoder Engine~~ -
+  done: `tools/manchester_model.py` (ManchesterDecoder + ManchesterTransmitter + build_manchester_tx_asm + build_manchester_rx_asm) + `test/test_manchester.py` (57/57 regression pass, 4-cycle symmetric half-bit waveform, standard/pseudorandom RX into R0, biphase violation detection, 18/18 mutants killed).
+- CAN Bus Physical-Layer Controller (Dominant/Recessive Bit Timing, Bit Stuffing & Arbitration via `GRD`).
+- DMX512 Stage Lighting Protocol Engine (Break pulse >= 88us, MAB, Start Code 0x00, and 512-slot data frame reception).
 - Convert `program_ram.v` to a synchronous-read design once real synthesis
   data shows it matters for PPA (`docs/limitations.md`).
 
