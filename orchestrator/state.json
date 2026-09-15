@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-bridge-matrix-verified",
+  "phase": "isa-v1-watchdog-brownout-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 27 complete (Multi-Protocol Bus Bridging Matrix: I2C-to-SPI, UART-to-CAN, 1-Wire-to-UART). Next: Iteration 28 (Hardware Watchdog Timer & Brownout Recovery Circuit Feasibility Study).",
+  "active_objective": "Continuous engineering loop: Iteration 28 complete (Hardware Watchdog Timer & Brownout Recovery Circuit Feasibility Study). Next: Iteration 29 (Dynamic Power & Energy Optimization Study: Clock Gating & Micro-Architectural Profiling).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 27,
+  "iterations": 28,
   "halt": false,
-  "notes": "Iteration 27 complete: Created tools/bridge_matrix_model.py (universal bus bridging firmware generator for I2C-to-SPI, UART-to-CAN, 1-Wire-to-UART, and multi-byte streaming) and test/test_bridge_matrix.py (6/6 tests pass: I2C read to SPI Master Mode 0 egress, UART RX to open-drain CAN 2.0A egress with ACK monitoring, 1-Wire read timeslots to UART TX 8-N-1 egress, multi-byte UART-to-SPI streaming, ingress framing error isolation suppressing spurious CAN transmission, and unused pin High-Z electrical safety). Added test_bridge_matrix to test/Makefile. Full regression suite: 132/132 tests PASS (100.0%) across 25 modules. Added MUT_30_GPIO_OD_OE_INVERT in scripts/mutate.py (killed in 79.96s, 30/30 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 82s). Gate-level simulation confirmed 8/8 physical tests pass in 26.92s."
+  "notes": "Iteration 28 complete: Authored docs/watchdog_study.md (PPA, circuit-level BOD supervisor co-design, and WWDT architectural feasibility study). Created tools/watchdog_model.py (WatchdogModel cycle-accurate simulator with windowed bounds [T_min, T_max], two-token keyed service FSM, sticky reset registers; firmware generators for periodic service, intentional task hang, early-pet window violation, and brownout recovery) and test/test_watchdog.py (5/5 tests pass: normal WWDT servicing, task deadlock timeout and soft reset, windowed early-pet violation trap, brownout warm-boot recovery in 3 cycles, reset electrical isolation). Added test_watchdog to test/Makefile. Full regression suite: 137/137 tests PASS (100.0%) across 26 modules. Added MUT_31_WARM_BOOT_IGNORE in scripts/mutate.py (killed in 101.40s, 31/31 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 76s). Gate-level simulation confirmed 8/8 physical tests pass in 29.97s."
 }

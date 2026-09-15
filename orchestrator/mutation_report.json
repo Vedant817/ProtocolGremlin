@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-09-15T18:38:44Z",
-  "total_mutants": 30,
-  "killed": 30,
+  "timestamp": "2026-09-15T20:32:09Z",
+  "total_mutants": 31,
+  "killed": 31,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 2445.85,
+  "campaign_time_sec": 2555.03,
   "mutants": [
     {
       "id": "MUT_01_BRANCH_JZ_INVERT",
@@ -12,7 +12,7 @@
       "file": "src/core.v",
       "description": "Invert branch condition in OP_JZ (jump on !z instead of z)",
       "status": "KILLED",
-      "elapsed_sec": 91.07
+      "elapsed_sec": 72.48
     },
     {
       "id": "MUT_02_WAIT_OFF_BY_ONE",
@@ -20,7 +20,7 @@
       "file": "src/core.v",
       "description": "Off-by-one decrement in WAIT countdown (-2 instead of -1)",
       "status": "KILLED",
-      "elapsed_sec": 61.59
+      "elapsed_sec": 50.84
     },
     {
       "id": "MUT_03_ALU_ADD_CORRUPT",
@@ -28,7 +28,7 @@
       "file": "src/alu.v",
       "description": "Arithmetic bug: OP_ADD adds 1 to calculated sum",
       "status": "KILLED",
-      "elapsed_sec": 92.6
+      "elapsed_sec": 76.2
     },
     {
       "id": "MUT_04_ALU_SUB_TO_ADD",
@@ -36,7 +36,7 @@
       "file": "src/alu.v",
       "description": "Operator replacement: OP_SUB computes sum instead of diff",
       "status": "KILLED",
-      "elapsed_sec": 82.49
+      "elapsed_sec": 77.32
     },
     {
       "id": "MUT_05_RESET_PC_CORRUPT",
@@ -44,7 +44,7 @@
       "file": "src/core.v",
       "description": "Reset corruption: PC initializes to 1 instead of 0",
       "status": "KILLED",
-      "elapsed_sec": 85.79
+      "elapsed_sec": 78.42
     },
     {
       "id": "MUT_06_DECJNZ_NO_BRANCH",
@@ -52,7 +52,7 @@
       "file": "src/core.v",
       "description": "Branch condition inversion in DECJNZ loop termination",
       "status": "KILLED",
-      "elapsed_sec": 80.61
+      "elapsed_sec": 87.05
     },
     {
       "id": "MUT_07_SHIFTOUT_MSB_FIRST",
@@ -60,7 +60,7 @@
       "file": "src/core.v",
       "description": "Serial shift bug: SHIFTOUT transmits MSB instead of LSB",
       "status": "KILLED",
-      "elapsed_sec": 84.93
+      "elapsed_sec": 78.11
     },
     {
       "id": "MUT_08_GPIO_OE_INVERT",
@@ -68,7 +68,7 @@
       "file": "src/gpio.v",
       "description": "GPIO bus direction inversion: pin_oe driven inverted",
       "status": "KILLED",
-      "elapsed_sec": 79.25
+      "elapsed_sec": 78.59
     },
     {
       "id": "MUT_09_WAITEDGE_OFF_BY_ONE",
@@ -76,7 +76,7 @@
       "file": "src/core.v",
       "description": "Edge timing bug: WAITEDGE omits edge detection cycle in duration",
       "status": "KILLED",
-      "elapsed_sec": 81.61
+      "elapsed_sec": 81.41
     },
     {
       "id": "MUT_10_BOOTLOADER_REQ_IGNORE",
@@ -84,7 +84,7 @@
       "file": "src/core.v",
       "description": "Bootloader FSM bug: core ignores host serial LOAD_REQ signal",
       "status": "KILLED",
-      "elapsed_sec": 50.22
+      "elapsed_sec": 62.72
     },
     {
       "id": "MUT_11_OPEN_DRAIN_DRIVE_HIGH",
@@ -92,7 +92,7 @@
       "file": "src/gpio.v",
       "description": "Open-drain electrical bug: pin_out actively drives high in open-drain mode",
       "status": "KILLED",
-      "elapsed_sec": 83.71
+      "elapsed_sec": 95.45
     },
     {
       "id": "MUT_12_BOOTLOADER_CRC_BYPASS",
@@ -100,7 +100,7 @@
       "file": "src/core.v",
       "description": "Bootloader security bug: core accepts corrupted programs by bypassing CRC-8 verification",
       "status": "KILLED",
-      "elapsed_sec": 82.78
+      "elapsed_sec": 88.69
     },
     {
       "id": "MUT_13_SHIFTIN_BIT_ORDER",
@@ -108,7 +108,7 @@
       "file": "src/core.v",
       "description": "Shift input bug: SHIFTIN LSB mode shifts left instead of right (reverses bit order)",
       "status": "KILLED",
-      "elapsed_sec": 69.81
+      "elapsed_sec": 76.45
     },
     {
       "id": "MUT_14_OPEN_DRAIN_OE_POLARITY",
@@ -116,7 +116,7 @@
       "file": "src/gpio.v",
       "description": "Open-drain OE polarity inversion: pin_oe asserts on out_val=1 instead of out_val=0",
       "status": "KILLED",
-      "elapsed_sec": 83.2
+      "elapsed_sec": 82.41
     },
     {
       "id": "MUT_15_WAITEDGE_POLARITY_INVERT",
@@ -124,7 +124,7 @@
       "file": "src/core.v",
       "description": "WAITEDGE polarity inversion: falling edge mode triggers on rising edge",
       "status": "KILLED",
-      "elapsed_sec": 82.97
+      "elapsed_sec": 81.45
     },
     {
       "id": "MUT_16_ALU_XOR_TO_OR",
@@ -132,7 +132,7 @@
       "file": "src/alu.v",
       "description": "ALU logic bug: XOR opcode executes bitwise OR instead of bitwise XOR",
       "status": "KILLED",
-      "elapsed_sec": 85.71
+      "elapsed_sec": 101.06
     },
     {
       "id": "MUT_17_GDIRI_INVERT",
@@ -140,7 +140,7 @@
       "file": "src/core.v",
       "description": "GPIO direction bug: GDIRI inverts direction mask (inputs become outputs and vice versa)",
       "status": "KILLED",
-      "elapsed_sec": 90.06
+      "elapsed_sec": 83.71
     },
     {
       "id": "MUT_18_SHIFTIN_MSB_INVERT",
@@ -148,7 +148,7 @@
       "file": "src/core.v",
       "description": "Shift input bug: SHIFTIN MSB mode inverts incoming pin data bit",
       "status": "KILLED",
-      "elapsed_sec": 103.59
+      "elapsed_sec": 90.71
     },
     {
       "id": "MUT_19_GODRI_DISABLE",
@@ -156,7 +156,7 @@
       "file": "src/core.v",
       "description": "Open-drain configuration bug: GODRI fails to set open-drain mode (pins remain push-pull)",
       "status": "KILLED",
-      "elapsed_sec": 91.88
+      "elapsed_sec": 86.79
     },
     {
       "id": "MUT_20_WAITEDGE_DURATION_OFF_BY_ONE",
@@ -164,7 +164,7 @@
       "file": "src/core.v",
       "description": "WAITEDGE timing calculation bug: omits single-cycle edge detection latency from measured pulse width",
       "status": "KILLED",
-      "elapsed_sec": 85.92
+      "elapsed_sec": 81.51
     },
     {
       "id": "MUT_21_WAITEDGE_MODE_BIT_SLICE",
@@ -172,7 +172,7 @@
       "file": "src/core.v",
       "description": "WAITEDGE decode bug: edge_mode sliced from operand[5:4] instead of operand[4:3]",
       "status": "KILLED",
-      "elapsed_sec": 83.8
+      "elapsed_sec": 84.04
     },
     {
       "id": "MUT_22_ALU_ZERO_FLAG_INVERT",
@@ -180,7 +180,7 @@
       "file": "src/core.v",
       "description": "ALU flag calculation bug: zero flag Z inverted on ALU operations (asserts when result non-zero)",
       "status": "KILLED",
-      "elapsed_sec": 70.37
+      "elapsed_sec": 72.47
     },
     {
       "id": "MUT_23_WAITEDGE_TIMESTAMP_CORRUPT",
@@ -188,7 +188,7 @@
       "file": "src/core.v",
       "description": "WAITEDGE timestamp capture bug: writes cycle_cnt[15:8] instead of cycle_cnt[7:0]",
       "status": "KILLED",
-      "elapsed_sec": 91.13
+      "elapsed_sec": 85.85
     },
     {
       "id": "MUT_24_BRANCH_JNZ_INVERT",
@@ -196,7 +196,7 @@
       "file": "src/core.v",
       "description": "Branch condition inversion in OP_JNZ (branches on z instead of !z)",
       "status": "KILLED",
-      "elapsed_sec": 82.89
+      "elapsed_sec": 77.42
     },
     {
       "id": "MUT_25_BRANCH_JZ_INVERT",
@@ -204,7 +204,7 @@
       "file": "src/core.v",
       "description": "Branch condition inversion in OP_JZ (branches on !z instead of z)",
       "status": "KILLED",
-      "elapsed_sec": 78.48
+      "elapsed_sec": 76.45
     },
     {
       "id": "MUT_26_ALU_AND_TO_OR",
@@ -212,7 +212,7 @@
       "file": "src/alu.v",
       "description": "ALU logic bug: AND opcode executes bitwise OR instead of bitwise AND",
       "status": "KILLED",
-      "elapsed_sec": 76.08
+      "elapsed_sec": 86.41
     },
     {
       "id": "MUT_27_ALU_OR_TO_AND",
@@ -220,7 +220,7 @@
       "file": "src/alu.v",
       "description": "ALU logic bug: OR opcode executes bitwise AND instead of bitwise OR",
       "status": "KILLED",
-      "elapsed_sec": 75.5
+      "elapsed_sec": 98.01
     },
     {
       "id": "MUT_28_ALU_XOR_TO_XNOR",
@@ -228,7 +228,7 @@
       "file": "src/alu.v",
       "description": "ALU logic bug: XOR opcode executes bitwise XNOR instead of bitwise XOR",
       "status": "KILLED",
-      "elapsed_sec": 75.0
+      "elapsed_sec": 85.4
     },
     {
       "id": "MUT_29_GPIO_OD_PIN_OUT",
@@ -236,7 +236,7 @@
       "file": "src/gpio.v",
       "description": "Open-drain pin output bug: drives out_val actively high even when od_mode is enabled (violates open-drain high-Z specification)",
       "status": "KILLED",
-      "elapsed_sec": 81.48
+      "elapsed_sec": 84.19
     },
     {
       "id": "MUT_30_GPIO_OD_OE_INVERT",
@@ -244,7 +244,15 @@
       "file": "src/gpio.v",
       "description": "Open-drain output enable bug: asserts pin_oe when out_val is 1 instead of 0 in open-drain mode, inverting open-drain drive behavior",
       "status": "KILLED",
-      "elapsed_sec": 79.96
+      "elapsed_sec": 90.59
+    },
+    {
+      "id": "MUT_31_WARM_BOOT_IGNORE",
+      "category": "System / Bootloader",
+      "file": "src/core.v",
+      "description": "Warm-boot skip logic bug: always enters serial load even when LOAD_REQ=0, breaking instant warm-boot and brownout recovery",
+      "status": "KILLED",
+      "elapsed_sec": 101.4
     }
   ]
 }

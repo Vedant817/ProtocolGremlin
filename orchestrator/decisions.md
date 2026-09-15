@@ -950,3 +950,36 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 26.92s.
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-16 - Iteration 28: Hardware Watchdog Timer & Brownout Recovery Circuit Feasibility Study
+
+- **Context & Motivation:**
+  - Mission-critical edge computing, automotive (ISO 26262 ASIL-B/D), and industrial communication gateways require robust autonomous recovery against firmware lockups (e.g. infinite polling loops, line-stuck stalls in `WAITEDGE`), soft errors / single-event upsets (SEU), and transient power supply brownouts.
+  - In Tiny Tapeout's IHP 130nm CMOS5L digital tiles, precision analog bandgap voltage monitors are external or require dedicated analog macros.
+  - A co-design architecture combining an external supply supervisor (e.g. TPS3823) with on-chip Windowed Watchdog Timer (WWDT) and fast warm-boot state recovery microcode provides fail-safe reliability.
+- **Architectural Design & Safety (`docs/watchdog_study.md`, `tools/watchdog_model.py`):**
+  - **Windowed Watchdog Timer (WWDT):**
+    - Enforces both a lower bound ($T_{\min}$) and an upper bound ($T_{\max}$) on service intervals.
+    - Prevents both frozen firmware ($T > T_{\max}$) and runaway code perpetually kicking the timer ($T < T_{\min}$).
+  - **Keyed Two-Token Service Protocol:**
+    - Requires alternating writes of Token A (`0x5A`) followed by Token B (`0xA5`) on `uio_out` to service the timer.
+    - Any invalid token or out-of-sequence write immediately triggers an illegal service fault (`RESET_STATUS = 0x05`).
+  - **Sticky Reset Reason Register (`RESET_STATUS`):**
+    - Differentiates Cold Boot (`0x01`), Watchdog Timeout (`0x02`), Brownout / External Hard Reset (`0x03`), and Windowed Violation (`0x05`).
+  - **Fast Warm-Boot Recovery (<10 cycles):**
+    - When a brownout or soft reset occurs, holding `LOAD_REQ = 0` triggers the serial bootloader warm-boot skip path.
+    - The core skips serial RAM reprogramming, verifies RAM integrity, and resumes protocol processing within 3 cycles.
+- **Verification Suite (`test/test_watchdog.py`):**
+  - Added 5 comprehensive cocotb test cases verified against independent `WatchdogModel`:
+    1. `test_wdt_normal_servicing`: Verified firmware executes 4 periodic task iterations, petting the watchdog within the valid window with 0 timeouts (`R2 = 0x00`). **PASS** (168.6 us).
+    2. `test_wdt_task_hang_and_soft_reset`: Verified task deadlock (`R2 = 0xDE`) trips watchdog timeout, asserting `wdt_alarm` and soft reset with `status = 0x02`. **PASS** (174.1 us).
+    3. `test_wdt_windowed_early_pet_violation`: Verified premature petting before $T_{\min}$ trips early-service violation with `status = 0x05`. **PASS** (68.15 us).
+    4. `test_brownout_transient_drop_and_warm_recovery`: Mid-execution supply drop on `rst_n` triggered instant warm boot in 3 cycles, preserving RAM and completing execution (`R2 = 0xAA`). **PASS** (120.9 us).
+    5. `test_wdt_electrical_safety_and_pin_isolation`: Verified `uio_oe` remains strictly `0x00` (High-Z) during reset assertion and recovery. **PASS** (156.5 us).
+  - Regression Suite: **137/137 tests passing (100.0%)** across 26 test modules.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 76s).
+  - Mutation Testing: Added `MUT_31_WARM_BOOT_IGNORE` in `scripts/mutate.py`. Cumulative score: **31/31 mutants killed (100.0% kill rate)** in 2555.03s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 29.97s.
+  - Area: Architectural study confirmed WWDT addition requires ~180 standard cells (~350 GE, +0.93% area overhead) with zero timing impact.
+
+

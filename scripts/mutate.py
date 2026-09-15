@@ -265,6 +265,14 @@ MUTANTS = [
         "replacement": "assign pin_oe  = (dir & ~od_mode) | (dir & od_mode & out_val);",
         "description": "Open-drain output enable bug: asserts pin_oe when out_val is 1 instead of 0 in open-drain mode, inverting open-drain drive behavior",
     },
+    {
+        "id": "MUT_31_WARM_BOOT_IGNORE",
+        "category": "System / Bootloader",
+        "file": "src/core.v",
+        "target": "          end else if (gpio_in[LOAD_REQ_BIT]) begin",
+        "replacement": "          end else if (1'b1) begin",
+        "description": "Warm-boot skip logic bug: always enters serial load even when LOAD_REQ=0, breaking instant warm-boot and brownout recovery",
+    },
 ]
 
 
