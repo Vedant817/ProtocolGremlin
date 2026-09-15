@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-09-15T20:32:09Z",
-  "total_mutants": 32,
-  "killed": 32,
+  "timestamp": "2026-09-15T21:09:31Z",
+  "total_mutants": 33,
+  "killed": 33,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 2609.14,
+  "campaign_time_sec": 2705.13,
   "mutants": [
     {
       "id": "MUT_01_BRANCH_JZ_INVERT",
@@ -261,6 +261,14 @@
       "description": "Power and execution control bug: OP_HALT fails to assert halted, causing runaway instruction execution and continuous dynamic switching power instead of entering static idle",
       "status": "KILLED",
       "elapsed_sec": 54.11
+    },
+    {
+      "id": "MUT_33_CORE_XORI_DECODE",
+      "category": "Core / Crypto Datapath",
+      "file": "src/core.v",
+      "description": "Cryptographic datapath decode bug: OP_XORI decodes to ALU_AND instead of ALU_XOR, corrupting ARX quarter-rounds and non-linear primitives",
+      "status": "KILLED",
+      "elapsed_sec": 95.99
     }
   ]
 }

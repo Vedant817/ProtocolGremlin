@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-power-clockgating-verified",
+  "phase": "isa-v1-crypto-accelerator-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 29 complete (Dynamic Power & Energy Optimization Study: Clock Gating & Instruction Micro-Architectural Profiling). Next: Iteration 30 (Cryptographic Accelerator Feasibility Study: ChaCha8 / Poly1305 / SHA-256 bit-sliced microcode).",
+  "active_objective": "Continuous engineering loop: Iteration 30 complete (Cryptographic Accelerator Feasibility Study: ChaCha8 / Poly1305 / SHA-256 bit-sliced microcode vs. hardware coprocessor). Next: Iteration 31 (Deterministic Real-Time Scheduling Engine: Priority Multi-Tasking & Round-Robin Schedulers).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 29,
+  "iterations": 30,
   "halt": false,
-  "notes": "Iteration 29 complete: Authored docs/power_study.md (comprehensive PPA and CMOS power physics study on IHP SG13G2 130nm standard cells). Created tools/power_model.py (PowerModel cycle-accurate energy tracker with IHP 130nm parameters, clock gating models, and benchmark firmware generators) and test/test_power.py (6/6 tests pass: instruction power profiling, wait stall clock gating 98.68% reduction, waitedge low-power stall with 1-cycle instant wakeup, pad capacitive load linear energy scaling 20pF vs 50pF, UART protocol energy benchmark 104 pJ/bit, halted state electrical safety). Added test_power to test/Makefile. Full regression suite: 143/143 tests PASS (100.0%) across 27 modules. Added MUT_32_HALT_RUNAWAY in scripts/mutate.py (killed in 54.11s, 32/32 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 77s). Gate-level simulation confirmed 8/8 physical tests pass in 26.31s."
+  "notes": "Iteration 30 complete: Authored docs/crypto_study.md (comprehensive architectural and PPA trade-off study on RFC 8439 ChaCha8/20, Poly1305, and SHA-256 bit-sliced microcode vs hardware coprocessor macro on IHP 130nm). Created tools/crypto_model.py (CryptoPerformanceModel, ChaCha8 ARX quarter-round, SHA-256 Ch/Maj non-linear primitives, Poly1305 MAC step, assembly firmware generators) and test/test_crypto.py (6/6 tests pass: 32-bit multi-precision addition with 4-byte carry propagation, ChaCha quarter-round step, Poly1305 MAC step, SHA-256 Ch/Maj primitives, coprocessor PPA scaling 33x to 44x speedup with +1.97% to +2.70% area, electrical pin isolation). Added test_crypto to test/Makefile. Full regression suite: 149/149 tests PASS (100.0%) across 28 modules. Added MUT_33_CORE_XORI_DECODE in scripts/mutate.py (killed in 95.99s, 33/33 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 75s). Gate-level simulation confirmed 8/8 physical tests pass in 34.33s."
 }

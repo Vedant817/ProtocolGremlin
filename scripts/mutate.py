@@ -281,6 +281,14 @@ MUTANTS = [
         "replacement": "              OP_HALT: halted <= 1'b0;",
         "description": "Power and execution control bug: OP_HALT fails to assert halted, causing runaway instruction execution and continuous dynamic switching power instead of entering static idle",
     },
+    {
+        "id": "MUT_33_CORE_XORI_DECODE",
+        "category": "Core / Crypto Datapath",
+        "file": "src/core.v",
+        "target": "      OP_XORI: alu_op = ALU_XOR;",
+        "replacement": "      OP_XORI: alu_op = ALU_AND;",
+        "description": "Cryptographic datapath decode bug: OP_XORI decodes to ALU_AND instead of ALU_XOR, corrupting ARX quarter-rounds and non-linear primitives",
+    },
 ]
 
 
@@ -308,6 +316,18 @@ def run_tests(timeout_sec=240):
         return False
 
 
+def cleanup_backups():
+    src_dir = os.path.join(REPO_ROOT, "src")
+    if os.path.exists(src_dir):
+        for f in os.listdir(src_dir):
+            if f.endswith(".bak_mut"):
+                orig = f[:-8]
+                bak_path = os.path.join(src_dir, f)
+                orig_path = os.path.join(src_dir, orig)
+                shutil.copyfile(bak_path, orig_path)
+                os.remove(bak_path)
+
+
 def apply_mutation(filepath, target, replacement):
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
@@ -321,6 +341,7 @@ def apply_mutation(filepath, target, replacement):
 
 
 def main():
+    cleanup_backups()
     parser = argparse.ArgumentParser(description="Run RTL mutation testing suite.")
     parser.add_argument("--mutant", help="Run a specific mutant ID only")
     args = parser.parse_args()
