@@ -681,3 +681,34 @@ mutation-kill rates.
   - Mutation Testing: Added `MUT_23_WAITEDGE_TIMESTAMP_CORRUPT` in `scripts/mutate.py`. Evaluated and killed in 70.61s. Cumulative score: **23/23 mutants killed (100.0% kill rate)**.
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
 
+## 2026-09-15 - Iteration 20: Gate-Level Simulation with Real Standard Cell Timing Models (GATES=yes)
+
+- **Motivation & Physical Grounding:**
+  - RTL simulation relies on zero-delay delta cycles, which cannot detect real silicon timing hazards such as race conditions, glitch-induced clocking, setup/hold marginalities, or netlist synthesis mapping discrepancies.
+  - Physical gate-level simulation with non-zero standard-cell propagation delays (`specify` path delays) is mandatory before silicon tapeout to guarantee that technology-mapped gates and flip-flops operate identically to RTL.
+- **Calibrated Standard Cell Timing Library (`test/simcells_timing.v`):**
+  - Implemented behavioral and timing simulation models for generic CMOS / IHP 130nm standard cell primitives mapped by Yosys (`$_NOT_`, `$_NAND_`, `$_NOR_`, `$_DFF_PN0_`, `$_DFF_PN1_`, `$_DFFE_PP_`, `$_DFFE_PN0P_`).
+  - Added calibrated propagation delays via Verilog `specify` blocks:
+    - Combinational gates (`$_NOT_`, `$_NAND_`, `$_NOR_`): 50–80 ps input-to-output path delay.
+    - Sequential flip-flops (`$_DFF_*`, `$_DFFE_*`): 200 ps clock-to-Q delay (`(posedge C => (Q : D)) = (0.200, 0.200)`), and negative-edge reset-to-Q delay (`(negedge R => (Q : 1'b0)) = (0.150, 0.150)`).
+- **Physical Pin Verification Paradigm:**
+  - Real post-fabrication automated test equipment (ATE) cannot access internal registers or hierarchical wire names (`pc`, `r0..r3`, `u_core.*`), which are flattened or renamed by logic synthesis.
+  - `test/test_gate_level.py` interacts strictly through the physical chip boundary (`clk`, `rst_n`, `ui_in`, `uo_out`, `uio_in`, `uio_out`, `uio_oe`).
+  - Addressed bootloader reset timing: `ld_settle_cnt` counts 2 clock cycles after `rst_n` deassertion before sampling `LOAD_REQ`. Deasserting `rst_n` on `FallingEdge(dut.clk)` and starting `bootload()` on the same cycle guarantees the netlist reliably samples `LOAD_REQ = 1`.
+  - Addressed cocotb phase safety: Avoid driving signals during cocotb's `ReadOnly` phase when sampling bidirectional SPI/open-drain buses.
+- **Gate-Level Verification Suite (`test/test_gate_level.py`):**
+  - Added 8 physical gate-level test cases:
+    1. `test_gl_bootload_valid_frame`: Serial bootloader clocking and execution on synthesized gate netlist (`uo_out = 0x01, uio_out = 0x01`). **PASS** (51.5 us).
+    2. `test_gl_bootload_corrupted_crc`: Hardware CRC-8 error trapping on gate netlist asserting `uo_out = 0x03` and permanent lock. **PASS** (30.4 us).
+    3. `test_gl_uart_tx_waveform_timing`: Cycle-exact UART TX at 8 cycles/bit verified against independent `UartReceiver`. **PASS** (1.06 ms).
+    4. `test_gl_spi_master_full_duplex`: SPI Master Mode 0 full duplex on mapped pins verified against `SpiSlave`. **PASS** (741.6 us).
+    5. `test_gl_manchester_biphase_encoding`: Symmetric 4-cycle half-bit line coding verified against `ManchesterDecoder`. **PASS** (433.35 us).
+    6. `test_gl_dmx512_break_mab_packet`: DMX512 Break (96 cycles) + MAB (16 cycles) + slots verified against `Dmx512ReceiverModel`. **PASS** (914.85 us).
+    7. `test_gl_hdlc_flag_and_bit_stuffing`: HDLC opening flag `0x7E`, NRZI transitions, and bit stuffing verified against `HdlcReceiver`. **PASS** (812.1 us).
+    8. `test_gl_open_drain_bus_safety`: High-Z bus electrical isolation verified on synthesized bidirectional IO pads. **PASS** (81.4 us).
+- **Execution & Integration:**
+  - Automated gate-level regression script: `scripts/test_gl.sh` synthesizes `test/gate_level_netlist.v` and executes `make -C test GATES=yes`.
+  - Netlist simulation results: **8/8 tests PASS (100.0%) in 23.10s**.
+  - Confirmed zero timing violations, zero race conditions, and zero functional discrepancies across all 8 protocol domains.
+
+

@@ -79,8 +79,10 @@ bounded problem").
 
 ## P3 (research / novelty, advanced validation)
 
-- Gate-level simulation with real standard-cell timing models (`GATES=yes`).
+- ~~Gate-level simulation with real standard-cell timing models (`GATES=yes`)~~ -
+  done: `test/simcells_timing.v` (calibrated CMOS standard cell specify timing models: 50-80 ps gate, 200 ps clock-to-Q) + `test/test_gate_level.py` (8/8 tests pass in 23.10s: bootload, CRC-8 lock, UART TX, SPI Master, Manchester, DMX512, HDLC, open-drain bus safety) + `scripts/test_gl.sh`.
 - Deterministic protocol fault injection & protocol stress engine (intentional CAN stuff errors, CRC corruption, I2C collision, UART framing error, HDLC aborts).
 - Multi-lane architecture investigation (dual-core protocol bridging, event fabric within 8x4 Tiny Tapeout footprint).
 - Low-speed USB / 10 Mbit Ethernet feasibility studies.
 - End-to-end Protocol Sniff -> Classify -> Replay pipeline demo.
+

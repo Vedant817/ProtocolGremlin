@@ -139,11 +139,27 @@ generates legal, randomized programs with bounded loops and forward branches.
 - **Automated Shrinking (Delta Debugging):** When a mismatch is encountered, `shrink_program()` systematically performs 1-minimization delta-debugging to eliminate non-essential instructions, reducing the failing program to the minimal reproducible sequence.
 - Verified in CI via `test_fuzz.py` across 10 randomized program campaigns per run plus an automated shrinker unit test.
 
+### 9. Gate-Level Simulation with Real Standard Cell Timing (`test/simcells_timing.v`, `test/test_gate_level.py`, `scripts/test_gl.sh`)
+To guarantee functional and timing equivalence after logic synthesis mapping to CMOS primitives:
+- **Calibrated Timing Models (`test/simcells_timing.v`):** Provides standard cell simulation models (`$_NOT_`, `$_NAND_`, `$_NOR_`, `$_DFF_*`, `$_DFFE_*`) with realistic path propagation delays (50–80 ps combinational path delays, 200 ps clock-to-Q sequential delay).
+- **Physical Pin Verification:** Verifies the synthesized gate netlist (`test/gate_level_netlist.v`) strictly across external chip pins (`clk`, `rst_n`, `ui_in`, `uo_out`, `uio_in`, `uio_out`, `uio_oe`) without internal signal probes, reflecting real ATE post-silicon testing.
+- **Protocol Test Suite (`test/test_gate_level.py`):** Exercises 8 physical protocol scenarios:
+  1. Serial bootloading & execution into synthesized flip-flop RAM matrix.
+  2. On-chip hardware CRC-8 error trapping (`uo_out = 0x03`) and permanent lock.
+  3. Cycle-exact UART TX waveform and baud timing at 8 cycles/bit.
+  4. SPI Master Mode 0 full-duplex transmission and reception.
+  5. Manchester Biphase-L self-clocking line code.
+  6. DMX512 stage lighting packet (Break, MAB, and slot data).
+  7. HDLC/SDLC NRZI line coding and dynamic zero-bit insertion.
+  8. Open-drain high-Z bus electrical isolation on synthesized bidirectional pads.
+- **Results:** 8/8 tests pass cleanly (100.0%) in 23.10s via `scripts/test_gl.sh`.
+
 ## Running the Verification Suite
 
 ```bash
 bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
-bash scripts/regress.sh     # runs the complete regression suite (89/89 tests pass)
+bash scripts/regress.sh     # runs the complete RTL regression suite (89/89 tests pass)
+bash scripts/test_gl.sh     # runs the gate-level timing simulation suite (8/8 tests pass)
 sby -f formal/core.sby      # runs the SymbiYosys formal proof with Z3 (20 steps pass)
 python3 scripts/mutate.py   # runs the seeded RTL mutation testing campaign (23/23 killed)
 bash scripts/synth.sh       # runs Yosys synthesis and logs area/cell metrics
@@ -151,5 +167,6 @@ bash scripts/synth.sh       # runs Yosys synthesis and logs area/cell metrics
 
 ## Remaining Verification Queue (Future Work)
 
-- Gate-level simulation against mapped netlist with real cell timing (`GATES=yes`).
 - Multi-lane cross-core formal assertions.
+- Deterministic protocol fault injection test suite.
+

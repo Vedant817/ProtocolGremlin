@@ -22,3 +22,6 @@ abc -g cmos2
 
 # Print post-mapping CMOS cell statistics
 stat
+
+# Output synthesized gate-level netlist for gate-level simulation (GATES=yes)
+write_verilog -noattr test/gate_level_netlist.v

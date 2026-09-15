@@ -107,11 +107,11 @@ module core #(
   // ---------------------------------------------------------------------
   // Architectural state
   // ---------------------------------------------------------------------
-  reg [ADDR_WIDTH-1:0] pc;
-  reg [7:0] r0, r1, r2, r3;
-  reg z;
-  reg halted;
-  reg [7:0] wait_remaining;
+  (* keep *) reg [ADDR_WIDTH-1:0] pc;
+  (* keep *) reg [7:0] r0, r1, r2, r3;
+  (* keep *) reg z;
+  (* keep *) reg halted;
+  (* keep *) reg [7:0] wait_remaining;
 
   reg [7:0] gpio_dir;
   reg [7:0] gpio_out;

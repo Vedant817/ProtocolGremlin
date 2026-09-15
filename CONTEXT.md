@@ -17,7 +17,7 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 
 ## Current status
 
-- **Phase:** ISA v1 complete — Iterations 1–19 complete (Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine, High-Level Data Link Control HDLC / SDLC ISO/IEC 13239 Bit-Oriented Protocol Engine, Pure Firmware Autobaud Rate Auto-Discovery Engine & Program RAM Architecture Study, DMX512 ANSI E1.11 / USITT DMX512-A Stage Lighting Protocol Engine, CAN 2.0A Controller Physical-Layer Protocol Engine, Manchester Biphase-L IEEE 802.3 / MIL-STD-1553 Encoder & Decoder Engine, ARM SWD Interface Engine & DPIDR Readout, JTAG IEEE 1149.1 TAP Controller Engine with 32-bit IDCODE Readout & BYPASS Verification, PS/2 Bidirectional Host Controller Engine, Dallas 1-Wire Master with Single-Cycle Presence Pulse Discovery, Zero-Jitter UART RX with WAITEDGE, Bootloader CRC-8 Hardware Protection, I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART TX, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
+- **Phase:** ISA v1 complete — Iterations 1–20 complete (Gate-Level Simulation Suite with Real Standard Cell Timing Models GATES=yes, Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine, High-Level Data Link Control HDLC / SDLC ISO/IEC 13239 Bit-Oriented Protocol Engine, Pure Firmware Autobaud Rate Auto-Discovery Engine & Program RAM Architecture Study, DMX512 ANSI E1.11 / USITT DMX512-A Stage Lighting Protocol Engine, CAN 2.0A Controller Physical-Layer Protocol Engine, Manchester Biphase-L IEEE 802.3 / MIL-STD-1553 Encoder & Decoder Engine, ARM SWD Interface Engine & DPIDR Readout, JTAG IEEE 1149.1 TAP Controller Engine with 32-bit IDCODE Readout & BYPASS Verification, PS/2 Bidirectional Host Controller Engine, Dallas 1-Wire Master with Single-Cycle Presence Pulse Discovery, Zero-Jitter UART RX with WAITEDGE, Bootloader CRC-8 Hardware Protection, I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART TX, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
 - **What exists:**
   1. **Core:** 24 opcodes, 4 registers, bidirectional GPIO bus on `uio[7:0]`,
      `SHIFTOUT`/`SHIFTIN` with MSB/LSB direction select (`imm8[3]`), `WAITEDGE`
@@ -54,11 +54,14 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
      (citing Huang et al. 2015, Firefly 2025).
   7. **Constrained-Random Fuzzing:** Automated instruction fuzzer (`tools/fuzzer.py`)
      with delta-debugging program shrinker, verified in `test/test_fuzz.py`.
-  8. **Real PPA Baseline:** Mapped with Yosys 0.69+ (`scripts/synth.sh`), measuring
+  8. **Gate-Level Timing Verification:** Full post-synthesis physical netlist simulation
+     with calibrated CMOS standard cell timing models (`test/simcells_timing.v`, `scripts/test_gl.sh`)
+     verifying 8/8 physical protocol tests across external chip pins in 23.10s.
+  9. **Real PPA Baseline:** Mapped with Yosys 0.69+ (`scripts/synth.sh`), measuring
      19,291 CMOS cells (37,832 GE). Active processor logic is only 1,580 cells
      (~2.2 kGE) with 91.8% of cells in the synthesized flip-flop RAM matrix.
      Fits the 8x4 competition tile footprint with >80 ns timing slack at 10 MHz.
-- **What's verified:** 89/89 test suites pass cleanly via `scripts/regress.sh`:
+- **What's verified:** 89/89 RTL tests pass via `scripts/regress.sh` and 8/8 gate-level timing tests pass via `scripts/test_gl.sh`:
   (1) cycle-by-cycle differential test (`test/test.py`),
   (2) UART TX edge-case verification (`0x00`, `0xFF`, `0x55`, `0xAA` at 4, 8, 16 cycles/bit),
   (3) UART TX pseudorandom frames,
@@ -168,6 +171,7 @@ orchestrator/   Durable state (decisions.md, queue.md, metrics.json, experiments
 ```bash
 bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
 bash scripts/regress.sh     # runs all 89 cocotb regression tests (~55s)
+bash scripts/test_gl.sh     # runs gate-level timing simulation (8/8 tests pass, ~23s)
 sby -f formal/core.sby      # runs SymbiYosys formal verification with Z3 (20 steps pass)
 python3 scripts/mutate.py   # runs RTL mutation testing campaign (23/23 killed)
 bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
@@ -180,19 +184,19 @@ bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 - Programmable protocol GPIO mapped to bidirectional `uio[7:0]`.
 - Genuinely reprogrammable program RAM loaded via serial bootloader with CRC-8 frame integrity protection.
 - Multi-tiered verification: differential cycle-by-cycle testing, SymbiYosys formal
-  safety proofs, independent protocol decoders, 100% mutation kill rate, and
-  constrained-random fuzzing with automated shrinking.
+  safety proofs, independent protocol decoders, 100% mutation kill rate,
+  constrained-random fuzzing with automated shrinking, and gate-level timing simulation.
 - Synthesized PPA measured: active core is 1,580 cells (~2.2 kGE), RAM is 17,757 cells.
 
 ## What to work on next
 
 Full prioritized backlog: `orchestrator/queue.md`. Entering continuous loop:
 
-1. Iteration 20: Gate-level simulation with real standard cell timing (`GATES=yes`).
-2. Iteration 21: Deterministic Fault Injection & Protocol Stress Test Engine.
-3. Iteration 22: Multi-Lane Architecture & Dual-Core PPA Feasibility Study.
-4. Iteration 23: Low-speed USB 1.1 / 10 Mbit Ethernet physical signaling exploration.
-5. Iteration 24: End-to-end Protocol Sniff -> Classify -> Replay pipeline demo.
+1. Iteration 21: Deterministic Fault Injection & Protocol Stress Engine (intentional CAN stuff errors, CRC corruption, I2C collision, UART framing error, HDLC aborts).
+2. Iteration 22: Multi-Lane Architecture & Dual-Core PPA Feasibility Study (bridging & synchronization within 8x4 Tiny Tapeout footprint).
+3. Iteration 23: Low-speed USB 1.1 / 10 Mbit Ethernet physical signaling exploration.
+4. Iteration 24: End-to-end Protocol Sniff -> Classify -> Replay pipeline demo.
+
 
 
 ## Keeping this file current
