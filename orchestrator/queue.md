@@ -72,6 +72,8 @@ bounded problem").
   done: `tools/autobaud_model.py` (AutobaudTransmitterModel + build_autobaud_rx_asm) + `test/test_autobaud.py` (75/75 regression pass, rate 8/16/32 profiles, noise rejection, framing error detection, 21/21 mutants killed).
 - ~~Program RAM architecture trade-off study (`program_ram.v` combinational vs synchronous read)~~ -
   done: quantified >80 ns timing slack at 10 MHz (<12 ns combinational path delay across 20 logic levels), justified retaining combinational read to guarantee 1-cycle determinism without pipeline bubbles or branch penalty stalls.
+- ~~HDLC / SDLC Bit-Oriented Protocol Engine (ISO/IEC 13239 bit-oriented framing, NRZI line coding, zero-bit stuffing/destuffing, flag framing 0x7E, abort sequences)~~ -
+  done: `tools/hdlc_model.py` (HdlcTransmitter + HdlcReceiver + build_hdlc_tx_words + build_hdlc_rx_words) + `test/test_hdlc.py` (82/82 regression pass, zero jitter, bit stuffing on 0xFF/0x7E/0x3F, payload recovery in R0, abort detection R1=0xAB, 22/22 mutants killed).
 
 ## P3 (research / novelty, once core protocols are solid)
 

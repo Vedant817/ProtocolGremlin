@@ -193,10 +193,18 @@ MUTANTS = [
         "replacement": "wire [1:0] edge_mode = operand[5:4];",
         "description": "WAITEDGE decode bug: edge_mode sliced from operand[5:4] instead of operand[4:3]",
     },
+    {
+        "id": "MUT_22_ALU_ZERO_FLAG_INVERT",
+        "category": "Core / Flags",
+        "file": "src/core.v",
+        "target": "z <= (alu_result == 8'h00);",
+        "replacement": "z <= (alu_result != 8'h00);",
+        "description": "ALU flag calculation bug: zero flag Z inverted on ALU operations (asserts when result non-zero)",
+    },
 ]
 
 
-def run_tests(timeout_sec=60):
+def run_tests(timeout_sec=120):
     """Run regression test suite in test directory. Returns True if tests pass, False if failed."""
     cmd = ["make", "-C", os.path.join(REPO_ROOT, "test"), "clean", "sim"]
     env = os.environ.copy()

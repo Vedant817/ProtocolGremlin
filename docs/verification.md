@@ -109,9 +109,10 @@ injects seeded, first-order architectural faults across all major RTL modules
 | `MUT_19_GODRI_DISABLE` | Protocol / Open-Drain | Open-drain bug: GODRI fails to set open-drain mode register | **KILLED** | 42.47s |
 | `MUT_20_WAITEDGE_DURATION_OFF_BY_ONE` | Timing / Edge-Detect | WAITEDGE timing bug: omits single-cycle edge detection latency | **KILLED** | 47.28s |
 | `MUT_21_WAITEDGE_MODE_BIT_SLICE` | Timing / Edge-Detect | WAITEDGE decode bug: edge_mode sliced from operand[5:4] | **KILLED** | 49.97s |
+| `MUT_22_ALU_ZERO_FLAG_INVERT` | Core / Flags | ALU flag bug: zero flag Z inverted on ALU operations | **KILLED** | 58.88s |
 
-- **Empirical Mutation Kill Rate: 21/21 (100.0%)**
-- Total campaign duration: ~14.1 minutes
+- **Empirical Mutation Kill Rate: 22/22 (100.0%)**
+- Total campaign duration: ~15.1 minutes
 - Result log: `orchestrator/mutation_report.json`
 
 ### 7. Independent Protocol Verification Engines
@@ -127,6 +128,7 @@ The test suite pairs firmware with independent cycle-accurate Python simulation 
 - **CAN 2.0A Controller (`tools/can_model.py`, `test/test_can.py`):** ISO 11898-1 open-drain physical layer, 15-bit CRC, bit stuffing, cycle-exact in-cell arbitration loss detection, and dominant ACK assertion against `CanReceiverModel`.
 - **DMX512 Engine (`tools/dmx512_model.py`, `test/test_dmx512.py`):** ANSI E1.11 / USITT DMX512-A transmitter (Break, MAB, Start Code 0x00, 8-N-2 UART slots) and receiver with single-cycle Break pulse duration measurement in `R3` and per-slot `WAITEDGE` edge synchronization against `Dmx512ReceiverModel`.
 - **Autobaud Rate Auto-Discovery Engine (`tools/autobaud_model.py`, `test/test_autobaud.py`):** Hardware pulse duration measurement via `WAITEDGE`, pulse symmetry noise rejection ($|T_0 - T_1| \le 1$), multi-rate profile classification (Rate 8, 16, 32 cycles/bit), dynamic adaptive sampling with framing error detection against `AutobaudTransmitterModel`.
+- **HDLC / SDLC Controller (`tools/hdlc_model.py`, `test/test_hdlc.py`):** ISO/IEC 13239 bit-oriented framing engine with NRZI line coding (transition on 0, hold on 1), dynamic zero-bit insertion (stuffing 0 after five consecutive 1s) and deletion (destuffing), flag delimiters (`01111110` / `0x7E`), and abort sequence detection ($\ge 7$ consecutive 1s) against `HdlcTransmitter` and `HdlcReceiver`.
 
 ### 8. Constrained-Random Instruction Fuzzing with Shrinking (`tools/fuzzer.py`, `test/test_fuzz.py`)
 To discover corner cases not anticipated by hand-written tests, `tools/fuzzer.py`

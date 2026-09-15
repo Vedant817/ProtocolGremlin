@@ -1,12 +1,11 @@
 {
-  "phase": "isa-v1-autobaud-engine-verified",
+  "phase": "isa-v1-hdlc-engine-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 17 complete (Pure Firmware Autobaud Rate Auto-Discovery Engine & Program RAM Architecture Study). Next: Iteration 18 (Multi-Lane Event Fabric / Dual-Core Protocol Architecture).",
+  "active_objective": "Continuous engineering loop: Iteration 18 complete (High-Level Data Link Control HDLC / SDLC ISO/IEC 13239 Protocol Engine). Next: Iteration 19 (Hardware Protocol Sniffer & Autonomous Protocol Classifier Engine).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 17,
+  "iterations": 18,
   "halt": false,
-  "notes": "Iteration 17 complete: Created tools/autobaud_model.py (AutobaudTransmitterModel with symmetry and framing distortion, build_autobaud_rx_asm firmware with dual-edge pulse duration measurement, symmetry noise rejection, and 3-profile rate classification) and test/test_autobaud.py (8/8 tests: rate 8/16/32 discovery, payload sweep, noise asymmetry rejection, unsupported baud rejection, framing error detection, pin direction safety). Added test_autobaud to test/Makefile. All 75 regression tests pass (100%). SymbiYosys formal BMC passed (20-step Z3, 0 violations). Added MUT_21_WAITEDGE_MODE_BIT_SLICE in scripts/mutate.py, achieving 21/21 mutants killed (100.0% kill rate) in 862.70s. Synthesis cell count unchanged at 19,291 CMOS cells (active logic 1,580 cells)."
+  "notes": "Iteration 18 complete: Created tools/hdlc_model.py (HdlcTransmitter with dynamic zero-bit insertion and NRZI encoding, HdlcReceiver with NRZI decoding, zero-bit destuffing, flag framing, and abort detection, build_hdlc_tx_words, build_hdlc_rx_words with WAITEDGE edge sync and 11-cycle jitter-free sampling) and test/test_hdlc.py (7/7 tests: TX waveform fidelity, dynamic bit stuffing on 0xFF/0x7E/0x3F, payload sweep, RX clean frame 0xA5 into R0 with R1=0x00, RX zero-bit destuffing on 0xFF/0x7E/0x3F, RX abort sequence detection flagging R1=0xAB, and tri-state pin safety). Added test_hdlc to test/Makefile. All 82 regression tests pass (100%). SymbiYosys formal BMC passed (20-step Z3, 0 violations). Added MUT_22_ALU_ZERO_FLAG_INVERT in scripts/mutate.py, achieving 22/22 mutants killed (100.0% kill rate) in 58.88s. Synthesis cell count unchanged at 19,291 CMOS cells (active logic 1,580 cells, ~2.2 kGE)."
 }
-

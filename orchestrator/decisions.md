@@ -603,3 +603,43 @@ mutation-kill rates.
   - SymbiYosys: 20-step Z3 BMC proof verified in 67s (PASS, 0 violations).
   - Mutation Testing: Added `MUT_21_WAITEDGE_MODE_BIT_SLICE`. Evaluated and killed in 49.97s. Cumulative mutation score: **21/21 mutants killed (100.0% kill rate)** in 862.70s.
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
+
+## 2026-09-15 - Iteration 18: High-Level Data Link Control (HDLC / SDLC - ISO/IEC 13239) Protocol Engine
+
+- **Motivation & Standard Context:**
+  - HDLC (High-Level Data Link Control, ISO/IEC 13239) and SDLC (IBM Synchronous Data Link Control) are the foundational Layer 2 protocols for high-reliability telecommunications, financial point-to-point leased lines, and avionic networks.
+  - Unlike byte-oriented UART or SPI, HDLC is a synchronous bit-oriented protocol requiring bit-level inspection, line coding transformations (NRZI), and continuous bit stuffing/destuffing.
+- **Protocol Principles & Implementation:**
+  - **NRZI (Non-Return-to-Zero Inverted) Line Coding:**
+    - Logical '0' is encoded as an electrical transition (toggle).
+    - Logical '1' is encoded as maintaining the current signal level (constant).
+  - **Dynamic Zero-Bit Insertion (Bit Stuffing):**
+    - Between frame flag delimiters, whenever five consecutive '1' bits occur in the payload, the transmitter automatically inserts a '0' bit (which forces an NRZI transition).
+    - This guarantees periodic signal transitions for clock synchronization and guarantees that user data never accidentally mimics the delimiting flag sequence.
+  - **Dynamic Zero-Bit Deletion (Bit Destuffing):**
+    - The receiver samples each bit period, decodes NRZI level transitions into logical bits, tracks consecutive '1's, and when five '1's are observed:
+      - If the 6th bit is '0': it is recognized as a stuffed zero and deleted from the reconstructed payload byte without advancing the bit index.
+      - If the 6th bit is '1': it checks for closing flag or abort sequence.
+  - **Flag Delimiters (`01111110` / `0x7E`):**
+    - Framing is bounded by unique `0x7E` flag sequences at frame start and frame end.
+  - **Abort Sequence Detection:**
+    - If $\ge 7$ consecutive '1' bits are detected without transition, the frame is aborted (`R1 = 0xAB`).
+- **Firmware & Models (`tools/hdlc_model.py`):**
+  - `HdlcTransmitter`: Reference model that computes bit stuffing, prepends/appends flags, converts to NRZI line levels, and drives physical pins.
+  - `HdlcReceiver`: Reference model that decodes NRZI levels, verifies flag boundaries, destuffs zero bits, detects aborts, and reconstructs payloads.
+  - `build_hdlc_tx_words`: Generates cycle-exact ASIC firmware for HDLC TX where every bit period (0, 1, or stuffed 0) is guaranteed to be exactly $T$ clock cycles (zero jitter).
+  - `build_hdlc_rx_words`: Generates cycle-exact ASIC firmware for HDLC RX that synchronizes to the opening flag via `WAITEDGE`, samples at bit centers, performs zero-bit destuffing, reconstructs payload into `R0`, validates closing flag (`R1 = 0x00`), and flags aborts (`R1 = 0xAB`).
+- **Verification (`test/test_hdlc.py`):**
+  - Added 7 cocotb test cases:
+    1. `test_hdlc_tx_waveform_fidelity`: Verified ASIC TX generates exact opening flag (`0x7E`), payload `0xA5`, and closing flag (`0x7E`) with zero clock cycle drift.
+    2. `test_hdlc_tx_dynamic_bit_stuffing`: Verified ASIC TX dynamically inserts zero bits after 5 consecutive 1s on payloads `0xFF`, `0x7E`, `0x3F`, verified by independent `HdlcReceiver`.
+    3. `test_hdlc_tx_payload_sweep`: Swept dynamic patterns (`0x00`, `0x55`, `0xAA`, `0x3C`) with 100% frame validity.
+    4. `test_hdlc_rx_clean_frame`: Verified ASIC RX receives opening flag, standard payload `0xA5` into `R0`, and verifies closing flag (`R1 = 0x00`).
+    5. `test_hdlc_rx_zero_bit_destuffing`: Verified ASIC RX correctly detects and deletes stuffed zeros on payloads `0xFF`, `0x7E`, `0x3F`, recovering `R0` with status `R1 = 0x00`.
+    6. `test_hdlc_rx_abort_detection`: Verified ASIC RX detects 8 consecutive 1s and reports abort status `R1 = 0xAB`.
+    7. `test_hdlc_pin_direction_safety`: Verified strict tri-state pin safety (input in RX, output in TX).
+  - Regression Suite: **82/82 tests passing (100.0%)** across 17 test suites in 54.12s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified in 82s (PASS, 0 violations).
+  - Mutation Testing: Added `MUT_22_ALU_ZERO_FLAG_INVERT` in `scripts/mutate.py`. Evaluated and killed in 58.88s. Cumulative score: **22/22 mutants killed (100.0% kill rate)**.
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
