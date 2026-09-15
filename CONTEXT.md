@@ -17,7 +17,7 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 
 ## Current status
 
-- **Phase:** ISA v1 complete — Iterations 1–20 complete (Gate-Level Simulation Suite with Real Standard Cell Timing Models GATES=yes, Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine, High-Level Data Link Control HDLC / SDLC ISO/IEC 13239 Bit-Oriented Protocol Engine, Pure Firmware Autobaud Rate Auto-Discovery Engine & Program RAM Architecture Study, DMX512 ANSI E1.11 / USITT DMX512-A Stage Lighting Protocol Engine, CAN 2.0A Controller Physical-Layer Protocol Engine, Manchester Biphase-L IEEE 802.3 / MIL-STD-1553 Encoder & Decoder Engine, ARM SWD Interface Engine & DPIDR Readout, JTAG IEEE 1149.1 TAP Controller Engine with 32-bit IDCODE Readout & BYPASS Verification, PS/2 Bidirectional Host Controller Engine, Dallas 1-Wire Master with Single-Cycle Presence Pulse Discovery, Zero-Jitter UART RX with WAITEDGE, Bootloader CRC-8 Hardware Protection, I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART TX, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
+- **Phase:** ISA v1 complete — Iterations 1–21 complete (Deterministic Fault Injection & Protocol Stress Engine, Gate-Level Simulation Suite with Real Standard Cell Timing Models GATES=yes, Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine, High-Level Data Link Control HDLC / SDLC ISO/IEC 13239 Bit-Oriented Protocol Engine, Pure Firmware Autobaud Rate Auto-Discovery Engine & Program RAM Architecture Study, DMX512 ANSI E1.11 / USITT DMX512-A Stage Lighting Protocol Engine, CAN 2.0A Controller Physical-Layer Protocol Engine, Manchester Biphase-L IEEE 802.3 / MIL-STD-1553 Encoder & Decoder Engine, ARM SWD Interface Engine & DPIDR Readout, JTAG IEEE 1149.1 TAP Controller Engine with 32-bit IDCODE Readout & BYPASS Verification, PS/2 Bidirectional Host Controller Engine, Dallas 1-Wire Master with Single-Cycle Presence Pulse Discovery, Zero-Jitter UART RX with WAITEDGE, Bootloader CRC-8 Hardware Protection, I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART TX, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
 - **What exists:**
   1. **Core:** 24 opcodes, 4 registers, bidirectional GPIO bus on `uio[7:0]`,
      `SHIFTOUT`/`SHIFTIN` with MSB/LSB direction select (`imm8[3]`), `WAITEDGE`
@@ -47,10 +47,11 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
      DMX512 engine with Break pulse duration measurement in `R3` and per-slot `WAITEDGE` edge synchronization (`tools/dmx512_model.py`),
      Autobaud Rate Auto-Discovery Engine with pulse symmetry noise rejection and multi-rate classification (`tools/autobaud_model.py`),
      HDLC / SDLC ISO/IEC 13239 bit-oriented framing engine with NRZI line coding, dynamic zero-bit insertion (stuffing) and deletion (destuffing), flag delimiters (`0x7E`), and abort detection (`tools/hdlc_model.py`),
-     and Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine (`tools/classifier_model.py`) fingerprinting UART, Manchester, 1-Wire, DMX512, HDLC, and noise via `WAITEDGE` pulse measurement and two's-complement bounds checking,
+     Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine (`tools/classifier_model.py`) fingerprinting UART, Manchester, 1-Wire, DMX512, HDLC, and noise via `WAITEDGE` pulse measurement and two's-complement bounds checking,
+     and Deterministic Fault Injection & Protocol Stress Engine (`tools/fault_injector_model.py`) generating intentional protocol violations across CAN, HDLC, UART, and Manchester standards,
      paired with independent `UartReceiver`, `UartTransmitter`, `SpiSlave`, `I2cSlave`, `OneWireSlave`, `PS2Device`, `JtagTarget`, `SwdTarget`, `ManchesterDecoder`, `CanReceiverModel`, `Dmx512ReceiverModel`, `AutobaudTransmitterModel`, `HdlcTransmitter`, `HdlcReceiver`, and `TrafficGenerator` verification models.
-  6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 23
-     architectural fault categories, measuring **100.0% kill rate (23/23 killed)**
+  6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 24
+     architectural fault categories, measuring **100.0% kill rate (24/24 killed)**
      (citing Huang et al. 2015, Firefly 2025).
   7. **Constrained-Random Fuzzing:** Automated instruction fuzzer (`tools/fuzzer.py`)
      with delta-debugging program shrinker, verified in `test/test_fuzz.py`.
@@ -61,7 +62,7 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
      19,291 CMOS cells (37,832 GE). Active processor logic is only 1,580 cells
      (~2.2 kGE) with 91.8% of cells in the synthesized flip-flop RAM matrix.
      Fits the 8x4 competition tile footprint with >80 ns timing slack at 10 MHz.
-- **What's verified:** 89/89 RTL tests pass via `scripts/regress.sh` and 8/8 gate-level timing tests pass via `scripts/test_gl.sh`:
+- **What's verified:** 98/98 RTL tests pass via `scripts/regress.sh` and 8/8 gate-level timing tests pass via `scripts/test_gl.sh`:
   (1) cycle-by-cycle differential test (`test/test.py`),
   (2) UART TX edge-case verification (`0x00`, `0xFF`, `0x55`, `0xAA` at 4, 8, 16 cycles/bit),
   (3) UART TX pseudorandom frames,
@@ -150,7 +151,16 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
   (86) Protocol Sniffer Dallas 1-Wire Reset + Recovery classification (R0 = 0x03),
   (87) Protocol Sniffer HDLC flag hold classification (R0 = 0x05),
   (88) Protocol Sniffer unrecognized noise pulse rejection (R0 = 0xFF),
-  (89) Protocol Sniffer physical pin direction electrical safety (strictly input, uio_oe = 0x00).
+  (89) Protocol Sniffer physical pin direction electrical safety (strictly input, uio_oe = 0x00),
+  (90) CAN bit stuff error injection (omitted stuff bit detected by ISO model),
+  (91) CAN CRC-15 checksum corruption injection,
+  (92) CAN EOF dominant glitch injection,
+  (93) HDLC abort sequence injection (7 consecutive 1s detected by receiver),
+  (94) HDLC stuff bit omission injection,
+  (95) UART framing error injection (forced low stop bit raises UartFramingError),
+  (96) UART sub-baud noise glitch rejection (1-cycle runt pulse ignored),
+  (97) Manchester biphase violation injection,
+  (98) Fault injection pin electrical safety.
 - **Git:** Sequence of small, reviewable commits (`git log`).
 
 ## Repository map
@@ -158,10 +168,10 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 ```text
 src/            RTL: project.v (TT wrapper), core.v, alu.v, gpio.v, program_ram.v
 firmware/       Assembly programs (loop_demo.asm)
-tools/          assembler.py, isa_model.py, uart_model.py, spi_model.py, i2c_model.py, onewire_model.py, ps2_model.py, jtag_model.py, swd_model.py, manchester_model.py, can_model.py, dmx512_model.py, autobaud_model.py, hdlc_model.py, classifier_model.py, fuzzer.py
-test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz, test_spi, test_i2c, test_bootload, test_onewire, test_ps2, test_jtag, test_swd, test_manchester, test_can, test_dmx512, test_autobaud, test_hdlc, test_classifier)
+tools/          assembler.py, isa_model.py, uart_model.py, spi_model.py, i2c_model.py, onewire_model.py, ps2_model.py, jtag_model.py, swd_model.py, manchester_model.py, can_model.py, dmx512_model.py, autobaud_model.py, hdlc_model.py, classifier_model.py, fault_injector_model.py, fuzzer.py
+test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz, test_spi, test_i2c, test_bootload, test_onewire, test_ps2, test_jtag, test_swd, test_manchester, test_can, test_dmx512, test_autobaud, test_hdlc, test_classifier, test_fault_injection, test_gate_level)
 formal/         SymbiYosys formal harness (core.sby, core_formal.v)
-scripts/        setup_env.sh, regress.sh, mutate.py, synth.sh, synth.ys
+scripts/        setup_env.sh, regress.sh, test_gl.sh, mutate.py, synth.sh, synth.ys
 docs/           architecture, ISA, verification, toolchain, PPA, limitations
 orchestrator/   Durable state (decisions.md, queue.md, metrics.json, experiments.jsonl)
 ```
@@ -170,10 +180,10 @@ orchestrator/   Durable state (decisions.md, queue.md, metrics.json, experiments
 
 ```bash
 bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
-bash scripts/regress.sh     # runs all 89 cocotb regression tests (~55s)
-bash scripts/test_gl.sh     # runs gate-level timing simulation (8/8 tests pass, ~23s)
+bash scripts/regress.sh     # runs all 98 cocotb regression tests (~60s)
+bash scripts/test_gl.sh     # runs gate-level timing simulation (8/8 tests pass, ~30s)
 sby -f formal/core.sby      # runs SymbiYosys formal verification with Z3 (20 steps pass)
-python3 scripts/mutate.py   # runs RTL mutation testing campaign (23/23 killed)
+python3 scripts/mutate.py   # runs RTL mutation testing campaign (24/24 killed)
 bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 ```
 
@@ -192,10 +202,10 @@ bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 
 Full prioritized backlog: `orchestrator/queue.md`. Entering continuous loop:
 
-1. Iteration 21: Deterministic Fault Injection & Protocol Stress Engine (intentional CAN stuff errors, CRC corruption, I2C collision, UART framing error, HDLC aborts).
-2. Iteration 22: Multi-Lane Architecture & Dual-Core PPA Feasibility Study (bridging & synchronization within 8x4 Tiny Tapeout footprint).
-3. Iteration 23: Low-speed USB 1.1 / 10 Mbit Ethernet physical signaling exploration.
-4. Iteration 24: End-to-end Protocol Sniff -> Classify -> Replay pipeline demo.
+1. Iteration 22: Multi-Lane Architecture & Dual-Core PPA Feasibility Study (bridging & synchronization within 8x4 Tiny Tapeout footprint).
+2. Iteration 23: Low-speed USB 1.1 / 10 Mbit Ethernet physical signaling exploration.
+3. Iteration 24: End-to-end Protocol Sniff -> Classify -> Replay pipeline demo.
+
 
 
 

@@ -209,6 +209,14 @@ MUTANTS = [
         "replacement": "write_rd(rd_idx, cycle_cnt[15:8]);",
         "description": "WAITEDGE timestamp capture bug: writes cycle_cnt[15:8] instead of cycle_cnt[7:0]",
     },
+    {
+        "id": "MUT_24_BRANCH_JNZ_INVERT",
+        "category": "Control / Branch",
+        "file": "src/core.v",
+        "target": "OP_JNZ: if (!z) pc <= operand[ADDR_WIDTH-1:0];",
+        "replacement": "OP_JNZ: if (z) pc <= operand[ADDR_WIDTH-1:0];",
+        "description": "Branch condition inversion in OP_JNZ (branches on z instead of !z)",
+    },
 ]
 
 

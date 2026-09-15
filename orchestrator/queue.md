@@ -81,8 +81,10 @@ bounded problem").
 
 - ~~Gate-level simulation with real standard-cell timing models (`GATES=yes`)~~ -
   done: `test/simcells_timing.v` (calibrated CMOS standard cell specify timing models: 50-80 ps gate, 200 ps clock-to-Q) + `test/test_gate_level.py` (8/8 tests pass in 23.10s: bootload, CRC-8 lock, UART TX, SPI Master, Manchester, DMX512, HDLC, open-drain bus safety) + `scripts/test_gl.sh`.
-- Deterministic protocol fault injection & protocol stress engine (intentional CAN stuff errors, CRC corruption, I2C collision, UART framing error, HDLC aborts).
+- ~~Deterministic protocol fault injection & protocol stress engine (intentional CAN stuff errors, CRC corruption, I2C collision, UART framing error, HDLC aborts)~~ -
+  done: `tools/fault_injector_model.py` (generators for CAN stuff error, CRC-15 corruption, EOF dominant glitch, HDLC abort, stuff omission, corrupted flag, UART framing error, sub-baud glitch, Manchester biphase violation) + `test/test_fault_injection.py` (9/9 cocotb tests pass, 100% detection by independent protocol models, MUT_24 killed).
 - Multi-lane architecture investigation (dual-core protocol bridging, event fabric within 8x4 Tiny Tapeout footprint).
 - Low-speed USB / 10 Mbit Ethernet feasibility studies.
 - End-to-end Protocol Sniff -> Classify -> Replay pipeline demo.
+
 

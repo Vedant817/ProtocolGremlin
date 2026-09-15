@@ -111,9 +111,10 @@ injects seeded, first-order architectural faults across all major RTL modules
 | `MUT_21_WAITEDGE_MODE_BIT_SLICE` | Timing / Edge-Detect | WAITEDGE decode bug: edge_mode sliced from operand[5:4] | **KILLED** | 49.97s |
 | `MUT_22_ALU_ZERO_FLAG_INVERT` | Core / Flags | ALU flag bug: zero flag Z inverted on ALU operations | **KILLED** | 58.88s |
 | `MUT_23_WAITEDGE_TIMESTAMP_CORRUPT` | Timing / Edge-Detect | WAITEDGE timestamp capture bug: captures upper byte cycle_cnt[15:8] | **KILLED** | 70.61s |
+| `MUT_24_BRANCH_JNZ_INVERT` | Control / Branch | Branch condition inversion in OP_JNZ (branches on z instead of !z) | **KILLED** | 72.49s |
 
-- **Empirical Mutation Kill Rate: 23/23 (100.0%)**
-- Total campaign duration: ~16.3 minutes
+- **Empirical Mutation Kill Rate: 24/24 (100.0%)**
+- Total campaign duration: ~17.5 minutes
 - Result log: `orchestrator/mutation_report.json`
 
 ### 7. Independent Protocol Verification Engines
@@ -131,6 +132,7 @@ The test suite pairs firmware with independent cycle-accurate Python simulation 
 - **Autobaud Rate Auto-Discovery Engine (`tools/autobaud_model.py`, `test/test_autobaud.py`):** Hardware pulse duration measurement via `WAITEDGE`, pulse symmetry noise rejection ($|T_0 - T_1| \le 1$), multi-rate profile classification (Rate 8, 16, 32 cycles/bit), dynamic adaptive sampling with framing error detection against `AutobaudTransmitterModel`.
 - **HDLC / SDLC Controller (`tools/hdlc_model.py`, `test/test_hdlc.py`):** ISO/IEC 13239 bit-oriented framing engine with NRZI line coding (transition on 0, hold on 1), dynamic zero-bit insertion (stuffing 0 after five consecutive 1s) and deletion (destuffing), flag delimiters (`01111110` / `0x7E`), and abort sequence detection ($\ge 7$ consecutive 1s) against `HdlcTransmitter` and `HdlcReceiver`.
 - **Autonomous Protocol Sniffer & Classifier (`tools/classifier_model.py`, `test/test_classifier.py`):** Passive bus snooping via `WAITEDGE`, high-precision pulse timing extraction ($T_{\text{low}}, T_{\text{high}}$), and pure firmware two's-complement bounds checking classifying UART, Manchester, Dallas 1-Wire, DMX512, HDLC, or Noise against `TrafficGenerator`.
+- **Deterministic Fault Injection & Stress Testing (`tools/fault_injector_model.py`, `test/test_fault_injection.py`):** Intentional generation of non-compliant bus anomalies across CAN (bit stuff violations, CRC-15 corruption, EOF dominant glitches), HDLC (7-bit aborts, stuff omissions, corrupted closing flags), UART (framing errors with low stop bit, sub-baud glitches), and Manchester (omitted mid-bit transitions), verified against independent receiver models.
 
 ### 8. Constrained-Random Instruction Fuzzing with Shrinking (`tools/fuzzer.py`, `test/test_fuzz.py`)
 To discover corner cases not anticipated by hand-written tests, `tools/fuzzer.py`
@@ -158,15 +160,16 @@ To guarantee functional and timing equivalence after logic synthesis mapping to 
 
 ```bash
 bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
-bash scripts/regress.sh     # runs the complete RTL regression suite (89/89 tests pass)
+bash scripts/regress.sh     # runs the complete RTL regression suite (98/98 tests pass)
 bash scripts/test_gl.sh     # runs the gate-level timing simulation suite (8/8 tests pass)
 sby -f formal/core.sby      # runs the SymbiYosys formal proof with Z3 (20 steps pass)
-python3 scripts/mutate.py   # runs the seeded RTL mutation testing campaign (23/23 killed)
+python3 scripts/mutate.py   # runs the seeded RTL mutation testing campaign (24/24 killed)
 bash scripts/synth.sh       # runs Yosys synthesis and logs area/cell metrics
 ```
 
 ## Remaining Verification Queue (Future Work)
 
 - Multi-lane cross-core formal assertions.
-- Deterministic protocol fault injection test suite.
+- Multi-lane dual-core hardware synchronization fabric.
+
 

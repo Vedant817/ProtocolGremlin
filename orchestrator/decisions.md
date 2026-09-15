@@ -711,4 +711,44 @@ mutation-kill rates.
   - Netlist simulation results: **8/8 tests PASS (100.0%) in 23.10s**.
   - Confirmed zero timing violations, zero race conditions, and zero functional discrepancies across all 8 protocol domains.
 
+## 2026-09-15 - Iteration 21: Deterministic Fault Injection & Protocol Stress Engine
+
+- **Motivation & Qualification Utility:**
+  - Protocol test equipment (e.g. Vector CANoe, Total Phase Beagle, Teledyne LeCroy) exists primarily to inject deliberate non-compliances, verifying that receivers detect errors, transition to recovery states, and discard corrupted frames without hanging or crashing.
+  - Fixed-function hardware controllers (e.g. microcontroller integrated peripherals) cannot inject bit-stuffing errors or corrupted CRC words into active frames because internal silicon hardware automates and enforces compliant framing.
+  - The Jane Street Protocol Emulator ASIC's cycle-exact deterministic timing guarantees that physical and logical faults can be placed at an exact bit cell index with single-cycle precision.
+- **Fault Injection Domains & Firmware Architecture (`tools/fault_injector_model.py`):**
+  - **CAN 2.0A Fault Modes:**
+    - `stuff_error`: Transmits payload without inserting complementary stuff bits after 5 consecutive identical bits (e.g. 8 consecutive zeros on payload 0x00), verified by independent `remove_can_bit_stuffing` detecting `is_valid == False`.
+    - `crc_error`: Deliberately corrupts the 15-bit CRC field (`crc15 ^ 0x5555`), verifying that downstream receivers detect a checksum mismatch while destuffing succeeds.
+    - `eof_error`: Drives an active Dominant ('0') bit during the 7-bit Recessive End of Frame at bit index 2.
+  - **HDLC / SDLC Fault Modes:**
+    - `abort_sequence`: Transmits 7 consecutive 1s inside an active frame without NRZI transition, triggering `abort_detected == True` in `HdlcReceiver`.
+    - `stuff_omission`: Transmits 8 consecutive 1s without zero-bit stuffing, triggering destuffing/abort violation.
+    - `corrupted_flag`: Ends frame with invalid closing delimiter (`0x7B` instead of `0x7E`).
+  - **UART Fault Modes:**
+    - `framing_error`: Transmits 8 data bits but drives the Stop bit timeslot LOW (0), triggering `UartFramingError` in `UartReceiver`.
+    - `noise_glitch`: Generates a narrow 1-cycle runt pulse (0) on an idle line, verified to be rejected as a sub-baud false start glitch with zero spurious bytes.
+    - `break_condition`: Drives line LOW for 14 continuous bit periods.
+  - **Manchester Biphase-L Fault Modes:**
+    - `biphase_violation`: Holds line level constant across an entire bit cell without the required mid-bit transition, triggering `valid == False` and `phase_violations >= 1` in `ManchesterDecoder`.
+- **Verification Suite (`test/test_fault_injection.py`):**
+  - Added 9 cocotb test cases covering all fault modes and pin electrical safety:
+    1. `test_can_fault_stuff_error`: **PASS** (1.14 ms, `is_valid=False`).
+    2. `test_can_fault_crc_corruption`: **PASS** (1.18 ms, CRC mismatch caught).
+    3. `test_can_fault_eof_dominant_glitch`: **PASS** (1.20 ms, dominant 0 detected at EOF bit 2).
+    4. `test_hdlc_fault_abort_sequence`: **PASS** (0.49 ms, abort sequence detected).
+    5. `test_hdlc_fault_stuff_omission`: **PASS** (0.61 ms, destuffing failure caught).
+    6. `test_uart_fault_framing_error`: **PASS** (0.27 ms, `UartFramingError` caught).
+    7. `test_uart_fault_noise_glitch`: **PASS** (0.09 ms, 0 spurious bytes).
+    8. `test_manchester_fault_biphase_violation`: **PASS** (0.42 ms, violation detected).
+    9. `test_fault_injection_pin_safety`: **PASS** (1.12 ms, open-drain never drives 1).
+  - Regression Suite: **98/98 tests passing (100.0%)** across 19 test suites in ~60s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified in 80s (PASS, 0 violations).
+  - Mutation Testing: Added `MUT_24_BRANCH_JNZ_INVERT` in `scripts/mutate.py`. Evaluated and killed in 72.49s. Cumulative score: **24/24 mutants killed (100.0% kill rate)**.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`).
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
+
+
 
