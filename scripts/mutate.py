@@ -305,6 +305,14 @@ MUTANTS = [
         "replacement": "                  gpio_out[pin_idx] <= rd_val[6];",
         "description": "Bit-serial protocol engine bug: SHIFTOUT MSB mode emits rd_val[6] instead of MSB rd_val[7], corrupting CAN FD, SPI, and UART frames",
     },
+    {
+        "id": "MUT_36_PAD_STATUS_PIN_SWAP",
+        "category": "Pad / Package Pinout",
+        "file": "src/project.v",
+        "target": "  assign uo_out = {6'b000000, boot_err, boot_done};",
+        "replacement": "  assign uo_out = {6'b000000, boot_done, boot_err};",
+        "description": "Package pinout routing bug: uo_out[1] boot_err and uo_out[0] boot_done pad connections swapped in top-level padframe",
+    },
 ]
 
 
