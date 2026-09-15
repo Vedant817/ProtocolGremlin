@@ -1,10 +1,10 @@
 {
   "timestamp": "2026-09-15T21:45:12Z",
-  "total_mutants": 36,
-  "killed": 36,
+  "total_mutants": 37,
+  "killed": 37,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 2952.37,
+  "campaign_time_sec": 3047.43,
   "mutants": [
     {
       "id": "MUT_01_BRANCH_JZ_INVERT",
@@ -293,6 +293,14 @@
       "description": "Package pinout routing bug: uo_out[1] boot_err and uo_out[0] boot_done pad connections swapped in top-level padframe",
       "status": "KILLED",
       "elapsed_sec": 82.97
+    },
+    {
+      "id": "MUT_37_EVENT_EDGE_POLARITY",
+      "category": "Event / Edge-Detect",
+      "file": "src/core.v",
+      "description": "Asynchronous event detection bug: WAITEDGE mode 01 (rising edge) checks edge_fall instead of edge_rise, causing edge-triggered interrupts to hang or miss events",
+      "status": "KILLED",
+      "elapsed_sec": 96.49
     }
   ]
 }

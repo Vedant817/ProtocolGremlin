@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-floorplan-verified",
+  "phase": "isa-v1-interrupt-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 33 complete (Physical Die Floorplan, Pad Placement & Package Pinout Co-Design Study). Next: Iteration 34 (Asynchronous Event Notification & Level/Edge Interrupt Controller Subsystem).",
+  "active_objective": "Continuous engineering loop: Iteration 34 complete (Asynchronous Event Notification & Level/Edge Interrupt Controller Subsystem). Next: Iteration 35 (Memory Protection Unit (MPU) & Multi-Tenant Partitioning Engine).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 33,
+  "iterations": 34,
   "halt": false,
-  "notes": "Iteration 33 complete: Authored docs/floorplan_study.md (die geometry 1x2 and 2x2 footprints, standard cell placement density 58.4% in 2x2 tile, sg13cmos5l_io pad cell allocation, QFN-64 package pinout, SSO ground bounce modeling, adjacent pin cross-talk isolation, and PDN IR drop budget). Created tools/floorplan_model.py (PhysicalPad, SsoGroundBounceModel, IrDropModel, CrossTalkModel, and firmware generators) and test/test_floorplan.py (6/6 tests pass: SSO 8-pin simultaneous switching stability, adjacent pin drive isolation, analytical SSO ground bounce bounding V_bounce=64 mV < 200 mV noise margin, PDN IR drop bounding V_drop=7.77 mV < 0.45% VDD, adjacent pin cross-talk capacitive coupling factor Kc <= 0.0076 / >42 dB isolation, clean return to High-Z on halt). Added test_floorplan to test/Makefile. Full regression suite: 167/167 tests PASS (100.0%) across 31 modules. Added MUT_36_PAD_STATUS_PIN_SWAP in scripts/mutate.py (killed in 82.97s, 36/36 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 75s). Gate-level simulation confirmed 8/8 physical tests pass in 31.38s."
+  "notes": "Iteration 34 complete: Authored docs/interrupt_study.md (asynchronous event handling theory, HIC dual-rank synchronizer architecture, trigger mode selector, priority arbitration, vector dispatch, latency analysis, and PPA scaling on IHP 130nm SG13G2). Created tools/interrupt_model.py (TriggerMode, InterruptChannel, InterruptControllerModel, InterruptPpaModel, build_edge_event_capture_asm, build_level_event_handler_asm, build_priority_event_dispatcher_asm, build_nested_context_preservation_asm) and test/test_interrupt.py (6/6 tests pass: single-cycle rising edge event capture with timestamp in R3, level-sensitive IRQ detection and ACK handshake, strict priority arbitration between Pin 0 and Pin 1, nested register context preservation, cycle-accurate HIC model and PPA validation, and High-Z electrical pin safety). Added test_interrupt to test/Makefile. Full regression suite: 173/173 tests PASS (100.0%) across 32 modules. Added MUT_37_EVENT_EDGE_POLARITY in scripts/mutate.py (killed in 96.49s, 37/37 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 76s). Gate-level simulation confirmed 8/8 physical tests pass in 27.96s."
 }

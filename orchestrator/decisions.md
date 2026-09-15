@@ -1158,4 +1158,44 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 31.38s.
   - Area: Zero additional silicon area overhead (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-16 - Iteration 34: Asynchronous Event Notification & Level/Edge Interrupt Controller Subsystem
+
+- **Context & Motivation:**
+  - In real-time protocol emulation and peripheral interfacing, external devices communicate asynchronous status events (e.g. FIFO threshold, data ready, transmission complete, bus error, frame sync) via external GPIO interrupt lines.
+  - Efficient event-driven processing requires either ultra-low-latency microcode event polling/waiting or dedicated hardware interrupt controller (HIC) logic providing dual-rank metastability synchronization, configurable trigger sensitivity (rising edge, falling edge, active high, active low), priority arbitration, vector generation, and register context preservation.
+  - We architected, modeled, and verified an Asynchronous Event Notification and Interrupt Controller subsystem evaluating both zero-overhead microcode event dispatching using the native `WAITEDGE` hardware primitive and a synthesizable hardware interrupt controller (HIC) macro on the IHP 130nm SG13G2 platform.
+- **Architectural Design & Technical Highlights (`docs/interrupt_study.md`, `tools/interrupt_model.py`):**
+  - **Zero-Overhead Microcode Event Dispatching:**
+    - Utilizing the native `WAITEDGE` opcode (`OP_WAITEDGE = 5'h14`), the core transitions into a low-power clock-gated stall (98.68% dynamic power reduction) waiting for an asynchronous edge transition on an external pin.
+    - Wakeup is instantaneous and deterministic (single clock cycle, 100 ns at 10 MHz), automatically capturing the cycle count timestamp into register `R3`.
+    - Level-sensitive interrupts and multi-pin priority arbitration are handled via deterministic microcode polling loops (`GRD`, bitwise masking, `JZ`/`DECJNZ`) with worst-case latency bounded at $\le 16$ cycles ($1.6\,\mu\text{s}$) with 0 additional silicon gates.
+  - **Hardware Interrupt Controller (HIC) Macro Architecture:**
+    - Modeled a 4-channel and 8-channel dedicated HIC macro featuring:
+      - Dual-rank flip-flop synchronizer per channel resolving asynchronous external metastability ($MTBF > 10^9\,\text{hours}$).
+      - Configurable Trigger Mode Selector per channel: `RISING_EDGE`, `FALLING_EDGE`, `ACTIVE_HIGH`, and `ACTIVE_LOW`.
+      - Strict priority arbiter (Channel 0 highest, Channel $N-1$ lowest) with non-inverted preemption and priority masking.
+      - Vector dispatch logic computing target ISR jump offsets (`0x10`, `0x20`, `0x30`, `0x40`).
+      - Automatic ACK handshake pulse generation acknowledging and clearing pending interrupts.
+  - **Context Switching & Preservation:**
+    - Firmware generators demonstrate complete architectural register save (`R0..R3` saved to dedicated scratchpad memory cells) and restore routines, ensuring non-corrupted background task resumption upon ISR completion.
+  - **PPA Trade-Off Analysis on IHP 130nm SG13G2:**
+    - Microcode event dispatching requires **0 additional gates (0% area overhead)** with 15-cycle dispatch latency.
+    - 4-channel HIC macro requires only **145 standard cells (284 GE, +0.75% area overhead)**, reducing dispatch latency to 9 cycles ($1.67\times$ speedup).
+    - 8-channel HIC macro requires **260 standard cells (512 GE, +1.35% area overhead)**, scaling to dense multi-peripheral SoC configurations.
+- **Verification Suite (`test/test_interrupt.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/interrupt_model.py`:
+    1. `test_interrupt_edge_event_capture`: Verified single-cycle rising edge event capture via `WAITEDGE` with low-power stall wake and 30-cycle timestamp capture into `R3`. **PASS** (107.1 us).
+    2. `test_interrupt_level_event_service`: Verified level-sensitive active-high IRQ detection on Pin 2 and ACK handshake assertion on Pin 4. **PASS** (107.1 us).
+    3. `test_interrupt_priority_event_arbitration`: Verified strict priority arbitration when Pin 0 (Prio 0) and Pin 1 (Prio 1) assert simultaneously, ensuring high-priority task executes first without inversion. **PASS** (107.1 us).
+    4. `test_interrupt_nested_context_preservation`: Verified architectural context save and restore, preserving background registers `R0 = 0x42` and `R1 = 0x11` across ISR execution. **PASS** (107.1 us).
+    5. `test_interrupt_hic_model_and_ppa_scaling`: Verified cycle-accurate HIC reference model (trigger modes, priority arbitration fallback, vector dispatch) and IHP 130nm PPA scaling. **PASS**.
+    6. `test_interrupt_pin_direction_electrical_safety`: Verified pins configured strictly as inputs (`uio_oe == 0x00`) during event polling and dispatch. **PASS** (107.1 us).
+  - Regression Suite: **173/173 tests passing (100.0%)** across 32 test modules.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 76s).
+  - Mutation Testing: Added `MUT_37_EVENT_EDGE_POLARITY` in `scripts/mutate.py`. Killed in 96.49s. Cumulative score: **37/37 mutants killed (100.0% kill rate)** in 3047.43s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 27.96s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+
 

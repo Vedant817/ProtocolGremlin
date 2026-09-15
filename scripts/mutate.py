@@ -313,6 +313,14 @@ MUTANTS = [
         "replacement": "  assign uo_out = {6'b000000, boot_done, boot_err};",
         "description": "Package pinout routing bug: uo_out[1] boot_err and uo_out[0] boot_done pad connections swapped in top-level padframe",
     },
+    {
+        "id": "MUT_37_EVENT_EDGE_POLARITY",
+        "category": "Event / Edge-Detect",
+        "file": "src/core.v",
+        "target": "                      (edge_mode == 2'b01) ? edge_rise :",
+        "replacement": "                      (edge_mode == 2'b01) ? edge_fall :",
+        "description": "Asynchronous event detection bug: WAITEDGE mode 01 (rising edge) checks edge_fall instead of edge_rise, causing edge-triggered interrupts to hang or miss events",
+    },
 ]
 
 
