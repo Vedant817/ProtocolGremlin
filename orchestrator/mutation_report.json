@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-09-15T21:09:31Z",
-  "total_mutants": 33,
-  "killed": 33,
+  "timestamp": "2026-09-15T21:24:33Z",
+  "total_mutants": 34,
+  "killed": 34,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 2705.13,
+  "campaign_time_sec": 2794.51,
   "mutants": [
     {
       "id": "MUT_01_BRANCH_JZ_INVERT",
@@ -269,6 +269,14 @@
       "description": "Cryptographic datapath decode bug: OP_XORI decodes to ALU_AND instead of ALU_XOR, corrupting ARX quarter-rounds and non-linear primitives",
       "status": "KILLED",
       "elapsed_sec": 95.99
+    },
+    {
+      "id": "MUT_34_DECJNZ_STEP_SIZE",
+      "category": "Control / Loop",
+      "file": "src/core.v",
+      "description": "Deterministic loop control bug: DECJNZ decrements register by 2 instead of 1, halving loop iteration count and corrupting real-time scheduling time-slices",
+      "status": "KILLED",
+      "elapsed_sec": 89.38
     }
   ]
 }

@@ -289,6 +289,14 @@ MUTANTS = [
         "replacement": "      OP_XORI: alu_op = ALU_AND;",
         "description": "Cryptographic datapath decode bug: OP_XORI decodes to ALU_AND instead of ALU_XOR, corrupting ARX quarter-rounds and non-linear primitives",
     },
+    {
+        "id": "MUT_34_DECJNZ_STEP_SIZE",
+        "category": "Control / Loop",
+        "file": "src/core.v",
+        "target": "    if (opcode == OP_DECJNZ) alu_b = 8'hFF;  // -1 mod 256",
+        "replacement": "    if (opcode == OP_DECJNZ) alu_b = 8'hFE;  // -2 mod 256 bug",
+        "description": "Deterministic loop control bug: DECJNZ decrements register by 2 instead of 1, halving loop iteration count and corrupting real-time scheduling time-slices",
+    },
 ]
 
 

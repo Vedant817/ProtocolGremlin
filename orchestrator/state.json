@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-crypto-accelerator-verified",
+  "phase": "isa-v1-scheduler-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 30 complete (Cryptographic Accelerator Feasibility Study: ChaCha8 / Poly1305 / SHA-256 bit-sliced microcode vs. hardware coprocessor). Next: Iteration 31 (Deterministic Real-Time Scheduling Engine: Priority Multi-Tasking & Round-Robin Schedulers).",
+  "active_objective": "Continuous engineering loop: Iteration 31 complete (Deterministic Real-Time Task Scheduling Engine: Priority Multi-Tasking & Round-Robin Schedulers). Next: Iteration 32 (CAN FD Flexible Data-Rate Protocol Accelerator Feasibility & Bit-Rate Switching Study).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 30,
+  "iterations": 31,
   "halt": false,
-  "notes": "Iteration 30 complete: Authored docs/crypto_study.md (comprehensive architectural and PPA trade-off study on RFC 8439 ChaCha8/20, Poly1305, and SHA-256 bit-sliced microcode vs hardware coprocessor macro on IHP 130nm). Created tools/crypto_model.py (CryptoPerformanceModel, ChaCha8 ARX quarter-round, SHA-256 Ch/Maj non-linear primitives, Poly1305 MAC step, assembly firmware generators) and test/test_crypto.py (6/6 tests pass: 32-bit multi-precision addition with 4-byte carry propagation, ChaCha quarter-round step, Poly1305 MAC step, SHA-256 Ch/Maj primitives, coprocessor PPA scaling 33x to 44x speedup with +1.97% to +2.70% area, electrical pin isolation). Added test_crypto to test/Makefile. Full regression suite: 149/149 tests PASS (100.0%) across 28 modules. Added MUT_33_CORE_XORI_DECODE in scripts/mutate.py (killed in 95.99s, 33/33 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 75s). Gate-level simulation confirmed 8/8 physical tests pass in 34.33s."
+  "notes": "Iteration 31 complete: Authored docs/scheduler_study.md (comprehensive real-time scheduling theory, cooperative yield vs preemptive models, worst-case response latency bounds R <= 17 cycles / 1.7 us, round-robin time slicing, and zero-gate PPA analysis). Created tools/scheduler_model.py (cycle-accurate SchedulerModel, TaskContext, cooperative priority dispatch, round-robin fairness, context switch fidelity, and hard deadline periodic firmware generators) and test/test_scheduler.py (6/6 tests pass: cooperative priority preemption, round-robin fairness across 3 tasks, context switch fidelity, periodic hard deadline compliance with WAIT, WCRL latency bounds, GPIO bus electrical isolation). Added test_scheduler to test/Makefile. Full regression suite: 155/155 tests PASS (100.0%) across 29 modules. Added MUT_34_DECJNZ_STEP_SIZE in scripts/mutate.py (killed in 89.38s, 34/34 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 90s). Gate-level simulation confirmed 8/8 physical tests pass in 28.96s."
 }
