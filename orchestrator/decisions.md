@@ -509,3 +509,36 @@ mutation-kill rates.
   - Mutation Testing: Added `MUT_18_SHIFTIN_MSB_INVERT`. Evaluated and killed in 41.01s. Cumulative mutation score: **18/18 mutants killed (100.0% kill rate)** in 673.94s.
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
 
+## 2026-09-15 - Iteration 15: CAN 2.0A Controller Physical-Layer Protocol Engine
+
+- **Motivation & Protocol Overview:**
+  - Controller Area Network (CAN ISO 11898-1) is the mission-critical automotive and industrial fieldbus standard.
+  - Key architectural properties:
+    - Open-drain wired-AND physical layer: Dominant (logic 0) actively pulls the bus low and overrides Recessive (logic 1, bus floating high via pull-up).
+    - Bit stuffing: Whenever 5 consecutive identical polarity bits occur anywhere between SOF and the end of the CRC sequence, a complementary stuff bit is inserted by the transmitter and removed by the receiver.
+    - Non-destructive bitwise arbitration: During the 11-bit Identifier field, all transmitting nodes monitor the bus via `GRD`. If a node transmits Recessive (1) but senses Dominant (0), it has lost arbitration to a higher-priority message and must immediately cease driving without corrupting the winning frame.
+    - Hardware-level ACK slot: Transmitters send Recessive (1) and receivers assert Dominant (0) to acknowledge error-free CRC reception.
+- **Novelty Highlight (Cycle-Exact In-Cell Arbitration & Dominant ACK Assertion):**
+  - **In-Cell Arbitration Without Jitter:** Naively adding `GRD`, `ANDI`, and `JZ` after a bit countdown introduces 3 extra clock cycles, causing severe duty-cycle distortion. The emulator firmware embeds the arbitration check directly *inside* the recessive bit window: `GWRI` (1) + `WAIT 3` (4) + `GRD` (1) + `ANDI` (1) + `JZ` (1) = exactly 8 clock cycles! The bus is sampled at posedge cycle 6 (62.5% into the bit cell), perfectly matching the ISO 11898 sample point specification.
+  - **Single-Cycle Collision Abort:** On arbitration loss, the core immediately releases the bus (`GWRI (1 << pin)`), writes `R2 = 0xAA` (Arbitration Lost), and halts, allowing the higher-priority frame to proceed unhindered.
+  - **Dominant ACK Assertion in Receiver:** In `build_can_rx_asm`, after synchronizing to SOF via `WAITEDGE` and extracting 8 payload data bits into `R0`, the core strides to the ACK slot and pulls the open-drain bus Dominant (`GWRI 0x00`) for exactly 1 bit period, formally acknowledging frame reception.
+- **Firmware & Models (`tools/can_model.py`):**
+  - `compute_can_crc15`: Cycle-accurate implementation of standard ISO 11898 15-bit CRC (poly `0x4599`).
+  - `insert_can_bit_stuffing` and `remove_can_bit_stuffing`: CAN bit stuffing and destuffing engines with 6-consecutive-bit stuff error detection.
+  - `CanReceiverModel`: Independent cycle-accurate reference model for validating CAN bitstreams.
+  - `build_can_tx_asm`: Generates cycle-exact CAN transmission firmware with bit stuffing, CRC-15, in-cell arbitration sampling, and ACK slot verification.
+  - `build_can_rx_asm`: Generates CAN receiver firmware synchronizing via `WAITEDGE`, extracting payload into `R0`, and asserting dominant ACK.
+- **Verification (`test/test_can.py`):**
+  - Added 5 cocotb test cases:
+    1. `test_can_tx_standard_frame`: Verified transmission of frame 0x123 payload 0xA5 against independent `CanReceiverModel`, confirming 100% valid bit stuffing, CRC-15, external ACK recognition, and `R2 = 0x00`.
+    2. `test_can_tx_arbitration_loss`: Injected dominant collision on ID bit 1 (ID 0x123 vs competitor 0x120); verified core aborts instantly and halts with `R2 = 0xAA`.
+    3. `test_can_tx_no_ack_error`: Verified core detects missing ACK when no receiver acknowledges, halting with `R2 = 0xAE`.
+    4. `test_can_rx_standard_frame`: External transmitter sent frame 0x555 payload 0x3C; verified core synchronizes on SOF, decodes payload `R0 = 0x3C`, and asserts Dominant on the ACK slot.
+    5. `test_can_open_drain_safety`: Verified hardware open-drain mode (`GODRI`) prevents active drive-high contention against forced external bus pull-downs.
+  - Regression Suite: **62/62 tests passing (100.0%)** across 14 test suites in 43.94s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified in 68s (PASS, 0 violations).
+  - Mutation Testing: Added `MUT_19_GODRI_DISABLE`. Evaluated and killed in 42.47s. Cumulative mutation score: **19/19 mutants killed (100.0% kill rate)** in 765.45s.
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
+
+

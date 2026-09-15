@@ -169,6 +169,14 @@ MUTANTS = [
         "replacement": "write_rd(rd_idx, {rd_val[6:0], ~gpio_in[pin_idx]});",
         "description": "Shift input bug: SHIFTIN MSB mode inverts incoming pin data bit",
     },
+    {
+        "id": "MUT_19_GODRI_DISABLE",
+        "category": "Protocol / Open-Drain",
+        "file": "src/core.v",
+        "target": "OP_GODRI: gpio_od_mode <= operand;",
+        "replacement": "OP_GODRI: gpio_od_mode <= 8'h00;",
+        "description": "Open-drain configuration bug: GODRI fails to set open-drain mode (pins remain push-pull)",
+    },
 ]
 
 

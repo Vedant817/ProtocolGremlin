@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-manchester-verified",
+  "phase": "isa-v1-can-controller-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 14 complete (Manchester Biphase-L IEEE 802.3 / MIL-STD-1553 Encoder & Decoder Engine). Next: Iteration 15 (CAN Bus Physical-Layer Controller Engine).",
+  "active_objective": "Continuous engineering loop: Iteration 15 complete (CAN 2.0A Controller Physical-Layer Protocol Engine). Next: Iteration 16 (DMX512 Stage Lighting Protocol Engine).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 14,
+  "iterations": 15,
   "halt": false,
-  "notes": "Iteration 14 complete: Created tools/manchester_model.py (ManchesterDecoder reference model with biphase violation detection, ManchesterTransmitter stimulus generator, build_manchester_tx_asm jitter-free transmitter with idle settling, build_manchester_rx_asm receiver with WAITEDGE falling-edge synchronization and SHIFTIN MSB accumulation) and test/test_manchester.py (6/6 tests: exact 4-cycle half-bit waveform verification against ManchesterDecoder, pattern sweep across 0x00, 0xFF, 0x55, 0xAA, 0x3C, standard byte reception across 0x55, 0xAA, 0xA5, 0x00, 0xFF into R0, pseudorandom sweep across 8 patterns, biphase violation detection, pin electrical safety). Added test_manchester to test/Makefile. All 57 regression tests pass (100%). SymbiYosys formal BMC passed (20-step Z3, 0 violations). Added MUT_18_SHIFTIN_MSB_INVERT in scripts/mutate.py, achieving 18/18 mutants killed (100.0% kill rate). Synthesis cell count unchanged at 19,291 CMOS cells (active logic 1,580 cells)."
+  "notes": "Iteration 15 complete: Created tools/can_model.py (CanReceiverModel reference model with destuffing, CanBusModel wired-AND open-drain model, compute_can_crc15, build_can_tx_asm with in-cell arbitration checks and ACK monitoring, build_can_rx_asm with WAITEDGE SOF sync and dominant ACK assertion) and test/test_can.py (5/5 tests: standard frame TX with bit stuffing and CRC-15 into independent CanReceiverModel, arbitration collision detection aborting with R2=0xAA, missing ACK detection flagging R2=0xAE, standard frame RX with WAITEDGE SOF sync and dominant ACK pulse, and open-drain electrical safety). Added test_can to test/Makefile. All 62 regression tests pass (100%). SymbiYosys formal BMC passed (20-step Z3, 0 violations). Added MUT_19_GODRI_DISABLE in scripts/mutate.py, achieving 19/19 mutants killed (100.0% kill rate) in 765.45s. Synthesis cell count unchanged at 19,291 CMOS cells (active logic 1,580 cells)."
 }

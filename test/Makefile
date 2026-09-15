@@ -36,7 +36,7 @@ COMPILE_ARGS 		+= -I$(SRC_DIR)
 VERILOG_SOURCES += $(PWD)/tb.v
 TOPLEVEL = tb
 
-COCOTB_TEST_MODULES = test,test_uart,test_opcodes,test_waitedge,test_fuzz,test_spi,test_i2c,test_bootload,test_onewire,test_ps2,test_jtag,test_swd,test_manchester
+COCOTB_TEST_MODULES = test,test_uart,test_opcodes,test_waitedge,test_fuzz,test_spi,test_i2c,test_bootload,test_onewire,test_ps2,test_jtag,test_swd,test_manchester,test_can
 
 MODULE ?= $(COCOTB_TEST_MODULES)
 
