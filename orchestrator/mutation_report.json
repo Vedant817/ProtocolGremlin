@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-09-14T23:03:48Z",
-  "total_mutants": 14,
-  "killed": 14,
+  "timestamp": "2026-09-14T23:19:41Z",
+  "total_mutants": 15,
+  "killed": 15,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 263.34,
+  "campaign_time_sec": 346.52,
   "mutants": [
     {
       "id": "MUT_01_BRANCH_JZ_INVERT",
@@ -12,7 +12,7 @@
       "file": "src/core.v",
       "description": "Invert branch condition in OP_JZ (jump on !z instead of z)",
       "status": "KILLED",
-      "elapsed_sec": 20.97
+      "elapsed_sec": 24.1
     },
     {
       "id": "MUT_02_WAIT_OFF_BY_ONE",
@@ -20,7 +20,7 @@
       "file": "src/core.v",
       "description": "Off-by-one decrement in WAIT countdown (-2 instead of -1)",
       "status": "KILLED",
-      "elapsed_sec": 9.31
+      "elapsed_sec": 14.83
     },
     {
       "id": "MUT_03_ALU_ADD_CORRUPT",
@@ -28,7 +28,7 @@
       "file": "src/alu.v",
       "description": "Arithmetic bug: OP_ADD adds 1 to calculated sum",
       "status": "KILLED",
-      "elapsed_sec": 21.07
+      "elapsed_sec": 25.45
     },
     {
       "id": "MUT_04_ALU_SUB_TO_ADD",
@@ -36,7 +36,7 @@
       "file": "src/alu.v",
       "description": "Operator replacement: OP_SUB computes sum instead of diff",
       "status": "KILLED",
-      "elapsed_sec": 20.65
+      "elapsed_sec": 26.52
     },
     {
       "id": "MUT_05_RESET_PC_CORRUPT",
@@ -44,7 +44,7 @@
       "file": "src/core.v",
       "description": "Reset corruption: PC initializes to 1 instead of 0",
       "status": "KILLED",
-      "elapsed_sec": 20.47
+      "elapsed_sec": 23.25
     },
     {
       "id": "MUT_06_DECJNZ_NO_BRANCH",
@@ -52,7 +52,7 @@
       "file": "src/core.v",
       "description": "Branch condition inversion in DECJNZ loop termination",
       "status": "KILLED",
-      "elapsed_sec": 19.98
+      "elapsed_sec": 24.78
     },
     {
       "id": "MUT_07_SHIFTOUT_MSB_FIRST",
@@ -60,7 +60,7 @@
       "file": "src/core.v",
       "description": "Serial shift bug: SHIFTOUT transmits MSB instead of LSB",
       "status": "KILLED",
-      "elapsed_sec": 20.3
+      "elapsed_sec": 25.56
     },
     {
       "id": "MUT_08_GPIO_OE_INVERT",
@@ -68,7 +68,7 @@
       "file": "src/gpio.v",
       "description": "GPIO bus direction inversion: pin_oe driven inverted",
       "status": "KILLED",
-      "elapsed_sec": 18.91
+      "elapsed_sec": 21.57
     },
     {
       "id": "MUT_09_WAITEDGE_OFF_BY_ONE",
@@ -76,7 +76,7 @@
       "file": "src/core.v",
       "description": "Edge timing bug: WAITEDGE omits edge detection cycle in duration",
       "status": "KILLED",
-      "elapsed_sec": 20.74
+      "elapsed_sec": 25.87
     },
     {
       "id": "MUT_10_BOOTLOADER_REQ_IGNORE",
@@ -84,7 +84,7 @@
       "file": "src/core.v",
       "description": "Bootloader FSM bug: core ignores host serial LOAD_REQ signal",
       "status": "KILLED",
-      "elapsed_sec": 10.61
+      "elapsed_sec": 13.97
     },
     {
       "id": "MUT_11_OPEN_DRAIN_DRIVE_HIGH",
@@ -92,7 +92,7 @@
       "file": "src/gpio.v",
       "description": "Open-drain electrical bug: pin_out actively drives high in open-drain mode",
       "status": "KILLED",
-      "elapsed_sec": 20.86
+      "elapsed_sec": 25.35
     },
     {
       "id": "MUT_12_BOOTLOADER_CRC_BYPASS",
@@ -100,7 +100,7 @@
       "file": "src/core.v",
       "description": "Bootloader security bug: core accepts corrupted programs by bypassing CRC-8 verification",
       "status": "KILLED",
-      "elapsed_sec": 21.03
+      "elapsed_sec": 25.59
     },
     {
       "id": "MUT_13_SHIFTIN_BIT_ORDER",
@@ -108,7 +108,7 @@
       "file": "src/core.v",
       "description": "Shift input bug: SHIFTIN LSB mode shifts left instead of right (reverses bit order)",
       "status": "KILLED",
-      "elapsed_sec": 18.12
+      "elapsed_sec": 22.56
     },
     {
       "id": "MUT_14_OPEN_DRAIN_OE_POLARITY",
@@ -116,7 +116,15 @@
       "file": "src/gpio.v",
       "description": "Open-drain OE polarity inversion: pin_oe asserts on out_val=1 instead of out_val=0",
       "status": "KILLED",
-      "elapsed_sec": 19.53
+      "elapsed_sec": 20.88
+    },
+    {
+      "id": "MUT_15_WAITEDGE_POLARITY_INVERT",
+      "category": "Timing / Edge-Detect",
+      "file": "src/core.v",
+      "description": "WAITEDGE polarity inversion: falling edge mode triggers on rising edge",
+      "status": "KILLED",
+      "elapsed_sec": 25.15
     }
   ]
 }

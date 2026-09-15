@@ -98,12 +98,25 @@ injects seeded, first-order architectural faults across all major RTL modules
 | `MUT_08_GPIO_OE_INVERT` | Interface / Tri-state | Direction inversion: `pin_oe` driven with inverted `dir` | **KILLED** | 5.52s |
 | `MUT_09_WAITEDGE_OFF_BY_ONE` | Timing / Autobaud | Timing discovery bug: `WAITEDGE` omits detection cycle | **KILLED** | 5.60s |
 | `MUT_10_BOOTLOADER_REQ_IGNORE` | System / Bootloader | FSM bug: core ignores host serial `LOAD_REQ` signal | **KILLED** | 3.05s |
+| `MUT_11_OPEN_DRAIN_DRIVE_HIGH` | Protocol / Open-Drain | Contention bug: `pin_out` actively drives 1 in open-drain mode | **KILLED** | 4.95s |
+| `MUT_12_BOOTLOADER_CRC_BYPASS` | System / Security | Security bug: bypasses CRC-8 frame verification | **KILLED** | 4.88s |
+| `MUT_13_SHIFTIN_BIT_ORDER` | Protocol / Bit-Serial | Bit ordering bug: SHIFTIN shifts left instead of right | **KILLED** | 5.12s |
+| `MUT_14_OPEN_DRAIN_OE_POLARITY` | Protocol / Open-Drain | OE polarity bug: pin_oe asserts on out=1 instead of out=0 | **KILLED** | 4.70s |
+| `MUT_15_WAITEDGE_POLARITY_INVERT` | Timing / Edge-Detect | WAITEDGE bug: falling edge mode triggers on rising edge | **KILLED** | 24.82s |
 
-- **Empirical Mutation Kill Rate: 10/10 (100.0%)**
-- Total campaign duration: ~47 seconds
+- **Empirical Mutation Kill Rate: 15/15 (100.0%)**
+- Total campaign duration: ~5 minutes
 - Result log: `orchestrator/mutation_report.json`
 
-### 7. Constrained-Random Instruction Fuzzing with Shrinking (`tools/fuzzer.py`, `test/test_fuzz.py`)
+### 7. Independent Protocol Verification Engines
+The test suite pairs firmware with independent cycle-accurate Python simulation models:
+- **UART (`tools/uart_model.py`, `test/test_uart.py`):** TX and zero-jitter RX with `UartReceiver` and `UartTransmitter` models.
+- **SPI (`tools/spi_model.py`, `test/test_spi.py`):** Full-duplex master across all 4 modes ($CPOL \in \{0,1\}, CPHA \in \{0,1\}$) against `SpiSlave`.
+- **I2C (`tools/i2c_model.py`, `test/test_i2c.py`):** Multi-byte transfers, clock stretching absorption, multi-master arbitration loss against `I2cSlave`.
+- **Dallas 1-Wire (`tools/onewire_model.py`, `test/test_onewire.py`):** Single-cycle presence pulse width measurement and read/write timeslots against `OneWireSlave`.
+- **PS/2 Keyboard/Mouse (`tools/ps2_model.py`, `test/test_ps2.py`):** 11-bit odd-parity verified scan code reception, parity/framing error detection, host RTS transmit, and device ACK sampling against `PS2Device`.
+
+### 8. Constrained-Random Instruction Fuzzing with Shrinking (`tools/fuzzer.py`, `test/test_fuzz.py`)
 To discover corner cases not anticipated by hand-written tests, `tools/fuzzer.py`
 generates legal, randomized programs with bounded loops and forward branches.
 - **Differential Execution:** Programs are executed concurrently on RTL and `tools/isa_model.py`. Any discrepancy on architectural registers (PC, R0–R3, Z, halted, GPIO) halts the run.
@@ -114,14 +127,14 @@ generates legal, randomized programs with bounded loops and forward branches.
 
 ```bash
 bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
-bash scripts/regress.sh     # runs the complete regression suite (11/11 tests pass)
+bash scripts/regress.sh     # runs the complete regression suite (41/41 tests pass)
 sby -f formal/core.sby      # runs the SymbiYosys formal proof with Z3 (20 steps pass)
-python3 scripts/mutate.py   # runs the seeded RTL mutation testing campaign (100% kill rate)
+python3 scripts/mutate.py   # runs the seeded RTL mutation testing campaign (15/15 killed)
 bash scripts/synth.sh       # runs Yosys synthesis and logs area/cell metrics
 ```
 
 ## Remaining Verification Queue (Future Work)
 
 - Gate-level simulation against mapped netlist with real cell timing (`GATES=yes`).
-- SPI and I2C protocol decoders when firmware is developed.
+- JTAG TAP Controller, ARM SWD, Manchester, and CAN protocol engines.
 

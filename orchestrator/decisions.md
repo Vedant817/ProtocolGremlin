@@ -380,6 +380,43 @@ mutation-kill rates.
   - Mutation Testing: Added `MUT_14_OPEN_DRAIN_OE_POLARITY`. Evaluated against all 14 mutants: **14/14 mutants killed (100.0% kill rate)** in 263.34s.
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
 
+## 2026-09-15 - Iteration 11: PS/2 Bidirectional Host Controller Engine (Keyboard/Mouse Interface)
+
+- **Motivation & Protocol Overview:**
+  - IBM PS/2 is a classic synchronous, bidirectional open-drain serial protocol with dedicated Clock (`PS2_CLK`) and Data (`PS2_DATA`) lines pulled high with external resistors.
+  - Unlike SPI or UART where the host drives the clock or bit timing, in PS/2 **the peripheral device generates the clock pulses** even when receiving data from the host.
+  - Demonstrating full PS/2 Host capabilities validates the ASIC's ability to handle external asynchronous clock masters with zero jitter and complete open-drain electrical safety.
+- **Novelty Highlight (Hardware Falling-Edge Synchronization & Dynamic Parity Checking):**
+  - **Zero-Jitter Reception:** The host relies on `WAITEDGE R3, clk_pin` (mode 0, falling edge) to freeze PC advancing in hardware and immediately resume execution on the exact cycle the peripheral drives clock low, sampling valid data with maximal setup/hold margins.
+  - **11-bit Frame Reception:** Start bit (`0`), 8 data bits shifted LSB-first into `R0` via `SHIFTIN R0, data_pin`, odd parity bit dynamically verified in `R1` (`XORI R1, 1` when data bit is 1), and stop bit (`1`).
+  - **Comprehensive Fault Reporting:** Firmware validates frame integrity and outputs structured status codes in register `R2`:
+    - `R2 = 0x00`: Success. `R0` contains the verified scan code.
+    - `R2 = 0xFD`: Parity Error (corrupted odd parity bit or data bitflip).
+    - `R2 = 0xFE`: Framing Error (corrupted stop bit driven low).
+    - `R2 = 0xFF`: Start bit error (line high when clocked).
+  - **Host-to-Device RTS Transmission (12-bit frame):**
+    - Host pulls `PS2_CLK` low for $\ge 30$ cycles to inhibit communication, then asserts `PS2_DATA` low (Request-to-Send / Start bit), and releases `PS2_CLK`.
+    - Peripheral senses RTS, takes over clock generation, and clocks in the Start bit, 8 data bits (updated while clock is high, sampled on falling edge), odd parity bit, and stop bit.
+    - On the 12th clock cycle, the peripheral acknowledges by pulling `PS2_DATA` low. Host samples the ACK bit via `GRD R2` (`R2 = 0x00` on ACK, `R2 = 0xFC` on NACK).
+- **Firmware & Models (`tools/ps2_model.py`):**
+  - `PS2Device`: Independent cycle-accurate model of a PS/2 keyboard/mouse simulating clock pulse generation (15 cycles half-period), 11-bit transmit frames with optional parity/framing error injection, host inhibit detection, RTS clocking, and ACK pulse generation.
+  - `build_ps2_rx_asm(clk_pin=4, data_pin=5)`: Fully unrolled, cycle-deterministic 77-instruction host receiver with odd parity accumulation and framing verification.
+  - `build_ps2_tx_asm(cmd_byte, clk_pin=4, data_pin=5)`: 48-instruction host transmitter with inhibit, RTS, dual-edge `WAITEDGE` clock synchronization, parity synthesis, and device ACK sampling.
+- **Verification (`test/test_ps2.py`):**
+  - Added 6 cocotb test cases:
+    1. `test_ps2_rx_scan_codes`: Verified standard make/break codes (`0x1C` 'A', `0x32` 'B', `0xF0` Break, `0xAA` BAT, `0x00`, `0xFF`) received into `R0` with `R2 = 0x00`.
+    2. `test_ps2_rx_parity_error`: Injected parity fault detected with `R2 = 0xFD`.
+    3. `test_ps2_rx_framing_error`: Corrupted stop bit detected with `R2 = 0xFE`.
+    4. `test_ps2_tx_command`: Verified host transmission of commands (`0xED` Set LEDs, `0xF4` Enable, `0xFF` Reset) latched by `PS2Device` and acknowledged (`R2 = 0x00`).
+    5. `test_ps2_tx_nack`: Unresponsive device detected with `R2 = 0xFC`.
+    6. `test_ps2_electrical_safety`: Verified cycle-by-cycle electrical non-contention: host never asserts active high against external pull-downs.
+  - Regression Suite: **41/41 tests passing (100.0%)** in 24.0s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified in 67s (PASS, 0 violations).
+  - Mutation Testing: Added `MUT_15_WAITEDGE_POLARITY_INVERT`. Evaluated against 15 mutants: **15/15 mutants killed (100.0% kill rate)**.
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
+
+
 
 
 

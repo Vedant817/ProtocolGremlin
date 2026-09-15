@@ -137,6 +137,14 @@ MUTANTS = [
         "replacement": "assign pin_oe  = (dir & ~od_mode) | (dir & od_mode & out_val);",
         "description": "Open-drain OE polarity inversion: pin_oe asserts on out_val=1 instead of out_val=0",
     },
+    {
+        "id": "MUT_15_WAITEDGE_POLARITY_INVERT",
+        "category": "Timing / Edge-Detect",
+        "file": "src/core.v",
+        "target": "(edge_mode == 2'b00) ? edge_fall :",
+        "replacement": "(edge_mode == 2'b00) ? edge_rise :",
+        "description": "WAITEDGE polarity inversion: falling edge mode triggers on rising edge",
+    },
 ]
 
 
