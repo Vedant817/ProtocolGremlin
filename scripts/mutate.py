@@ -201,6 +201,14 @@ MUTANTS = [
         "replacement": "z <= (alu_result != 8'h00);",
         "description": "ALU flag calculation bug: zero flag Z inverted on ALU operations (asserts when result non-zero)",
     },
+    {
+        "id": "MUT_23_WAITEDGE_TIMESTAMP_CORRUPT",
+        "category": "Timing / Edge-Detect",
+        "file": "src/core.v",
+        "target": "write_rd(rd_idx, cycle_cnt[7:0]);",
+        "replacement": "write_rd(rd_idx, cycle_cnt[15:8]);",
+        "description": "WAITEDGE timestamp capture bug: writes cycle_cnt[15:8] instead of cycle_cnt[7:0]",
+    },
 ]
 
 

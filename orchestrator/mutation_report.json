@@ -1,16 +1,18 @@
 {
-  "timestamp": "2026-09-15T04:47:28Z",
-  "total_mutants": 22,
-  "killed": 22,
+  "timestamp": "2026-09-15T04:56:14Z",
+  "total_mutants": 1,
+  "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 58.95,
-  "latest_mutant": {
-    "id": "MUT_22_ALU_ZERO_FLAG_INVERT",
-    "category": "Core / Flags",
-    "file": "src/core.v",
-    "description": "ALU flag calculation bug: zero flag Z inverted on ALU operations (asserts when result non-zero)",
-    "status": "KILLED",
-    "elapsed_sec": 58.88
-  }
+  "campaign_time_sec": 70.67,
+  "mutants": [
+    {
+      "id": "MUT_23_WAITEDGE_TIMESTAMP_CORRUPT",
+      "category": "Timing / Edge-Detect",
+      "file": "src/core.v",
+      "description": "WAITEDGE timestamp capture bug: writes cycle_cnt[15:8] instead of cycle_cnt[7:0]",
+      "status": "KILLED",
+      "elapsed_sec": 70.61
+    }
+  ]
 }

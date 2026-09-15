@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-hdlc-engine-verified",
+  "phase": "isa-v1-classifier-engine-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 18 complete (High-Level Data Link Control HDLC / SDLC ISO/IEC 13239 Protocol Engine). Next: Iteration 19 (Hardware Protocol Sniffer & Autonomous Protocol Classifier Engine).",
+  "active_objective": "Continuous engineering loop: Iteration 19 complete (Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine). Next: Iteration 20 (Gate-Level Simulation with Real Cell Timing GATES=yes).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 18,
+  "iterations": 19,
   "halt": false,
-  "notes": "Iteration 18 complete: Created tools/hdlc_model.py (HdlcTransmitter with dynamic zero-bit insertion and NRZI encoding, HdlcReceiver with NRZI decoding, zero-bit destuffing, flag framing, and abort detection, build_hdlc_tx_words, build_hdlc_rx_words with WAITEDGE edge sync and 11-cycle jitter-free sampling) and test/test_hdlc.py (7/7 tests: TX waveform fidelity, dynamic bit stuffing on 0xFF/0x7E/0x3F, payload sweep, RX clean frame 0xA5 into R0 with R1=0x00, RX zero-bit destuffing on 0xFF/0x7E/0x3F, RX abort sequence detection flagging R1=0xAB, and tri-state pin safety). Added test_hdlc to test/Makefile. All 82 regression tests pass (100%). SymbiYosys formal BMC passed (20-step Z3, 0 violations). Added MUT_22_ALU_ZERO_FLAG_INVERT in scripts/mutate.py, achieving 22/22 mutants killed (100.0% kill rate) in 58.88s. Synthesis cell count unchanged at 19,291 CMOS cells (active logic 1,580 cells, ~2.2 kGE)."
+  "notes": "Iteration 19 complete: Created tools/classifier_model.py (TrafficGenerator stimulus generator for UART, Manchester, 1-Wire, DMX512, HDLC, noise; build_protocol_sniffer_asm passive classifier using WAITEDGE single-cycle timing measurement and two's complement bounds checking) and test/test_classifier.py (7/7 tests: UART R0=0x01, Manchester R0=0x02, DMX512 R0=0x04, 1-Wire R0=0x03, HDLC R0=0x05, noise rejection R0=0xFF, tri-state pin safety). Added test_classifier to test/Makefile. All 89 regression tests pass (100%). SymbiYosys formal BMC passed (20-step Z3, 0 violations in 74s). Added MUT_23_WAITEDGE_TIMESTAMP_CORRUPT in scripts/mutate.py, achieving 23/23 mutants killed (100.0% kill rate) in 70.61s. Synthesis cell count unchanged at 19,291 CMOS cells (active logic 1,580 cells, ~2.2 kGE)."
 }

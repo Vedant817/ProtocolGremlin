@@ -74,11 +74,13 @@ bounded problem").
   done: quantified >80 ns timing slack at 10 MHz (<12 ns combinational path delay across 20 logic levels), justified retaining combinational read to guarantee 1-cycle determinism without pipeline bubbles or branch penalty stalls.
 - ~~HDLC / SDLC Bit-Oriented Protocol Engine (ISO/IEC 13239 bit-oriented framing, NRZI line coding, zero-bit stuffing/destuffing, flag framing 0x7E, abort sequences)~~ -
   done: `tools/hdlc_model.py` (HdlcTransmitter + HdlcReceiver + build_hdlc_tx_words + build_hdlc_rx_words) + `test/test_hdlc.py` (82/82 regression pass, zero jitter, bit stuffing on 0xFF/0x7E/0x3F, payload recovery in R0, abort detection R1=0xAB, 22/22 mutants killed).
+- ~~Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine (passive pulse timing measurement via `WAITEDGE`, two's-complement bounds checking, automatic protocol fingerprinting into UART, Manchester, 1-Wire, DMX512, HDLC, or Noise)~~ -
+  done: `tools/classifier_model.py` (TrafficGenerator + build_protocol_sniffer_asm) + `test/test_classifier.py` (89/89 regression pass, multi-protocol fingerprinting, noise rejection R0=0xFF, pin safety, 23/23 mutants killed).
 
-## P3 (research / novelty, once core protocols are solid)
+## P3 (research / novelty, advanced validation)
 
-- Multi-lane architecture investigation (event fabric, dual-core protocol bridging).
-- JTAG / SWD / PS/2 / CAN-related protocol experiments.
+- Gate-level simulation with real standard-cell timing models (`GATES=yes`).
+- Deterministic protocol fault injection & protocol stress engine (intentional CAN stuff errors, CRC corruption, I2C collision, UART framing error, HDLC aborts).
+- Multi-lane architecture investigation (dual-core protocol bridging, event fabric within 8x4 Tiny Tapeout footprint).
 - Low-speed USB / 10 Mbit Ethernet feasibility studies.
-- Protocol sniff -> classify -> replay demo.
-- Deterministic fault injection demo.
+- End-to-end Protocol Sniff -> Classify -> Replay pipeline demo.

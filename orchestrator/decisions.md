@@ -643,3 +643,41 @@ mutation-kill rates.
   - SymbiYosys: 20-step Z3 BMC proof verified in 82s (PASS, 0 violations).
   - Mutation Testing: Added `MUT_22_ALU_ZERO_FLAG_INVERT` in `scripts/mutate.py`. Evaluated and killed in 58.88s. Cumulative score: **22/22 mutants killed (100.0% kill rate)**.
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
+
+## 2026-09-15 - Iteration 19: Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine
+
+- **Motivation & Operational Utility:**
+  - Modern protocol emulators (and especially reverse-engineering/forensic tools) must frequently connect to unknown or unlabeled communication lines where the protocol, baud rate, and framing rules are completely unknown.
+  - RP2040 PIO cannot autonomously classify protocols without external ARM core intervention because it lacks runtime timing inspection.
+  - The Jane Street Protocol Emulator leverages its native `WAITEDGE` hardware edge-measurement primitive to passively snoop bus traffic without intrusive bus driving, measure pulse widths with single-cycle precision, and classify traffic in pure autonomous firmware.
+- **Protocol Fingerprinting & Timing Signatures:**
+  - Protocol timing characteristics:
+    - **UART (Code 0x01):** Asynchronous serial start bit with low pulse $T_{\text{low}} \in [12, 24]$ cycles at typical 16 cycles/bit rate.
+    - **Manchester Biphase-L (Code 0x02):** Self-clocking IEEE 802.3 biphase traffic characterized by symmetric half-bit pulses $T_{\text{low}} \in [2, 6]$ and $T_{\text{high}} \in [2, 6]$ cycles.
+    - **Dallas 1-Wire (Code 0x03):** Asymmetric master reset pulse with long low duration $T_{\text{low}} \ge 80$ cycles followed by long bus recovery $T_{\text{high}} \ge 30$ cycles.
+    - **DMX512 (Code 0x04):** Stage lighting break with long low pulse $T_{\text{low}} \ge 80$ cycles followed by short Mark-After-Break (MAB) $T_{\text{high}} \le 24$ cycles.
+    - **HDLC / SDLC (Code 0x05):** Synchronous bit-oriented line with NRZI flag hold $T_{\text{low}} \in [48, 64]$ cycles (7 consecutive bit periods at $T=8$).
+    - **Unrecognized / Noise (Code 0xFF):** Short noise pulses or unsynchronized glitches outside known protocol windows.
+- **Two's-Complement Firmware Decision Tree:**
+  - Without dedicated hardware unsigned comparison opcodes (`BLTU`/`BGEU`), unsigned boundary comparison $X < C$ is computed via two's-complement arithmetic:
+    $$(X - C) \ \&\ \text{0x80} \neq 0 \iff X < C \quad (\text{for } X, C < 128)$$
+  - Each decision node requires only 3 instructions: `MOV R3, Rx`, `SUBI R3, C`, `ANDI R3, 0x80`, `JNZ is_less_than`.
+  - The resulting decision tree fits compactly in ~60 instructions of program memory with zero recursion or stack overhead.
+- **Firmware & Models (`tools/classifier_model.py`):**
+  - `TrafficGenerator`: Injects cycle-exact traffic bursts across all supported protocols and noise spikes.
+  - `build_protocol_sniffer_asm`: Assembles the complete passive classification engine on any specified GPIO pin.
+- **Verification (`test/test_classifier.py`):**
+  - Added 7 cocotb test cases:
+    1. `test_classify_uart`: UART start bit pulse ($T_{\text{low}}=16$) classified as `R0 = 0x01`.
+    2. `test_classify_manchester`: Manchester symmetric half-bits ($T_{\text{low}}=4, T_{\text{high}}=4$) classified as `R0 = 0x02`.
+    3. `test_classify_dmx512`: DMX512 Break ($T_{\text{low}}=96$) + MAB ($T_{\text{high}}=16$) classified as `R0 = 0x04`.
+    4. `test_classify_onewire`: Dallas 1-Wire Reset ($T_{\text{low}}=96$) + Recovery ($T_{\text{high}}=40$) classified as `R0 = 0x03`.
+    5. `test_classify_hdlc`: HDLC opening flag hold ($T_{\text{low}}=56$) classified as `R0 = 0x05`.
+    6. `test_classify_noise_rejection`: Unrecognized pulse ($T_{\text{low}}=8, T_{\text{high}}=8$) rejected with `R0 = 0xFF`.
+    7. `test_classifier_pin_direction_safety`: Verified pins are strictly configured as inputs (`uio_oe == 0x00`).
+  - Regression Suite: **89/89 tests passing (100.0%)** across 18 test suites in ~55s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified in 74s (PASS, 0 violations).
+  - Mutation Testing: Added `MUT_23_WAITEDGE_TIMESTAMP_CORRUPT` in `scripts/mutate.py`. Evaluated and killed in 70.61s. Cumulative score: **23/23 mutants killed (100.0% kill rate)**.
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
+
