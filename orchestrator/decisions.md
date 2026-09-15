@@ -790,3 +790,40 @@ mutation-kill rates.
   - Mutation Testing: Added `MUT_25_BRANCH_JZ_INVERT` in `scripts/mutate.py`. Cumulative score: **25/25 mutants killed (100.0% kill rate)**.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`).
   - Area & PPA: Proved physical feasibility of multi-lane architecture inside Tiny Tapeout 8x4 tiles with <65% placement density.
+
+## 2026-09-15 - Iteration 23: Low-Speed USB 1.1 Physical Layer & Packet Framing Engine
+
+- **Motivation & Physical Layer Challenges:**
+  - USB 1.1 Low-Speed (1.5 Mbps) presents complex physical layer signaling requirements: differential line coding (D+ and D-), Non-Return-to-Zero Inverted (NRZI) transition coding, dynamic bit stuffing (forced transition after six consecutive ones), and special single-ended signaling states (SE0 for End-of-Packet and Bus Reset).
+  - Emulating USB 1.1 on a general-purpose processor typically demands specialized hardware serial interface engines (SIEs) or complex PIO state machines.
+  - The Jane Street Protocol Emulator ASIC's cycle-exact deterministic timing and orthogonal bit manipulation primitives allow realizing complete USB 1.1 Low-Speed transmission and reception with zero specialized silicon macros.
+- **Physical Signaling & Line Coding Architecture (`tools/usb_model.py`):**
+  - **Low-Speed Differential Line States:**
+    - `J state` (Bus Idle): `D+ = 0, D- = 1` (differential '1').
+    - `K state`: `D+ = 1, D- = 0` (differential '0').
+    - `SE0 state`: `D+ = 0, D- = 0` (used for EOP delimiter and Bus Reset).
+    - `SE1 state`: `D+ = 1, D- = 1` (illegal condition, guarded by hardware).
+  - **NRZI Modulation:**
+    - '0' bit: transition at start of bit cell (`J <-> K`).
+    - '1' bit: hold current line state (no transition).
+  - **Dynamic Bit Stuffing:**
+    - Automatically monitors consecutive '1' bits; after 6 ones without transition, a stuffed '0' bit is inserted by the transmitter and stripped by the receiver.
+  - **Packet Framing:**
+    - `SYNC`: 8-bit calibration pattern (`0x80`, LSB-first `00000001` -> `K-J-K-J-K-J-K-K`).
+    - `PID`: 8-bit field with 4-bit type code and 4-bit bitwise complement check.
+    - `EOP`: Exactly 2 bit periods of SE0 followed by 1 bit period of J state.
+- **Verification Suite (`test/test_usb.py`):**
+  - Added 6 comprehensive cocotb test cases verified against independent `UsbReceiver` model:
+    1. `test_usb_handshake_packets`: Verified ACK (`0xD2`), NAK (`0x5A`), STALL (`0x1E`) packets with valid SYNC, PID check, and EOP. **PASS** (1.32 ms).
+    2. `test_usb_token_packet`: Verified SETUP (`0x2D`) token with 11-bit address/endpoint and CRC-5. **PASS** (0.76 ms).
+    3. `test_usb_dynamic_bit_stuffing`: Verified automatic '0' insertion after 8 consecutive ones (`0xFF`) and clean receiver destuffing. **PASS** (0.63 ms).
+    4. `test_usb_data_payload_sweep`: Verified multi-byte DATA0 packets (`0xC3`) across `[0x12, 0x34]`, `[0xAA, 0x55]`, `[0x00, 0x7E]`. **PASS** (2.33 ms).
+    5. `test_usb_bus_reset_detection`: Verified SE0 held continuously for 35 bit periods triggers bus reset detection. **PASS** (0.03 ms).
+    6. `test_usb_electrical_safety_and_pin_isolation`: Verified zero SE1 illegal states and clean High-Z bus release. **PASS** (0.44 ms).
+  - Regression Suite: **110/110 tests passing (100.0%)** across 21 test modules.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations).
+  - Mutation Testing: Added `MUT_26_ALU_AND_TO_OR` in `scripts/mutate.py`. Cumulative score: **26/26 mutants killed (100.0% kill rate)**.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`).
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+

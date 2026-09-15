@@ -1,12 +1,13 @@
 {
-  "phase": "isa-v1-multilane-architecture-verified",
+  "phase": "isa-v1-usb11-signaling-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 22 complete (Multi-Lane Dual-Core Architecture & PPA Feasibility Study). Next: Iteration 23 (Low-Speed USB 1.1 / 10 Mbit Ethernet Physical Signaling Feasibility Study).",
+  "active_objective": "Continuous engineering loop: Iteration 23 complete (Low-Speed USB 1.1 Physical Layer & Packet Framing Engine). Next: Iteration 24 (End-to-End Protocol Sniff -> Classify -> Replay Pipeline Demo).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 22,
+  "iterations": 23,
   "halt": false,
-  "notes": "Iteration 22 complete: Created comprehensive physical feasibility study docs/multilane_study.md proving Split Memory (2x128x16) fits within Tiny Tapeout 8x4 tiles (<65% density, +9.2% area overhead, ~40.5 kGE total). Created tools/multilane_model.py (DualCoreSystem, single-cycle event fabric, lock-free mailbox with overflow/underflow protection, build_dual_core_bridge_asm) and test/test_multilane.py (6/6 tests pass). Added test_multilane to test/Makefile. Regression suite: 104/104 tests PASS (100.0%) across 20 modules. Added MUT_25_BRANCH_JZ_INVERT in scripts/mutate.py (killed in 65.42s, 25/25 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 71s). Gate-level simulation confirmed 8/8 tests pass."
+  "notes": "Iteration 23 complete: Created tools/usb_model.py (differential J/K/SE0/SE1 line states, NRZI line coding, dynamic bit stuffing/destuffing, Token CRC-5, Data CRC-16, independent UsbReceiver cycle-accurate monitor, build_usb_tx_packet_asm transmitter, build_usb_rx_packet_asm receiver) and test/test_usb.py (6/6 tests pass: ACK/NAK/STALL handshakes, SETUP token with CRC-5, dynamic bit stuffing on 0xFF, multi-byte DATA0 sweeps, continuous SE0 bus reset detection, electrical safety). Added test_usb to test/Makefile. Regression suite: 110/110 tests PASS (100.0%) across 21 modules. Added MUT_26_ALU_AND_TO_OR in scripts/mutate.py (killed in 79.48s, 26/26 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 81s). Gate-level simulation confirmed 8/8 tests pass."
 }
+
 

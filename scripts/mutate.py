@@ -225,6 +225,14 @@ MUTANTS = [
         "replacement": "OP_JZ: if (!z) pc <= operand[ADDR_WIDTH-1:0];",
         "description": "Branch condition inversion in OP_JZ (branches on !z instead of z)",
     },
+    {
+        "id": "MUT_26_ALU_AND_TO_OR",
+        "category": "Datapath / ALU",
+        "file": "src/alu.v",
+        "target": "OP_AND:  result = a & b;",
+        "replacement": "OP_AND:  result = a | b;",
+        "description": "ALU logic bug: AND opcode executes bitwise OR instead of bitwise AND",
+    },
 ]
 
 

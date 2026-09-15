@@ -85,7 +85,10 @@ bounded problem").
   done: `tools/fault_injector_model.py` (generators for CAN stuff error, CRC-15 corruption, EOF dominant glitch, HDLC abort, stuff omission, corrupted flag, UART framing error, sub-baud glitch, Manchester biphase violation) + `test/test_fault_injection.py` (9/9 cocotb tests pass, 100% detection by independent protocol models, MUT_24 killed).
 - ~~Multi-lane architecture investigation (dual-core protocol bridging, event fabric within 8x4 Tiny Tapeout footprint)~~ -
   done: `docs/multilane_study.md` (PPA feasibility proof: Split Memory 2x128x16 adds only 1,775 cells, +9.2% area overhead, ~40.5 kGE total, <65% placement density), `tools/multilane_model.py` (DualCoreSystem, single-cycle event fabric, lock-free mailbox with overflow/underflow protection, build_dual_core_bridge_asm), `test/test_multilane.py` (6/6 cocotb tests pass: concurrent execution, 1-cycle event strobe wakeup, lock-free mailbox transfer, overflow/underflow protection, end-to-end Manchester-to-SPI bridge, pin isolation), `MUT_25` killed.
-- Low-speed USB / 10 Mbit Ethernet feasibility studies.
+- ~~Low-speed USB 1.1 physical signaling and packet framing engine~~ -
+  done: `tools/usb_model.py` (differential line states J/K/SE0/SE1, NRZI modulation, dynamic bit stuffing and destuffing, CRC-5/CRC-16 algorithms, independent `UsbReceiver` cycle-accurate monitor, `build_usb_tx_packet_asm` transmitter, `build_usb_rx_packet_asm` receiver) + `test/test_usb.py` (6/6 cocotb tests pass: ACK/NAK/STALL handshakes, SETUP token with CRC-5, bit stuffing on 0xFF, multi-byte DATA0 sweeps, continuous SE0 bus reset detection, electrical safety), `MUT_26` killed.
+- 10 Mbit Ethernet physical signaling feasibility study (Manchester / NLP).
 - End-to-end Protocol Sniff -> Classify -> Replay pipeline demo.
+
 
 
