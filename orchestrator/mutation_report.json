@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-15T12:43:51Z",
+  "timestamp": "2026-09-15T13:56:49Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 79.54,
+  "campaign_time_sec": 66.44,
   "mutants": [
     {
-      "id": "MUT_26_ALU_AND_TO_OR",
+      "id": "MUT_27_ALU_OR_TO_AND",
       "category": "Datapath / ALU",
       "file": "src/alu.v",
-      "description": "ALU logic bug: AND opcode executes bitwise OR instead of bitwise AND",
+      "description": "ALU logic bug: OR opcode executes bitwise AND instead of bitwise OR",
       "status": "KILLED",
-      "elapsed_sec": 79.48
+      "elapsed_sec": 66.39
     }
   ]
 }

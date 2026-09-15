@@ -827,3 +827,30 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`).
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-15 - Iteration 24: End-to-End Autonomous Protocol Pipeline (Sniff -> Classify -> Ingress -> Replay) & Cross-Protocol Bridge
+
+- **Context & Motivation:**
+  - In Iterations 18 and 20, the standalone protocol sniffer/classifier was verified for passive recognition.
+  - Real-world protocol emulation applications require the full closed-loop pipeline running completely autonomously in the ASIC core:
+    1. Passive Sniff: Line monitoring with `uio_oe=0x00` (High-Z) using `WAITEDGE` hardware edge detection.
+    2. Pattern Classification: Dynamic pulse width bounds checking (e.g. Start bit ~8 cycles -> Class 0x01 UART, half-bit ~4 cycles -> Class 0x02 Manchester, sub-baud glitch -> Class 0xFF Noise).
+    3. Payload Ingress: Context-sensitive sampling via `SHIFTIN` into architectural registers.
+    4. Transformation / Bridging: In-register arithmetic/logic transformation (e.g. echo increment `ADDI R3, 0x01` or cross-protocol format translation).
+    5. Active Egress Replay: Dynamic pin direction reconfiguration (`GDIRI`), low-jitter serialization (`SHIFTOUT`/`GWRI`), and clean high-impedance bus release upon completion.
+- **Implementation (`tools/pipeline_model.py`):**
+  - `build_pipeline_uart_echo_asm`: Full autonomous UART echo loop: passive sniff on `uio[0]`, Start bit bounds checking (6..10 cycles -> Class 0x01), 8 data bits ingress into `R3`, payload increment (`ADDI R3, 1`), dynamic enable of `uio[1]` output (`GDIRI 0x02`), 8-N-1 transmission, and bus release.
+  - `build_pipeline_manchester_echo_asm`: Autonomous Manchester Biphase-L pipeline: sniff on `uio[0]`, preamble half-bit check (3..5 cycles -> Class 0x02), 8 data bits ingress, payload increment, and Manchester encoded egress replay on `uio[1]`.
+  - `build_pipeline_uart_to_spi_bridge_asm`: Autonomous cross-protocol translation bridge: passive UART ingress on Lane 0 (`uio[0]`), hardware edge synchronization, LSB-first bit sampling into `R3`, dynamic bus reconfiguration for Lane 1 SPI Master Mode 0 (`SCK=uio[4]`, `MOSI=uio[5]`, `CS_N=uio[6]`), chip select assertion, MSB-first SPI clocking, and clean `CS_N` deassertion.
+- **Verification Suite (`test/test_pipeline.py`):**
+  - Added 4 comprehensive cocotb test cases verified against independent `UartReceiver` and `SpiSlave` models:
+    1. `test_pipeline_uart_sniff_classify_echo`: Verified UART sniff, Class 0x01 identification, payload 0xA5 ingress, and echoed 0xA6 replay on `uio[1]` received by independent `UartReceiver`. **PASS** (642.5 us).
+    2. `test_pipeline_cross_protocol_uart_to_spi`: Verified UART ingress on Lane 0 (`uio[0]`, payload 0x55) translated into SPI Master Mode 0 egress on Lane 1 (`uio[4..6]`), received with 100% data fidelity by independent `SpiSlave`. **PASS** (967.2 us).
+    3. `test_pipeline_noise_rejection`: Verified narrow 1-cycle noise glitch triggers Class 0xFF (Noise) and immediate halt with zero spurious transmissions. **PASS** (624.9 us).
+    4. `test_pipeline_pin_direction_safety`: Verified `uio_oe` is strictly 0x00 during passive sniff, preventing any bus contention on the monitored line. **PASS** (615.8 us).
+  - Regression Suite: **114/114 tests passing (100.0%)** across 22 test modules.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 161s).
+  - Mutation Testing: Added `MUT_27_ALU_OR_TO_AND` in `scripts/mutate.py`. Cumulative score: **27/27 mutants killed (100.0% kill rate)** in 66.39s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 31.49s.
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+

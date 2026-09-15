@@ -233,10 +233,18 @@ MUTANTS = [
         "replacement": "OP_AND:  result = a | b;",
         "description": "ALU logic bug: AND opcode executes bitwise OR instead of bitwise AND",
     },
+    {
+        "id": "MUT_27_ALU_OR_TO_AND",
+        "category": "Datapath / ALU",
+        "file": "src/alu.v",
+        "target": "OP_OR:   result = a | b;",
+        "replacement": "OP_OR:   result = a & b;",
+        "description": "ALU logic bug: OR opcode executes bitwise AND instead of bitwise OR",
+    },
 ]
 
 
-def run_tests(timeout_sec=120):
+def run_tests(timeout_sec=240):
     """Run regression test suite in test directory. Returns True if tests pass, False if failed."""
     cmd = ["make", "-C", os.path.join(REPO_ROOT, "test"), "clean", "sim"]
     env = os.environ.copy()

@@ -1,13 +1,13 @@
 {
-  "phase": "isa-v1-usb11-signaling-verified",
+  "phase": "isa-v1-protocol-pipeline-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 23 complete (Low-Speed USB 1.1 Physical Layer & Packet Framing Engine). Next: Iteration 24 (End-to-End Protocol Sniff -> Classify -> Replay Pipeline Demo).",
+  "active_objective": "Continuous engineering loop: Iteration 24 complete (End-to-End Autonomous Protocol Sniff -> Classify -> Ingress -> Replay Pipeline Demo). Next: Iteration 25 (Automated Protocol Fuzzing & Anomaly Injection Campaign).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 23,
+  "iterations": 24,
   "halt": false,
-  "notes": "Iteration 23 complete: Created tools/usb_model.py (differential J/K/SE0/SE1 line states, NRZI line coding, dynamic bit stuffing/destuffing, Token CRC-5, Data CRC-16, independent UsbReceiver cycle-accurate monitor, build_usb_tx_packet_asm transmitter, build_usb_rx_packet_asm receiver) and test/test_usb.py (6/6 tests pass: ACK/NAK/STALL handshakes, SETUP token with CRC-5, dynamic bit stuffing on 0xFF, multi-byte DATA0 sweeps, continuous SE0 bus reset detection, electrical safety). Added test_usb to test/Makefile. Regression suite: 110/110 tests PASS (100.0%) across 21 modules. Added MUT_26_ALU_AND_TO_OR in scripts/mutate.py (killed in 79.48s, 26/26 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 81s). Gate-level simulation confirmed 8/8 tests pass."
+  "notes": "Iteration 24 complete: Created tools/pipeline_model.py (build_pipeline_uart_echo_asm, build_pipeline_manchester_echo_asm, build_pipeline_uart_to_spi_bridge_asm) and test/test_pipeline.py (4/4 tests pass: UART sniff->classify->decode->echo replay, cross-protocol UART-to-SPI bridge, sub-baud noise rejection, passive-to-active pin direction safety). Added test_pipeline to test/Makefile. Regression suite: 114/114 tests PASS (100.0%) across 22 modules. Added MUT_27_ALU_OR_TO_AND in scripts/mutate.py (killed in 66.39s, 27/27 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 161s). Gate-level simulation confirmed 8/8 tests pass in 31.49s."
 }
 
 
