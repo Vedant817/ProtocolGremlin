@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-15T14:39:37Z",
+  "timestamp": "2026-09-15T15:17:27Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 158.0,
+  "campaign_time_sec": 86.76,
   "mutants": [
     {
-      "id": "MUT_28_ALU_XOR_TO_XNOR",
-      "category": "Datapath / ALU",
-      "file": "src/alu.v",
-      "description": "ALU logic bug: XOR opcode executes bitwise XNOR instead of bitwise XOR",
+      "id": "MUT_29_GPIO_OD_PIN_OUT",
+      "category": "IO / Open-Drain",
+      "file": "src/gpio.v",
+      "description": "Open-drain pin output bug: drives out_val actively high even when od_mode is enabled (violates open-drain high-Z specification)",
       "status": "KILLED",
-      "elapsed_sec": 157.95
+      "elapsed_sec": 86.73
     }
   ]
 }

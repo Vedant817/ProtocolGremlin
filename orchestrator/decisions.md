@@ -881,3 +881,35 @@ mutation-kill rates.
   - Mutation Testing: Added `MUT_28_ALU_XOR_TO_XNOR` in `scripts/mutate.py`. Cumulative score: **28/28 mutants killed (100.0% kill rate)** in 157.95s.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 38.99s.
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+## 2026-09-15 - Iteration 26: 10 Mbit Ethernet (10BASE-T) Physical Signaling Feasibility Study & Link Layer Engine
+
+- **Context & Motivation:**
+  - IEEE 802.3 Clause 14 (10BASE-T) is the foundational physical layer of modern wired networking, utilizing differential Manchester Biphase-L line coding at 10 MHz signaling rates, Normal Link Pulses (NLP) heartbeats to establish link integrity, 7-octet Preamble (`0x55`) and Start Frame Delimiter (`SFD = 0xD5`), End-of-Transmission (`TP_IDL`) delimiters, and 32-bit Frame Check Sequence (CRC-32) verification.
+  - While modern gigabit/10G Ethernet requires complex analog PHYs and SerDes macros, 10BASE-T can interface directly to magnetics or standard LVDS/single-ended transceivers with minimal external discrete components.
+  - Demonstrating 10BASE-T signaling and link integrity on the Jane Street Protocol Emulator proves the ASIC's capabilities span from micro-power peripheral buses to local-area network physical layers.
+- **Physical Layer Signaling & Packet Framing (`docs/ethernet_study.md`, `tools/ethernet_model.py`):**
+  - **Normal Link Pulses (NLP):** Periodic unmodulated positive pulses (~100 ns, 2 clock cycles) generated every 16 ms (or scaled in simulation) when no packet is being transmitted to maintain link status.
+  - **Manchester Biphase-L Encoding & Bit Order:**
+    - Bit '1': High during first half-period, Low during second half-period (falling edge at mid-bit).
+    - Bit '0': Low during first half-period, High during second half-period (rising edge at mid-bit).
+    - Standard Ethernet octets are transmitted **LSB-first** over Manchester biphase.
+  - **Preamble and Start Frame Delimiter (SFD):**
+    - Preamble octet `0x55` (`0b01010101`) transmits bit 0 (`1`) first, initiating an immediate rising edge from idle low.
+    - SFD octet `0xD5` (`0b11010101`) transmits bits 0..5 alternating `1, 0, 1, 0, 1, 0`, and terminates with consecutive `1, 1` (bits 6 and 7), breaking the alternation pattern to synchronize the MAC frame.
+  - **End of Transmission Delimiter (TP_IDL):** Following the final bit of the frame, the transmitter asserts a continuous positive unipolar pulse for 2–3 bit periods before returning to zero differential voltage (High-Z).
+  - **IEEE 802.3 Frame Check Sequence (CRC-32):** Standard polynomial `0xEDB88320` (reflected representation of `0x04C11DB7`) computed across packet payload.
+- **Verification Suite (`test/test_ethernet.py`):**
+  - Added 6 cocotb test cases verified against independent `EthernetTransceiverModel`:
+    1. `test_ethernet_nlp_link_pulse`: Verified periodic NLP heartbeat pulse generation with exact 2-cycle pulse width and clean High-Z return. **PASS** (1.0 us).
+    2. `test_ethernet_tx_packet_framing`: Verified 10BASE-T TX packet generation with 7-octet Preamble (`0x55`), SFD (`0xD5`), Payload (`0xA5`), and TP_IDL delimiter decoded with 100% fidelity. **PASS** (5.5 us).
+    3. `test_ethernet_rx_sfd_sync_and_payload`: Verified 10BASE-T RX core synchronizes to incoming mid-bit transition and captures payload byte (`0x7E`) into `R0`. **PASS** (5.5 us).
+    4. `test_ethernet_crc32_frame_check`: Verified IEEE 802.3 CRC-32 Frame Check Sequence against standard IEEE 802.3 vectors. **PASS** (0.01 us).
+    5. `test_ethernet_link_loss_detection`: Verified receiver link monitor detects link loss when incoming NLP heartbeats cease. **PASS** (3.0 us).
+    6. `test_ethernet_pin_direction_and_electrical_safety`: Verified `uio_oe` remains strictly input (`0x00`) during RX/idle, asserting output only on configured TX pin. **PASS** (2.5 us).
+  - Regression Suite: **126/126 tests passing (100.0%)** across 24 test modules.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 76s).
+  - Mutation Testing: Added `MUT_29_GPIO_OD_PIN_OUT` in `scripts/mutate.py`. Cumulative score: **29/29 mutants killed (100.0% kill rate)** in 86.73s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 30.24s.
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).

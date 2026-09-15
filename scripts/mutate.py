@@ -249,6 +249,14 @@ MUTANTS = [
         "replacement": "OP_XOR:  result = a ~^ b;",
         "description": "ALU logic bug: XOR opcode executes bitwise XNOR instead of bitwise XOR",
     },
+    {
+        "id": "MUT_29_GPIO_OD_PIN_OUT",
+        "category": "IO / Open-Drain",
+        "file": "src/gpio.v",
+        "target": "assign pin_out = out_val & ~od_mode;",
+        "replacement": "assign pin_out = out_val;",
+        "description": "Open-drain pin output bug: drives out_val actively high even when od_mode is enabled (violates open-drain high-Z specification)",
+    },
 ]
 
 

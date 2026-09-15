@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-protocol-fuzzing-verified",
+  "phase": "isa-v1-ethernet-signaling-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 25 complete (Automated Protocol Fuzzing & Anomaly Injection Campaign). Next: Iteration 26 (10 Mbit Ethernet physical signaling feasibility study - Manchester / NLP).",
+  "active_objective": "Continuous engineering loop: Iteration 26 complete (10 Mbit Ethernet 10BASE-T Physical Signaling Feasibility Study). Next: Iteration 27 (Multi-Protocol Bus Bridging Matrix: I2C-to-SPI, UART-to-CAN, 1-Wire-to-UART).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 25,
+  "iterations": 26,
   "halt": false,
-  "notes": "Iteration 25 complete: Created tools/protocol_fuzzer.py (ProtocolFuzzer with phase-bounded edge jitter modeling, false start glitch injection, framing error corruption, Manchester biphase violation, multi-frame recovery sequence generator) and test/test_protocol_fuzz.py (6/6 tests pass: UART jitter tolerance across pseudorandom payloads, UART false-start runt glitch rejection R2=0xFF, UART framing error detection R2=0xFE, Manchester jitter tolerance 0x96, multi-frame recovery Valid->Corrupted->Valid, and physical electrical safety uio_oe=0x00). Added test_protocol_fuzz to test/Makefile. Full regression suite: 120/120 tests PASS (100.0%) across 23 modules. Added MUT_28_ALU_XOR_TO_XNOR in scripts/mutate.py (killed in 157.95s, 28/28 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 100s). Gate-level simulation confirmed 8/8 physical tests pass in 38.99s."
+  "notes": "Iteration 26 complete: Authored docs/ethernet_study.md (comprehensive 10BASE-T architectural, circuit-level, and magnetics feasibility study). Created tools/ethernet_model.py (EthernetTransceiverModel with NLP heartbeats, LSB-first Manchester packet framing, IEEE 802.3 CRC-32 FCS calculation, build_ethernet_nlp_generator_asm, build_ethernet_tx_packet_asm, build_ethernet_rx_packet_asm) and test/test_ethernet.py (6/6 tests pass: NLP pulse periodic generation, TX packet framing with SFD and TP_IDL, RX SFD sync and payload ingress, IEEE 802.3 CRC-32 FCS, NLP link-loss detection, and pin direction electrical safety). Added test_ethernet to test/Makefile. Full regression suite: 126/126 tests PASS (100.0%) across 24 modules. Added MUT_29_GPIO_OD_PIN_OUT in scripts/mutate.py (killed in 86.73s, 29/29 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 76s). Gate-level simulation confirmed 8/8 physical tests pass in 30.24s."
 }
