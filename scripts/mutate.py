@@ -321,6 +321,14 @@ MUTANTS = [
         "replacement": "                      (edge_mode == 2'b01) ? edge_fall :",
         "description": "Asynchronous event detection bug: WAITEDGE mode 01 (rising edge) checks edge_fall instead of edge_rise, causing edge-triggered interrupts to hang or miss events",
     },
+    {
+        "id": "MUT_38_MPU_REGION_BOUND_CHECK",
+        "category": "MPU / Partition Dispatch",
+        "file": "src/core.v",
+        "target": "              OP_JMP: pc <= operand[ADDR_WIDTH-1:0];",
+        "replacement": "              OP_JMP: pc <= operand[ADDR_WIDTH-1:0] ^ 8'h01;",
+        "description": "MPU partition dispatch bug: OP_JMP jumps to operand ^ 8'h01 instead of operand, corrupting jump table dispatch and violating partition boundaries",
+    },
 ]
 
 

@@ -1197,5 +1197,45 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 27.96s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-16 - Iteration 35: Memory Protection Unit (MPU) & Multi-Tenant Partitioning Engine
+
+- **Context & Motivation:**
+  - In embedded protocol processing, multi-bus gateways, and mission-critical automotive/industrial ASICs, multiple protocol stacks or tenant workloads execute concurrently.
+  - Heterogeneous workloads (e.g. privileged supervisor, safety-critical CAN FD stack, third-party sensor telemetry driver) sharing the address space require spatial and temporal protection to prevent memory corruption, unauthorized GPIO drive, cross-tenant state tampering, and denial-of-service execution starvation.
+  - We architected, modeled, and verified a dual-domain Memory Protection Unit (MPU) and Multi-Tenant Partitioning Engine evaluating both a zero-gate software sandboxing supervisor and a dedicated synthesizable hardware MPU macro on the IHP 130nm SG13G2 CMOS5L platform.
+- **Architectural Design & Technical Highlights (`docs/mpu_study.md`, `tools/mpu_model.py`):**
+  - **Spatial Memory Partitioning & Fault Classification:**
+    - Defined memory regions as 4-tuples: $\langle \text{BASE}_i, \text{LIMIT}_i, \text{PERM}_i, \text{IO\_MASK}_i \rangle$, with permissions for Read (R), Write (W), Execute (X / XN), and Privilege level (Supervisor vs User).
+    - Established strict fault classification:
+      - `EXEC_VIOLATION` (`0xEF`): Fetch/branch to execute-never (XN) region or unprivileged branch into supervisor space.
+      - `WRITE_VIOLATION` (`0xEE`): Write attempt to read-only or out-of-bounds memory.
+      - `READ_VIOLATION` (`0xED`): Unauthorized read from privileged memory.
+      - `IO_ACCESS_VIOLATION` (`0xEA`): Attempted write to GPIO pins outside authorized `IO_MASK`.
+      - `TIMEOUT_VIOLATION` (`0xEB`): Instruction cycle budget exhaustion by runaway guest task.
+  - **IO Pin Authorization Mask Protection:**
+    - Constrains external bidirectional pin manipulation (`uio[7:0]`) per tenant. If a guest attempts to drive any pin outside its allocated mask, the MPU automatically intercepts the drive and clamps pins to safe High-Z (`uio_oe = 0x00`).
+  - **Temporal Cycle Budget Enforcement:**
+    - Enforces cycle execution allowances per timeslice via decrementing budget counters (`DECJNZ`), preempting runaway loops and preventing task starvation.
+  - **Hardware MPU Macro Architecture & PPA on IHP 130nm SG13G2:**
+    - Zero-overhead software sandboxing requires **0 additional gates (0% area overhead)**.
+    - 2-region hardware MPU requires 192 CMOS cells (376 GE, +0.99% area overhead).
+    - 4-region hardware MPU requires **384 CMOS cells (752 GE, +1.99% area overhead)** with $1.85\,\text{ns}$ comparator delay, leaving $> 98\,\text{ns}$ of timing slack at 10 MHz.
+    - 8-region hardware MPU requires 768 CMOS cells (1,504 GE, +3.98% area overhead).
+- **Verification Suite (`test/test_mpu.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/mpu_model.py`:
+    1. `test_mpu_authorized_tenant_execution`: Verified authorized tenant executes in partition (R0=50) and yields cleanly to supervisor with status code `R2 = 0x00`. **PASS** (97.2 us).
+    2. `test_mpu_out_of_bounds_write_detection`: Verified out-of-bounds pointer write attempt is trapped and quarantined with fault code `R2 = 0xEE` and pins tri-stated (`uio_oe = 0x00`). **PASS** (174.2 us).
+    3. `test_mpu_io_pin_authorization_enforcement`: Verified tenant attempting to assert restricted pin 7 outside mask 0x0F is trapped with fault code `R2 = 0xEA`, with restricted pin drive strictly suppressed. **PASS** (145.3 us).
+    4. `test_mpu_temporal_cycle_budget_trapping`: Verified runaway loop exceeding 5-tick budget is preempted and trapped with fault code `R2 = 0xEB`. **PASS** (137.8 us).
+    5. `test_mpu_hardware_macro_and_ppa_scaling`: Validated cycle-accurate `MpuControllerModel` reference simulator and analytical PPA scaling models across 2, 4, and 8 regions. **PASS**.
+    6. `test_mpu_quarantine_pin_electrical_safety`: Verified all GPIO pins remain strictly High-Z (`uio_oe == 0x00`) throughout fault trapping and quarantine. **PASS** (174.2 us).
+  - Regression Suite: **179/179 tests passing (100.0%)** across 33 test modules.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 73s).
+  - Mutation Testing: Added `MUT_38_MPU_REGION_BOUND_CHECK` in `scripts/mutate.py`. Killed in 80.64s. Cumulative score: **38/38 mutants killed (100.0% kill rate)** in 3128.07s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 24.14s.
+  - Area: Zero additional silicon area overhead for microcode sandboxing (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+
 
 

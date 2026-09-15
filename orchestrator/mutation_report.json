@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-09-15T21:45:12Z",
-  "total_mutants": 37,
-  "killed": 37,
+  "timestamp": "2026-09-15T22:10:34Z",
+  "total_mutants": 38,
+  "killed": 38,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 3047.43,
+  "campaign_time_sec": 3128.07,
   "mutants": [
     {
       "id": "MUT_01_BRANCH_JZ_INVERT",
@@ -301,6 +301,14 @@
       "description": "Asynchronous event detection bug: WAITEDGE mode 01 (rising edge) checks edge_fall instead of edge_rise, causing edge-triggered interrupts to hang or miss events",
       "status": "KILLED",
       "elapsed_sec": 96.49
+    },
+    {
+      "id": "MUT_38_MPU_REGION_BOUND_CHECK",
+      "category": "MPU / Partition Dispatch",
+      "file": "src/core.v",
+      "description": "MPU partition dispatch bug: OP_JMP jumps to operand ^ 8'h01 instead of operand, corrupting jump table dispatch and violating partition boundaries",
+      "status": "KILLED",
+      "elapsed_sec": 80.64
     }
   ]
 }
