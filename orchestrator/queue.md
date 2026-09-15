@@ -61,8 +61,8 @@ bounded problem").
   done: `tools/onewire_model.py` (OneWireSlave + build_onewire_reset_presence_asm + build_onewire_read_byte_asm + build_onewire_write_byte_asm) + `test/test_onewire.py` (35/35 regression pass, presence duration sweep, read/write timeslots, 14/14 mutants killed).
 - ~~PS/2 Bidirectional Host Controller (device clock edge sync on falling clock, 11-bit odd-parity verified frame reception and host-to-device inhibit/send via open-drain and `WAITEDGE`)~~ -
 - ~~JTAG TAP Controller Engine (TMS state machine: Test-Logic-Reset, Run-Test/Idle, Shift-DR, Shift-IR, BYPASS and IDCODE readout)~~ -
-  done: `tools/jtag_model.py` (JtagTarget + build_jtag_read_idcode_asm + build_jtag_bypass_verify_asm) + `test/test_jtag.py` (46/46 regression pass, 32-bit IDCODE into R0..R3, 1-cycle BYPASS latency, TMS reset recovery, 16/16 mutants killed).
-- ARM SWD (Serial Wire Debug) Interface Engine (Line Reset sequence 50+ clocks high, JTAG-to-SWD switching, turnaround bits, SWD header and ACK readout).
+- ~~ARM SWD (Serial Wire Debug) Interface Engine (Line Reset sequence 50+ clocks high, JTAG-to-SWD switching, turnaround bits, SWD header and ACK readout)~~ -
+  done: `tools/swd_model.py` (SwdTarget + build_swd_read_dpidr_asm + build_swd_switch_sequence_asm) + `test/test_swd.py` (51/51 regression pass, 32-bit DPIDR into R0..R3, Cortex sweep, WAIT/FAULT handling, 17/17 mutants killed).
 - Manchester Biphase-L (IEEE 802.3 / MIL-STD-1553) Encoder & Decoder Engine.
 - CAN Bus Physical-Layer Controller (Dominant/Recessive Bit Timing & Stuffing).
 - Convert `program_ram.v` to a synchronous-read design once real synthesis

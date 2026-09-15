@@ -447,3 +447,32 @@ mutation-kill rates.
   - SymbiYosys: 20-step Z3 BMC proof verified in 72s (PASS, 0 violations).
   - Mutation Testing: Added `MUT_16_ALU_XOR_TO_OR`. Evaluated and killed in 37.22s. Cumulative mutation score: **16/16 mutants killed (100.0% kill rate)**.
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
+
+## 2026-09-15 - Iteration 13: ARM SWD (Serial Wire Debug) Interface Engine & DPIDR Readout
+
+- **Motivation & Protocol Overview:**
+  - ARM Serial Wire Debug (SWD) is the primary debug and programming protocol for ARM Cortex-M and Cortex-A processors, defined in the ARM Debug Interface Architecture Specification ADIv5 (IHI0031A).
+  - Uses a 2-wire physical interface: `SWCLK` (clock driven by host) and `SWDIO` (bidirectional data, half-duplex with turnaround cycles).
+  - Operates synchronously: data is updated by the transmitter on the falling edge of `SWCLK` and sampled by the receiver on the rising edge of `SWCLK`.
+  - Implementing an ARM SWD Master engine demonstrates the processor's capability to interface with modern 32-bit embedded microcontrollers, perform line reset, execute JTAG-to-SWD switching, handle dynamic tri-state turnaround, and execute 32-bit register transfers.
+- **Novelty Highlight (Loop-Optimized 32-Bit DPIDR Transfer & Dynamic Direction Tri-stating):**
+  - **Single-Pass 32-Bit Identification Capture:** Standard ARM Cortex Debug Ports expose the 32-bit DPIDR register at DP address 0x0. The emulator reads the 32 data bits directly into architectural registers `R0..R3` (`R0`=bits [7:0], `R1`=bits [15:8], `R2`=bits [23:16], `R3`=bits [31:24]).
+  - **Loop-Optimized Read Firmware:** Utilizing `R3` as an 8-iteration loop counter for `R0`, `R1`, and `R2`, followed by an unrolled 8-bit read for `R3`, compressed the full transaction firmware from 265 instructions down to 155 instructions (60.5% RAM capacity), fitting comfortably within the 256-word program RAM.
+  - **JTAG-to-SWD Protocol Switcher:** Implemented the ARM standard switching sequence: 52 clocks with `SWDIO=1` (line reset), the 16-bit switching sequence `0x79E7` (`0b0111_1001_1110_0111` transmitted LSB-first), second line reset (52 clocks), and idle cycles.
+  - **Dynamic Direction Tri-state Contention Avoidance:** Verified that the host cleanly tri-states `SWDIO` (`uio_oe[5] = 0`) during Turnaround (Trn), ACK, and Data read phases, and drives `SWDIO` (`uio_oe[5] = 1`) during Packet Request Header and Line Reset, provably avoiding electrical bus contention.
+- **Firmware & Models (`tools/swd_model.py`):**
+  - `SwdTarget`: Independent cycle-accurate emulation model of an ARM SW-DP target tracking `SWCLK` transitions, verifying line reset (>= 50 consecutive 1s), parsing 8-bit packet headers with even parity (`0xA5`), driving 3-bit ACK responses (`001b` OK, `010b` WAIT, `100b` FAULT), driving 32-bit register data with even parity, and supporting fault injection.
+  - `build_swd_read_dpidr_asm(swclk_pin=4, swdio_pin=5, do_line_reset=True)`: Loop-optimized firmware performing line reset, request header transmission, turnaround, ACK sampling, 32-bit data read into `R0..R3`, parity cycle, and turnaround.
+  - `build_swd_switch_sequence_asm(swclk_pin=4, swdio_pin=5)`: Firmware executing line reset, 16-bit switching sequence `0x79E7`, second line reset, and 4 idle cycles.
+- **Verification (`test/test_swd.py`):**
+  - Added 5 cocotb test cases:
+    1. `test_swd_line_reset_and_switch`: Verified line reset and JTAG-to-SWD switching sequence (0x79E7) activates target `swd_active=True`.
+    2. `test_swd_read_dpidr_standard`: Verified standard ARM Cortex-M0/M3/M4 DPIDR `0x0BA01477` captured accurately into `R0..R3` with `0xA5` header and `001b` ACK.
+    3. `test_swd_read_dpidr_sweep`: Swept across Cortex-M7 (`0x0BB11477`), Cortex-M33 ARMv8-M (`0x2BA01477`), Cortex-M4+ETM (`0x1BA01477`), and Cortex-M23 (`0x6BA02477`) with 100% byte fidelity.
+    4. `test_swd_target_ack_wait_and_fault`: Verified non-blocking handling of target ACK=WAIT (`010b`) and ACK=FAULT (`100b`).
+    5. `test_swd_pin_direction_and_electrical_safety`: Verified `SWCLK` is continuously driven and `SWDIO` dynamically tri-states with zero electrical contention.
+  - Regression Suite: **51/51 tests passing (100.0%)** in 40.21s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified in 72s (PASS, 0 violations).
+  - Mutation Testing: Added `MUT_17_GDIRI_INVERT`. Evaluated and killed in 37.86s. Cumulative mutation score: **17/17 mutants killed (100.0% kill rate)**.
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).

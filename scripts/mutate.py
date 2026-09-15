@@ -153,6 +153,14 @@ MUTANTS = [
         "replacement": "OP_XOR:  result = a | b;",
         "description": "ALU logic bug: XOR opcode executes bitwise OR instead of bitwise XOR",
     },
+    {
+        "id": "MUT_17_GDIRI_INVERT",
+        "category": "Interface / Tri-state",
+        "file": "src/core.v",
+        "target": "OP_GDIRI: gpio_dir <= operand;",
+        "replacement": "OP_GDIRI: gpio_dir <= ~operand;",
+        "description": "GPIO direction bug: GDIRI inverts direction mask (inputs become outputs and vice versa)",
+    },
 ]
 
 
