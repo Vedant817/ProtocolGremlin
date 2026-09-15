@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-ethernet-signaling-verified",
+  "phase": "isa-v1-bridge-matrix-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 26 complete (10 Mbit Ethernet 10BASE-T Physical Signaling Feasibility Study). Next: Iteration 27 (Multi-Protocol Bus Bridging Matrix: I2C-to-SPI, UART-to-CAN, 1-Wire-to-UART).",
+  "active_objective": "Continuous engineering loop: Iteration 27 complete (Multi-Protocol Bus Bridging Matrix: I2C-to-SPI, UART-to-CAN, 1-Wire-to-UART). Next: Iteration 28 (Hardware Watchdog Timer & Brownout Recovery Circuit Feasibility Study).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 26,
+  "iterations": 27,
   "halt": false,
-  "notes": "Iteration 26 complete: Authored docs/ethernet_study.md (comprehensive 10BASE-T architectural, circuit-level, and magnetics feasibility study). Created tools/ethernet_model.py (EthernetTransceiverModel with NLP heartbeats, LSB-first Manchester packet framing, IEEE 802.3 CRC-32 FCS calculation, build_ethernet_nlp_generator_asm, build_ethernet_tx_packet_asm, build_ethernet_rx_packet_asm) and test/test_ethernet.py (6/6 tests pass: NLP pulse periodic generation, TX packet framing with SFD and TP_IDL, RX SFD sync and payload ingress, IEEE 802.3 CRC-32 FCS, NLP link-loss detection, and pin direction electrical safety). Added test_ethernet to test/Makefile. Full regression suite: 126/126 tests PASS (100.0%) across 24 modules. Added MUT_29_GPIO_OD_PIN_OUT in scripts/mutate.py (killed in 86.73s, 29/29 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 76s). Gate-level simulation confirmed 8/8 physical tests pass in 30.24s."
+  "notes": "Iteration 27 complete: Created tools/bridge_matrix_model.py (universal bus bridging firmware generator for I2C-to-SPI, UART-to-CAN, 1-Wire-to-UART, and multi-byte streaming) and test/test_bridge_matrix.py (6/6 tests pass: I2C read to SPI Master Mode 0 egress, UART RX to open-drain CAN 2.0A egress with ACK monitoring, 1-Wire read timeslots to UART TX 8-N-1 egress, multi-byte UART-to-SPI streaming, ingress framing error isolation suppressing spurious CAN transmission, and unused pin High-Z electrical safety). Added test_bridge_matrix to test/Makefile. Full regression suite: 132/132 tests PASS (100.0%) across 25 modules. Added MUT_30_GPIO_OD_OE_INVERT in scripts/mutate.py (killed in 79.96s, 30/30 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 82s). Gate-level simulation confirmed 8/8 physical tests pass in 26.92s."
 }

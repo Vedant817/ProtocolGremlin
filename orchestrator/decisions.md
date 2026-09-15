@@ -913,3 +913,40 @@ mutation-kill rates.
   - Mutation Testing: Added `MUT_29_GPIO_OD_PIN_OUT` in `scripts/mutate.py`. Cumulative score: **29/29 mutants killed (100.0% kill rate)** in 86.73s.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 30.24s.
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+## 2026-09-15 - Iteration 27: Multi-Protocol Bus Bridging Matrix (I2C, SPI, UART, CAN, 1-Wire) & Multi-Byte Streaming Engine
+
+- **Context & Motivation:**
+  - Modern mixed-signal edge devices, automotive test harnesses, and industrial instrumentation systems frequently require bridging disparate serial protocol buses (e.g. reading sensor telemetry from an I2C or 1-Wire peripheral and forwarding it over an SPI or CAN bus, or bridging host UART commands to multi-drop industrial CAN nodes).
+  - Dedicated hardware bridge ICs (e.g. SC18IS602B for I2C-to-SPI or MCP2221A for UART-to-I2C) are rigid, single-purpose silicon with fixed pin assignments and zero flexibility.
+  - The Jane Street Protocol Emulator ASIC's bit-banged orthogonal instruction set allows constructing an arbitrary multi-protocol bus bridging matrix entirely in firmware on the universal `uio[7:0]` pin fabric.
+- **Architectural Design & Safety (`tools/bridge_matrix_model.py`):**
+  - **I2C Master Ingress to SPI Master Mode 0 Egress:**
+    - Drives open-drain I2C Master read sequence on `uio[1:0]` (`SCL=uio[1]`, `SDA=uio[0]`) with repeated start, 7-bit slave addressing, read ACK/NACK, and clock stretching support.
+    - Captures incoming byte into register `R0`.
+    - Automatically shifts domain to push-pull SPI Master Mode 0 on `uio[6:4]` (`SCK=uio[4]`, `MOSI=uio[5]`, `CS_N=uio[6]`), asserting `CS_N`, transmitting 8 bits MSB-first, and releasing `CS_N` high.
+  - **UART Ingress to CAN 2.0A Egress:**
+    - Ingress: Asynchronous 8-N-1 UART receiver on `uio[0]` synchronizing on start bit via `WAITEDGE` and validating stop bit.
+    - Error Trapping: If the UART stop bit is corrupt (0 instead of 1), the engine traps the framing error (`R2 = 0xFE`), halts immediately, and guarantees **zero** spurious CAN frames are emitted onto the vehicle bus.
+    - Egress: Dynamically reconfigures `uio[4]` as open-drain CAN TX, formatting standard 11-bit ID frame with ISO 11898-1 bit-stuffing, 15-bit CRC, ACK slot monitoring (`R2 = 0xAE` if missing), and EOF delimiter.
+  - **Dallas 1-Wire Ingress to UART TX Egress:**
+    - Ingress: Issues 1-Wire Reset pulse (480 us equivalent, 48 cycles) on `uio[0]`, samples Presence pulse, and reads 8 data timeslots (6-cycle write-0 pulse, 15-cycle sample window).
+    - Egress: Bridges decoded byte directly to UART 8-N-1 transmitter on `uio[4]`, serializing Start bit, 8 data bits LSB-first, and Stop bit.
+  - **Multi-Byte Continuous Stream Translation:**
+    - Streams consecutive UART frames into continuous SPI Master transactions without cumulative timing drift.
+    - Utilizes pin partitioning with UART RX on `uio[3]` to prevent conflict with serial bootloader control signals (`LOAD_REQ=uio[0]`).
+- **Verification Suite (`test/test_bridge_matrix.py`):**
+  - Added 6 comprehensive cocotb test cases verified against independent protocol reference models (`I2cSlave`, `SpiSlave`, `CanReceiverModel`, `OneWireSlave`, `UartReceiver`):
+    1. `test_bridge_i2c_to_spi`: Verified I2C Master read (address 0x38, payload 0xA5) translated into SPI Master Mode 0 frame on `uio[6:4]`, received with 100% fidelity by `SpiSlave`. **PASS** (1.30 ms).
+    2. `test_bridge_uart_to_can`: Verified UART RX 0x55 on `uio[0]` translated to CAN 2.0A frame with valid bit-stuffing and CRC-15 on open-drain `uio[4]`, received by `CanReceiverModel`. **PASS** (1.28 ms).
+    3. `test_bridge_onewire_to_uart`: Verified 1-Wire read timeslots on `uio[0]` for 0x3C translated to UART TX 8-N-1 on `uio[4]`, received by `UartReceiver`. **PASS** (0.40 ms).
+    4. `test_bridge_multi_byte_streaming`: Verified 3 consecutive UART bytes (`[0x11, 0x22, 0x33]`) translated to 3 continuous SPI frames without cumulative phase drift. **PASS** (1.03 ms).
+    5. `test_bridge_ingress_error_isolation`: Injected UART framing error (corrupted stop bit); verified core halts with `R2 = 0xFE` and completely isolates the CAN bus with zero spurious dominant pulses. **PASS** (1.24 ms).
+    6. `test_bridge_pin_direction_and_electrical_safety`: Verified unused pins (`uio[7]`, `uio[2:1]`) remain strictly in High-Z input mode (`uio_oe = 0`). **PASS** (1.27 ms).
+  - Regression Suite: **132/132 tests passing (100.0%)** across 25 test modules.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 82s).
+  - Mutation Testing: Added `MUT_30_GPIO_OD_OE_INVERT` in `scripts/mutate.py`. Cumulative score: **30/30 mutants killed (100.0% kill rate)** in 2445.85s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 26.92s.
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+

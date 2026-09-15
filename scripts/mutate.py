@@ -257,6 +257,14 @@ MUTANTS = [
         "replacement": "assign pin_out = out_val;",
         "description": "Open-drain pin output bug: drives out_val actively high even when od_mode is enabled (violates open-drain high-Z specification)",
     },
+    {
+        "id": "MUT_30_GPIO_OD_OE_INVERT",
+        "category": "IO / Open-Drain",
+        "file": "src/gpio.v",
+        "target": "assign pin_oe  = (dir & ~od_mode) | (dir & od_mode & ~out_val);",
+        "replacement": "assign pin_oe  = (dir & ~od_mode) | (dir & od_mode & out_val);",
+        "description": "Open-drain output enable bug: asserts pin_oe when out_val is 1 instead of 0 in open-drain mode, inverting open-drain drive behavior",
+    },
 ]
 
 
