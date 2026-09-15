@@ -145,6 +145,14 @@ MUTANTS = [
         "replacement": "(edge_mode == 2'b00) ? edge_rise :",
         "description": "WAITEDGE polarity inversion: falling edge mode triggers on rising edge",
     },
+    {
+        "id": "MUT_16_ALU_XOR_TO_OR",
+        "category": "Core / Arithmetic",
+        "file": "src/alu.v",
+        "target": "OP_XOR:  result = a ^ b;",
+        "replacement": "OP_XOR:  result = a | b;",
+        "description": "ALU logic bug: XOR opcode executes bitwise OR instead of bitwise XOR",
+    },
 ]
 
 

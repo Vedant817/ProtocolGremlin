@@ -416,7 +416,34 @@ mutation-kill rates.
   - Mutation Testing: Added `MUT_15_WAITEDGE_POLARITY_INVERT`. Evaluated against 15 mutants: **15/15 mutants killed (100.0% kill rate)**.
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
 
+## 2026-09-15 - Iteration 12: JTAG (IEEE 1149.1) TAP Controller Engine & IDCODE Readout
 
-
-
-
+- **Motivation & Protocol Overview:**
+  - JTAG (IEEE Std 1149.1 Standard Test Access Port and Boundary-Scan Architecture) is the worldwide hardware industry standard for boundary scan, on-chip debugging, and silicon testability.
+  - The interface uses 4 dedicated lines: Test Clock (`TCK`), Test Mode Select (`TMS`), Test Data In (`TDI`), and Test Data Out (`TDO`).
+  - The TAP controller is a 16-state finite state machine controlled synchronously by the sequence of bits on `TMS` sampled on the rising edge of `TCK`.
+  - Implementing an IEEE 1149.1 compliant JTAG Master engine demonstrates the processor's capability to drive complex synchronous test state machines, program Instruction Registers (IR), and shift arbitrary length Data Registers (DR).
+- **Novelty Highlight (Zero-Overhead 32-bit IDCODE Capture & 1-Cycle BYPASS Register Delay):**
+  - **Single-Pass 32-Bit Identification Capture:** Standard JTAG devices expose a 32-bit IDCODE register (IEEE 1149.1 compliant LSB=1). The ASIC core leverages its 4 architectural registers `R0..R3` (4 x 8 = 32 bits) to capture the complete 32-bit device ID in a single pass without requiring data memory:
+    - `R0`: bits [7:0] (LSB=1, Manufacturer ID [6:0])
+    - `R1`: bits [15:8] (Manufacturer ID [10:7], Part Number [3:0])
+    - `R2`: bits [23:16] (Part Number [11:4])
+    - `R3`: bits [31:24] (Version / Stepping [3:0], Part Number [15:12])
+  - **1-Cycle BYPASS Register Verification:** IEEE 1149.1 mandates that when the BYPASS instruction (`0b1111`) is selected, the DR scan path is shortened to a single shift-register stage (1 flip-flop). The emulator verifies this exact 1-TCK shift delay by shifting a test byte through `TDI` and reading back the 1-bit right-shifted pattern from `TDO` into `R0`.
+  - **Deterministic 5-Cycle TMS Reset Recovery:** IEEE 1149.1 guarantees that driving `TMS=1` for at least 5 consecutive `TCK` rising edges forces the TAP controller from any arbitrary state into `Test-Logic-Reset`. The firmware implements this sequence to recover stuck or unsynchronized targets.
+- **Firmware & Models (`tools/jtag_model.py`):**
+  - `JtagTarget`: Independent cycle-accurate model of an IEEE 1149.1 TAP controller tracking all 16 states (`Test-Logic-Reset`, `Run-Test/Idle`, `Select-DR-Scan`, `Capture-DR`, `Shift-DR`, `Exit1-DR`, `Pause-DR`, `Exit2-DR`, `Update-DR`, `Select-IR-Scan`, `Capture-IR`, `Shift-IR`, `Exit1-IR`, `Pause-IR`, `Exit2-IR`, `Update-IR`), with programmable 32-bit IDCODE, 1-bit BYPASS register, and 4-bit instruction decoder.
+  - `build_jtag_read_idcode_asm(tck_pin=0, tms_pin=1, tdi_pin=2, tdo_pin=3)`: 45-instruction sequence executing 5-cycle reset, transitioning to `Shift-DR`, shifting 32 bits into `R0..R3`, and returning to `Run-Test/Idle`.
+  - `build_jtag_bypass_verify_asm(test_byte, tck_pin=0, tms_pin=1, tdi_pin=2, tdo_pin=3)`: Programs BYPASS instruction into IR, transitions to `Shift-DR`, shifts `test_byte` onto `TDI` while sampling `TDO` into `R0`.
+- **Verification (`test/test_jtag.py`):**
+  - Added 5 cocotb test cases:
+    1. `test_jtag_read_idcode_standard`: Verified readout of default standard IDCODE `0x149511C3` into `R0..R3`.
+    2. `test_jtag_read_idcode_sweep`: Swept patterns (`0x00000001`, `0xDEADBEEF`, `0x12345679`, `0xCAFEBABF`), all captured with 100% byte fidelity.
+    3. `test_jtag_bypass_register`: Verified 1-cycle pipeline delay across `0xA5`, `0x5A`, `0xFF`, `0x00`.
+    4. `test_jtag_tap_reset_recovery`: Initialized target into arbitrary states (`Pause-DR`, `Shift-IR`) and verified 5-pulse reset reliably recovers to `Test-Logic-Reset`.
+    5. `test_jtag_pin_isolation`: Verified `TCK`, `TMS`, and `TDI` are driven outputs while `TDO` remains strictly high-Z input on the emulator core.
+  - Regression Suite: **46/46 tests passing (100.0%)** in 34.29s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified in 72s (PASS, 0 violations).
+  - Mutation Testing: Added `MUT_16_ALU_XOR_TO_OR`. Evaluated and killed in 37.22s. Cumulative mutation score: **16/16 mutants killed (100.0% kill rate)**.
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).

@@ -36,7 +36,7 @@ COMPILE_ARGS 		+= -I$(SRC_DIR)
 VERILOG_SOURCES += $(PWD)/tb.v
 TOPLEVEL = tb
 
-COCOTB_TEST_MODULES = test,test_uart,test_opcodes,test_waitedge,test_fuzz,test_spi,test_i2c,test_bootload,test_onewire,test_ps2
+COCOTB_TEST_MODULES = test,test_uart,test_opcodes,test_waitedge,test_fuzz,test_spi,test_i2c,test_bootload,test_onewire,test_ps2,test_jtag
 
 # include cocotb's make rules to take care of the simulator setup
 include $(shell cocotb-config --makefiles)/Makefile.sim
