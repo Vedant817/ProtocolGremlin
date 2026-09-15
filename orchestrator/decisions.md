@@ -1085,3 +1085,36 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 28.96s.
   - Area: Zero additional silicon area overhead (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-16 - Iteration 32: CAN FD Flexible Data-Rate Protocol Accelerator Feasibility & Bit-Rate Switching Study
+
+- **Context & Motivation:**
+  - Standard CAN 2.0 (ISO 11898-1) is fundamentally constrained to a single nominal bit-rate (typically 500 kbps to 1 Mbps) and an 8-byte maximum payload due to multi-node bus propagation delays during arbitration.
+  - CAN FD (ISO 11898-1:2015) decouples arbitration from data transmission, allowing single-cycle bit-rate acceleration up to 2.0–8.0 Mbps during the data phase and expanding payload size up to 64 bytes.
+  - We investigated the feasibility of executing CAN FD on our 8-bit core without hardware PLLs or clock dividers, comparing pure software microcode against a dedicated hardware coprocessor macro on IHP 130nm CMOS5L.
+- **Architectural Design & Dual-Rate Dynamics (`docs/canfd_study.md`, `tools/canfd_model.py`):**
+  - **Single-Cycle Deterministic Bit-Rate Switching:**
+    - The core generates nominal arbitration bits (SOF, ID11, RRS, IDE, FDF) at $T_{nom} = 20$ cycles/bit (500 kbps at 10 MHz) using `WAIT 18` + `SHIFTOUT`.
+    - At the BRS (Bit Rate Switch) bit sample point, the firmware dynamically switches delay operands to $T_{dat} = 5$ cycles/bit (2.0 Mbps) with zero pipeline bubbles or clock divider latency.
+    - At the CRC Delimiter, the firmware switches back to $T_{nom}$ for multi-node dominant ACK reception and EOF synchronization.
+  - **Expanded Payload Support & Polynomials:**
+    - DLC 0–15 non-linear mapping supporting up to 64 bytes.
+    - CRC-17 ($P_{17}(x) = \mathtt{0x3685B}$) for frames with $\le 16$ bytes and CRC-21 ($P_{21}(x) = \mathtt{0x302857}$) for frames with $> 16$ bytes.
+  - **PPA Trade-Off Analysis:**
+    - Pure software microcode executes 2.0 Mbps data phase with 64-byte streaming at **0 additional silicon gates (0% area overhead)**.
+    - Hardware CAN FD coprocessor macro adds ~350 standard cells (+1.81% area) to accelerate data rate up to 8.0 Mbps ($5.76\times$ session speedup on 64-byte frames).
+- **Verification Suite (`test/test_canfd.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/canfd_model.py`:
+    1. `test_canfd_dual_rate_switching`: Verified single-cycle BRS bit-rate transition from nominal arbitration (25-30 cycles) to high-speed data phase (3-6 cycles) and switchback to nominal ACK. **PASS** (453.1 us).
+    2. `test_canfd_64byte_payload_streaming`: Verified high-speed data phase streaming of multi-byte payload buffer without pipeline stalls. **PASS** (253.1 us).
+    3. `test_canfd_crc17_and_crc21_validation`: Verified mathematical correctness and 100% single-bit error detection for CRC-17 (`0x11BD5`) and CRC-21 (`0x0D9749`). **PASS**.
+    4. `test_canfd_brs_disabled_compatibility`: Verified backward compatibility with classical CAN when BRS=0 (constant bit rate throughout). **PASS** (377.1 us).
+    5. `test_canfd_hardware_coprocessor_ppa_scaling`: Verified speedup models (5.76x on 64 bytes) and area constraints (<2.0%). **PASS**.
+    6. `test_canfd_bus_electrical_safety`: Verified open-drain High-Z drive and non-TX pin isolation (`uio_oe & 0xFE == 0x00`). **PASS** (453.1 us).
+  - Regression Suite: **161/161 tests passing (100.0%)** across 30 test modules.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 82s).
+  - Mutation Testing: Added `MUT_35_SHIFTOUT_MSB_BIT_SELECT` in `scripts/mutate.py`. Killed in 74.89s. Cumulative score: **35/35 mutants killed (100.0% kill rate)** in 2869.40s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 27.66s.
+  - Area: Zero additional silicon area overhead (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+

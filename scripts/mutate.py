@@ -297,6 +297,14 @@ MUTANTS = [
         "replacement": "    if (opcode == OP_DECJNZ) alu_b = 8'hFE;  // -2 mod 256 bug",
         "description": "Deterministic loop control bug: DECJNZ decrements register by 2 instead of 1, halving loop iteration count and corrupting real-time scheduling time-slices",
     },
+    {
+        "id": "MUT_35_SHIFTOUT_MSB_BIT_SELECT",
+        "category": "IO / Shift Datapath",
+        "file": "src/core.v",
+        "target": "                  gpio_out[pin_idx] <= rd_val[7];",
+        "replacement": "                  gpio_out[pin_idx] <= rd_val[6];",
+        "description": "Bit-serial protocol engine bug: SHIFTOUT MSB mode emits rd_val[6] instead of MSB rd_val[7], corrupting CAN FD, SPI, and UART frames",
+    },
 ]
 
 
