@@ -1,10 +1,10 @@
 {
   "timestamp": "2026-09-15T20:32:09Z",
-  "total_mutants": 31,
-  "killed": 31,
+  "total_mutants": 32,
+  "killed": 32,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 2555.03,
+  "campaign_time_sec": 2609.14,
   "mutants": [
     {
       "id": "MUT_01_BRANCH_JZ_INVERT",
@@ -253,6 +253,14 @@
       "description": "Warm-boot skip logic bug: always enters serial load even when LOAD_REQ=0, breaking instant warm-boot and brownout recovery",
       "status": "KILLED",
       "elapsed_sec": 101.4
+    },
+    {
+      "id": "MUT_32_HALT_RUNAWAY",
+      "category": "Power / Control",
+      "file": "src/core.v",
+      "description": "Power and execution control bug: OP_HALT fails to assert halted, causing runaway instruction execution and continuous dynamic switching power instead of entering static idle",
+      "status": "KILLED",
+      "elapsed_sec": 54.11
     }
   ]
 }

@@ -97,7 +97,10 @@ bounded problem").
   done: `tools/bridge_matrix_model.py` (`build_bridge_i2c_master_to_spi_asm`, `build_bridge_uart_to_can_asm`, `build_bridge_onewire_to_uart_asm`, `build_bridge_multi_byte_stream_asm`) + `test/test_bridge_matrix.py` (6/6 cocotb tests pass: I2C read to SPI Master Mode 0 egress, UART RX to open-drain CAN 2.0A egress with ACK monitoring, 1-Wire read timeslots to UART TX 8-N-1 egress, multi-byte UART-to-SPI streaming across [0x11, 0x22, 0x33], ingress framing error isolation suppressing spurious CAN transmission, and unused pin High-Z electrical safety), `MUT_30` killed.
 - ~~Hardware Watchdog Timer & Brownout Recovery Circuit Feasibility Study~~ -
   done: `docs/watchdog_study.md` (PPA, BOD supervisor co-design, and WWDT feasibility study), `tools/watchdog_model.py` (`WatchdogModel` cycle-accurate simulator with windowed bounds, two-token FSM, sticky reset registers; firmware generators for periodic service, task hang, early-pet window violation, brownout recovery) + `test/test_watchdog.py` (5/5 cocotb tests pass: normal WWDT servicing, task deadlock timeout and soft reset, windowed early-pet violation trap, brownout warm-boot recovery in 3 cycles, reset electrical isolation), `MUT_31` killed.
-- Dynamic Power & Energy Optimization Study (Clock Gating & Instruction Micro-Architectural Profiling).
+- ~~Dynamic Power & Energy Optimization Study (Clock Gating & Instruction Micro-Architectural Profiling)~~ -
+  done: `docs/power_study.md` (PPA and CMOS power physics study on IHP SG13G2 130nm standard cells), `tools/power_model.py` (`PowerModel` cycle-accurate energy tracker with IHP 130nm parameters, clock gating models, and benchmark firmware generators) + `test/test_power.py` (6/6 cocotb tests pass: instruction power profiling, wait stall clock gating 98.68% reduction, waitedge low-power stall with 1-cycle instant wakeup, pad capacitive load linear energy scaling 20pF vs 50pF, UART protocol energy benchmark 104 pJ/bit, halted state electrical safety), `MUT_32` killed.
 - Cryptographic Accelerator Feasibility Study (ChaCha8 / Poly1305 / SHA-256 bit-sliced microcode).
+- Physical Die Floorplan, Pad Placement & Package Pinout Co-Design Study.
+- Asynchronous Event Notification & Level/Edge Interrupt Controller Subsystem.
 
 

@@ -273,6 +273,14 @@ MUTANTS = [
         "replacement": "          end else if (1'b1) begin",
         "description": "Warm-boot skip logic bug: always enters serial load even when LOAD_REQ=0, breaking instant warm-boot and brownout recovery",
     },
+    {
+        "id": "MUT_32_HALT_RUNAWAY",
+        "category": "Power / Control",
+        "file": "src/core.v",
+        "target": "              OP_HALT: halted <= 1'b1;",
+        "replacement": "              OP_HALT: halted <= 1'b0;",
+        "description": "Power and execution control bug: OP_HALT fails to assert halted, causing runaway instruction execution and continuous dynamic switching power instead of entering static idle",
+    },
 ]
 
 

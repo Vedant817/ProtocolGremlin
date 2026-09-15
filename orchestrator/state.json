@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-watchdog-brownout-verified",
+  "phase": "isa-v1-power-clockgating-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 28 complete (Hardware Watchdog Timer & Brownout Recovery Circuit Feasibility Study). Next: Iteration 29 (Dynamic Power & Energy Optimization Study: Clock Gating & Micro-Architectural Profiling).",
+  "active_objective": "Continuous engineering loop: Iteration 29 complete (Dynamic Power & Energy Optimization Study: Clock Gating & Instruction Micro-Architectural Profiling). Next: Iteration 30 (Cryptographic Accelerator Feasibility Study: ChaCha8 / Poly1305 / SHA-256 bit-sliced microcode).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 28,
+  "iterations": 29,
   "halt": false,
-  "notes": "Iteration 28 complete: Authored docs/watchdog_study.md (PPA, circuit-level BOD supervisor co-design, and WWDT architectural feasibility study). Created tools/watchdog_model.py (WatchdogModel cycle-accurate simulator with windowed bounds [T_min, T_max], two-token keyed service FSM, sticky reset registers; firmware generators for periodic service, intentional task hang, early-pet window violation, and brownout recovery) and test/test_watchdog.py (5/5 tests pass: normal WWDT servicing, task deadlock timeout and soft reset, windowed early-pet violation trap, brownout warm-boot recovery in 3 cycles, reset electrical isolation). Added test_watchdog to test/Makefile. Full regression suite: 137/137 tests PASS (100.0%) across 26 modules. Added MUT_31_WARM_BOOT_IGNORE in scripts/mutate.py (killed in 101.40s, 31/31 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 76s). Gate-level simulation confirmed 8/8 physical tests pass in 29.97s."
+  "notes": "Iteration 29 complete: Authored docs/power_study.md (comprehensive PPA and CMOS power physics study on IHP SG13G2 130nm standard cells). Created tools/power_model.py (PowerModel cycle-accurate energy tracker with IHP 130nm parameters, clock gating models, and benchmark firmware generators) and test/test_power.py (6/6 tests pass: instruction power profiling, wait stall clock gating 98.68% reduction, waitedge low-power stall with 1-cycle instant wakeup, pad capacitive load linear energy scaling 20pF vs 50pF, UART protocol energy benchmark 104 pJ/bit, halted state electrical safety). Added test_power to test/Makefile. Full regression suite: 143/143 tests PASS (100.0%) across 27 modules. Added MUT_32_HALT_RUNAWAY in scripts/mutate.py (killed in 54.11s, 32/32 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 77s). Gate-level simulation confirmed 8/8 physical tests pass in 26.31s."
 }

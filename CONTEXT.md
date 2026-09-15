@@ -17,7 +17,7 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 
 ## Current status
 
-- **Phase:** ISA v1 complete — Iterations 1–28 complete (Hardware Watchdog Timer & Brownout Recovery Circuit Feasibility Study, Multi-Protocol Bus Bridging Matrix: I2C-to-SPI, UART-to-CAN, 1-Wire-to-UART, Multi-Byte Streaming, 10 Mbit Ethernet 10BASE-T Physical Signaling Feasibility Study & Link Layer Engine, Automated Protocol Fuzzing & Anomaly Injection Campaign, End-to-End Autonomous Protocol Pipeline Demo & Cross-Protocol Translation Bridge, Low-Speed USB 1.1 Physical Layer & Packet Framing Engine, Multi-Lane Dual-Core Protocol Processor Architecture & Physical PPA Feasibility Study, Deterministic Fault Injection & Protocol Stress Engine, Gate-Level Simulation Suite with Real Standard Cell Timing Models GATES=yes, Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine, High-Level Data Link Control HDLC / SDLC ISO/IEC 13239 Bit-Oriented Protocol Engine, Pure Firmware Autobaud Rate Auto-Discovery Engine & Program RAM Architecture Study, DMX512 ANSI E1.11 / USITT DMX512-A Stage Lighting Protocol Engine, CAN 2.0A Controller Physical-Layer Protocol Engine, Manchester Biphase-L IEEE 802.3 / MIL-STD-1553 Encoder & Decoder Engine, ARM SWD Interface Engine & DPIDR Readout, JTAG IEEE 1149.1 TAP Controller Engine with 32-bit IDCODE Readout & BYPASS Verification, PS/2 Bidirectional Host Controller Engine, Dallas 1-Wire Master with Single-Cycle Presence Pulse Discovery, Zero-Jitter UART RX with WAITEDGE, Bootloader CRC-8 Hardware Protection, I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART TX, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
+- **Phase:** ISA v1 complete — Iterations 1–29 complete (Dynamic Power & Energy Optimization Study: Clock Gating & Instruction Micro-Architectural Profiling, Hardware Watchdog Timer & Brownout Recovery Circuit Feasibility Study, Multi-Protocol Bus Bridging Matrix: I2C-to-SPI, UART-to-CAN, 1-Wire-to-UART, Multi-Byte Streaming, 10 Mbit Ethernet 10BASE-T Physical Signaling Feasibility Study & Link Layer Engine, Automated Protocol Fuzzing & Anomaly Injection Campaign, End-to-End Autonomous Protocol Pipeline Demo & Cross-Protocol Translation Bridge, Low-Speed USB 1.1 Physical Layer & Packet Framing Engine, Multi-Lane Dual-Core Protocol Processor Architecture & Physical PPA Feasibility Study, Deterministic Fault Injection & Protocol Stress Engine, Gate-Level Simulation Suite with Real Standard Cell Timing Models GATES=yes, Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine, High-Level Data Link Control HDLC / SDLC ISO/IEC 13239 Bit-Oriented Protocol Engine, Pure Firmware Autobaud Rate Auto-Discovery Engine & Program RAM Architecture Study, DMX512 ANSI E1.11 / USITT DMX512-A Stage Lighting Protocol Engine, CAN 2.0A Controller Physical-Layer Protocol Engine, Manchester Biphase-L IEEE 802.3 / MIL-STD-1553 Encoder & Decoder Engine, ARM SWD Interface Engine & DPIDR Readout, JTAG IEEE 1149.1 TAP Controller Engine with 32-bit IDCODE Readout & BYPASS Verification, PS/2 Bidirectional Host Controller Engine, Dallas 1-Wire Master with Single-Cycle Presence Pulse Discovery, Zero-Jitter UART RX with WAITEDGE, Bootloader CRC-8 Hardware Protection, I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART TX, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
 - **What exists:**
   1. **Core:** 24 opcodes, 4 registers, bidirectional GPIO bus on `uio[7:0]`,
      `SHIFTOUT`/`SHIFTIN` with MSB/LSB direction select (`imm8[3]`), `WAITEDGE`
@@ -55,22 +55,23 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
      Automated Protocol Fuzzing & Anomaly Injection Engine (`tools/protocol_fuzzer.py`) generating constrained-random phase-bounded edge jitter, false-start glitches, framing errors, and recovery sequences,
      10 Mbit Ethernet 10BASE-T Physical Signaling & Framing Engine (`tools/ethernet_model.py`, `docs/ethernet_study.md`) generating Normal Link Pulses (NLP), LSB-first Manchester biphase packets, SFD sync, TP_IDL delimiters, and IEEE 802.3 CRC-32 Frame Check Sequences,
      Universal Multi-Protocol Bus Bridging Matrix Engine (`tools/bridge_matrix_model.py`) realizing I2C-to-SPI, UART-to-CAN with ACK monitoring, 1-Wire-to-UART, and multi-byte continuous stream translations with framing error isolation,
-     and Hardware Watchdog Timer & Brownout Recovery Subsystem (`docs/watchdog_study.md`, `tools/watchdog_model.py`) supporting programmable windowed timing [T_min, T_max], keyed two-token service sequence (0x5A, 0xA5), sticky reset status registers (0x01 cold, 0x02 WDT timeout, 0x03 BOD, 0x05 early violation), and instant warm-boot recovery (<10 cycles),
-     paired with independent `UartReceiver`, `UartTransmitter`, `SpiSlave`, `I2cSlave`, `OneWireSlave`, `PS2Device`, `JtagTarget`, `SwdTarget`, `ManchesterDecoder`, `CanReceiverModel`, `Dmx512ReceiverModel`, `AutobaudTransmitterModel`, `HdlcTransmitter`, `HdlcReceiver`, `TrafficGenerator`, `DualCoreSystem`, `UsbReceiver`, `ProtocolFuzzer`, `EthernetTransceiverModel`, and `WatchdogModel` verification models.
-  6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 31
-     architectural fault categories, measuring **100.0% kill rate (31/31 killed)**
+     Hardware Watchdog Timer & Brownout Recovery Subsystem (`docs/watchdog_study.md`, `tools/watchdog_model.py`) supporting programmable windowed timing [T_min, T_max], keyed two-token service sequence (0x5A, 0xA5), sticky reset status registers (0x01 cold, 0x02 WDT timeout, 0x03 BOD, 0x05 early violation), and instant warm-boot recovery (<10 cycles),
+     and Dynamic Power & Energy Optimization Subsystem (`docs/power_study.md`, `tools/power_model.py`) modeling IHP 130nm CMOS power physics, 3-tier clock gating hierarchy (Program RAM write gating, datapath stall gating, ALU operand isolation), pad capacitive load scaling (20-50 pF), and protocol energy efficiency benchmarks ($pJ/\text{bit}$),
+     paired with independent `UartReceiver`, `UartTransmitter`, `SpiSlave`, `I2cSlave`, `OneWireSlave`, `PS2Device`, `JtagTarget`, `SwdTarget`, `ManchesterDecoder`, `CanReceiverModel`, `Dmx512ReceiverModel`, `AutobaudTransmitterModel`, `HdlcTransmitter`, `HdlcReceiver`, `TrafficGenerator`, `DualCoreSystem`, `UsbReceiver`, `ProtocolFuzzer`, `EthernetTransceiverModel`, `WatchdogModel`, and `PowerModel` verification models.
+  6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 32
+     architectural fault categories, measuring **100.0% kill rate (32/32 killed)**
      (citing Huang et al. 2015, Firefly 2025).
   7. **Constrained-Random Fuzzing:** Automated instruction fuzzer (`tools/fuzzer.py`)
      with delta-debugging program shrinker, verified in `test/test_fuzz.py`.
   8. **Gate-Level Timing Verification:** Full post-synthesis physical netlist simulation
      with calibrated CMOS standard cell timing models (`test/simcells_timing.v`, `scripts/test_gl.sh`)
-     verifying 8/8 physical protocol tests across external chip pins in 29.97s.
+     verifying 8/8 physical protocol tests across external chip pins in 26.31s.
   9. **Real PPA Baseline:** Mapped with Yosys 0.69+ (`scripts/synth.sh`), measuring
      19,291 CMOS cells (37,832 GE). Active processor logic is only 1,580 cells
      (~2.2 kGE) with 91.8% of cells in the synthesized flip-flop RAM matrix.
      Multi-lane study proves Split Memory ($2 \times 128 \times 16$) adds only 1,775 cells
      (+9.2% area, ~40.5 kGE total) and fits comfortably in 8x4 tiles (<65% density).
-- **What's verified:** 137/137 RTL tests pass via `scripts/regress.sh` and 8/8 gate-level timing tests pass via `scripts/test_gl.sh`:
+- **What's verified:** 143/143 RTL tests pass via `scripts/regress.sh` and 8/8 gate-level timing tests pass via `scripts/test_gl.sh`:
   (1) cycle-by-cycle differential test (`test/test.py`),
   (2) UART TX edge-case verification (`0x00`, `0xFF`, `0x55`, `0xAA` at 4, 8, 16 cycles/bit),
   (3) UART TX pseudorandom frames,
@@ -207,7 +208,13 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
   (134) Task deadlock timeout trap asserting wdt_alarm and soft reset with status 0x02,
   (135) Windowed early-service violation detection (T < T_min) asserting reset with status 0x05,
   (136) Transient power brownout recovery pulse on rst_n triggering instant warm boot in 3 cycles (<10 cycles target) with RAM preserved and completed execution (R2=0xAA),
-  (137) Watchdog and brownout reset physical electrical safety (uio_oe strictly 0x00 High-Z).
+  (137) Watchdog and brownout reset physical electrical safety (uio_oe strictly 0x00 High-Z),
+  (138) Micro-architectural power instruction profiling verifying ALU datapath power tracks carry propagation (308.52 uW ungated -> 17.09 uW gated, 1.77 pJ/insn),
+  (139) Fine-grained WAIT stall clock gating achieving 98.68% dynamic power reduction (303.0 uW down to 3.99 uW) with exact 100% cycle-count determinism,
+  (140) WAITEDGE low-power stall with deterministic 1-cycle instant wakeup latency upon pin edge detection,
+  (141) External GPIO pad capacitive load linear energy scaling across 20 pF (5,324 uW) and 50 pF (13,310 uW) matching physical theoretical 2.50x ratio,
+  (142) Protocol-level energy efficiency benchmarking on UART 8-N-1 (104.0 pJ/bit gated vs 308.0 pJ/bit ungated, 66.2% session energy reduction),
+  (143) Core halted state zero dynamic switching confirmation with pin isolation and static leakage baseline (0.58 uW).
 - **Git:** Sequence of small, reviewable commits (`git log`).
 
 ## Repository map
@@ -215,11 +222,11 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 ```text
 src/            RTL: project.v (TT wrapper), core.v, alu.v, gpio.v, program_ram.v
 firmware/       Assembly programs (loop_demo.asm)
-tools/          assembler.py, isa_model.py, uart_model.py, spi_model.py, i2c_model.py, onewire_model.py, ps2_model.py, jtag_model.py, swd_model.py, manchester_model.py, can_model.py, dmx512_model.py, autobaud_model.py, hdlc_model.py, classifier_model.py, fault_injector_model.py, multilane_model.py, usb_model.py, pipeline_model.py, protocol_fuzzer.py, ethernet_model.py, bridge_matrix_model.py, watchdog_model.py, fuzzer.py
-test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz, test_spi, test_i2c, test_bootload, test_onewire, test_ps2, test_jtag, test_swd, test_manchester, test_can, test_dmx512, test_autobaud, test_hdlc, test_classifier, test_fault_injection, test_multilane, test_usb, test_pipeline, test_protocol_fuzz, test_ethernet, test_bridge_matrix, test_watchdog, test_gate_level)
+tools/          assembler.py, isa_model.py, uart_model.py, spi_model.py, i2c_model.py, onewire_model.py, ps2_model.py, jtag_model.py, swd_model.py, manchester_model.py, can_model.py, dmx512_model.py, autobaud_model.py, hdlc_model.py, classifier_model.py, fault_injector_model.py, multilane_model.py, usb_model.py, pipeline_model.py, protocol_fuzzer.py, ethernet_model.py, bridge_matrix_model.py, watchdog_model.py, power_model.py, fuzzer.py
+test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz, test_spi, test_i2c, test_bootload, test_onewire, test_ps2, test_jtag, test_swd, test_manchester, test_can, test_dmx512, test_autobaud, test_hdlc, test_classifier, test_fault_injection, test_multilane, test_usb, test_pipeline, test_protocol_fuzz, test_ethernet, test_bridge_matrix, test_watchdog, test_power, test_gate_level)
 formal/         SymbiYosys formal harness (core.sby, core_formal.v)
 scripts/        setup_env.sh, regress.sh, test_gl.sh, mutate.py, synth.sh, synth.ys
-docs/           architecture, ISA, verification, toolchain, PPA, limitations, multilane_study, ethernet_study, watchdog_study
+docs/           architecture, ISA, verification, toolchain, PPA, limitations, multilane_study, ethernet_study, watchdog_study, power_study
 orchestrator/   Durable state (decisions.md, queue.md, metrics.json, experiments.jsonl)
 ```
 
@@ -227,10 +234,10 @@ orchestrator/   Durable state (decisions.md, queue.md, metrics.json, experiments
 
 ```bash
 bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
-bash scripts/regress.sh     # runs all 137 cocotb regression tests (~60s)
+bash scripts/regress.sh     # runs all 143 cocotb regression tests (~60s)
 bash scripts/test_gl.sh     # runs gate-level timing simulation (8/8 tests pass, ~30s)
 sby -f formal/core.sby      # runs SymbiYosys formal verification with Z3 (20 steps pass)
-python3 scripts/mutate.py   # runs RTL mutation testing campaign (31/31 killed)
+python3 scripts/mutate.py   # runs RTL mutation testing campaign (32/32 killed)
 bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 ```
 
@@ -251,14 +258,15 @@ bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 - 10 Mbit Ethernet 10BASE-T physical signaling feasibility proven with cycle-accurate Normal Link Pulses (NLP), LSB-first Manchester framing, SFD delimiter synchronization, TP_IDL delimiters, and IEEE 802.3 CRC-32 Frame Check Sequence.
 - Multi-Protocol Bus Bridging Matrix implemented and proven across I2C-to-SPI, UART-to-CAN (with bit-stuffing, CRC-15, and ACK monitoring), 1-Wire-to-UART, and continuous multi-byte streaming with ingress error isolation.
 - Hardware Watchdog Timer & Brownout Recovery Subsystem implemented with windowed timing [T_min, T_max], two-token key protocol (0x5A, 0xA5), sticky reset status registers, and instant warm-boot recovery (<10 cycles).
+- Dynamic Power & Energy Optimization Study completed: Program RAM write clock gating cuts active execution dynamic power by >94%, stall clock gating reduces `WAIT`/`WAITEDGE` power by 98.68% (303.0 uW down to 3.99 uW) with deterministic 1-cycle edge wakeup latency, and protocol energy efficiency benchmarked (10BASE-T 18.5 pJ/bit, SPI 27.0 pJ/bit, UART 104 pJ/bit).
 
 ## What to work on next
 
 Full prioritized backlog: `orchestrator/queue.md`. Entering continuous loop:
 
-1. Iteration 29: Dynamic Power & Energy Optimization Study (Clock Gating & Instruction Micro-Architectural Profiling).
-2. Iteration 30: Cryptographic Accelerator Feasibility Study (ChaCha8 / Poly1305 / SHA-256 bit-sliced microcode).
-3. Iteration 31: Physical Die Floorplan, Pad Placement & Package Pinout Co-Design Study.
+1. Iteration 30: Cryptographic Accelerator Feasibility Study (ChaCha8 / Poly1305 / SHA-256 bit-sliced microcode).
+2. Iteration 31: Physical Die Floorplan, Pad Placement & Package Pinout Co-Design Study.
+3. Iteration 32: Asynchronous Event Notification & Level/Edge Interrupt Controller Subsystem.
 
 
 
