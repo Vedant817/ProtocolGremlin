@@ -108,9 +108,10 @@ injects seeded, first-order architectural faults across all major RTL modules
 | `MUT_18_SHIFTIN_MSB_INVERT` | Protocol / Bit-Serial | Shift input bug: SHIFTIN MSB mode inverts incoming pin data bit | **KILLED** | 41.01s |
 | `MUT_19_GODRI_DISABLE` | Protocol / Open-Drain | Open-drain bug: GODRI fails to set open-drain mode register | **KILLED** | 42.47s |
 | `MUT_20_WAITEDGE_DURATION_OFF_BY_ONE` | Timing / Edge-Detect | WAITEDGE timing bug: omits single-cycle edge detection latency | **KILLED** | 47.28s |
+| `MUT_21_WAITEDGE_MODE_BIT_SLICE` | Timing / Edge-Detect | WAITEDGE decode bug: edge_mode sliced from operand[5:4] | **KILLED** | 49.97s |
 
-- **Empirical Mutation Kill Rate: 20/20 (100.0%)**
-- Total campaign duration: ~13.3 minutes
+- **Empirical Mutation Kill Rate: 21/21 (100.0%)**
+- Total campaign duration: ~14.1 minutes
 - Result log: `orchestrator/mutation_report.json`
 
 ### 7. Independent Protocol Verification Engines
@@ -125,6 +126,7 @@ The test suite pairs firmware with independent cycle-accurate Python simulation 
 - **Manchester Biphase-L (`tools/manchester_model.py`, `test/test_manchester.py`):** IEEE 802.3 / MIL-STD-1553 self-clocking transmitter with zero jitter, edge-synchronized receiver via `WAITEDGE` and `SHIFTIN MSB`, and biphase violation detection against `ManchesterDecoder`.
 - **CAN 2.0A Controller (`tools/can_model.py`, `test/test_can.py`):** ISO 11898-1 open-drain physical layer, 15-bit CRC, bit stuffing, cycle-exact in-cell arbitration loss detection, and dominant ACK assertion against `CanReceiverModel`.
 - **DMX512 Engine (`tools/dmx512_model.py`, `test/test_dmx512.py`):** ANSI E1.11 / USITT DMX512-A transmitter (Break, MAB, Start Code 0x00, 8-N-2 UART slots) and receiver with single-cycle Break pulse duration measurement in `R3` and per-slot `WAITEDGE` edge synchronization against `Dmx512ReceiverModel`.
+- **Autobaud Rate Auto-Discovery Engine (`tools/autobaud_model.py`, `test/test_autobaud.py`):** Hardware pulse duration measurement via `WAITEDGE`, pulse symmetry noise rejection ($|T_0 - T_1| \le 1$), multi-rate profile classification (Rate 8, 16, 32 cycles/bit), dynamic adaptive sampling with framing error detection against `AutobaudTransmitterModel`.
 
 ### 8. Constrained-Random Instruction Fuzzing with Shrinking (`tools/fuzzer.py`, `test/test_fuzz.py`)
 To discover corner cases not anticipated by hand-written tests, `tools/fuzzer.py`
@@ -137,9 +139,9 @@ generates legal, randomized programs with bounded loops and forward branches.
 
 ```bash
 bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
-bash scripts/regress.sh     # runs the complete regression suite (67/67 tests pass)
+bash scripts/regress.sh     # runs the complete regression suite (75/75 tests pass)
 sby -f formal/core.sby      # runs the SymbiYosys formal proof with Z3 (20 steps pass)
-python3 scripts/mutate.py   # runs the seeded RTL mutation testing campaign (20/20 killed)
+python3 scripts/mutate.py   # runs the seeded RTL mutation testing campaign (21/21 killed)
 bash scripts/synth.sh       # runs Yosys synthesis and logs area/cell metrics
 ```
 

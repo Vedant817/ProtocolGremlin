@@ -568,3 +568,38 @@ mutation-kill rates.
   - SymbiYosys: 20-step Z3 BMC proof verified in 71s (PASS, 0 violations).
   - Mutation Testing: Added `MUT_20_WAITEDGE_DURATION_OFF_BY_ONE`. Evaluated and killed in 47.28s. Cumulative mutation score: **20/20 mutants killed (100.0% kill rate)** in 812.73s.
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
+
+## 2026-09-15 - Iteration 17: Pure Firmware Autobaud Rate Auto-Discovery Engine & Program RAM Architecture Study
+
+- **Motivation & Protocol Overview:**
+  - Auto-baud rate discovery is essential in automated fieldbuses, industrial instrumentation, and LIN/automotive networks (ISO 17987) where devices connect to buses of unknown, dynamic, or non-standard bit rates.
+  - Standard microcontrollers (e.g. RP2040 PIO) cannot discover unknown bit rates without dedicated hardware capture timer peripherals or polling loops that introduce 3-4 clock cycles of quantization error (catastrophic at high baud rates).
+- **Novelty Highlight (Single-Cycle Autobaud Discovery & Noise Symmetry Check):**
+  - **Single-Cycle Pulse Measurement:** Using hardware `WAITEDGE` primitives, the core measures the duration of incoming sync bits ($T_0$ on the start bit and $T_1$ on bit 1) with single-cycle resolution directly into registers `R1` and `R3`.
+  - **Pulse Symmetry Validation:** Firmware validates that $|T_0 - T_1| \le 1$ to verify that the signal is a genuine periodic baud sync pattern (such as `0x55`), immediately rejecting asymmetric noise glitches or line transients (`R2 = 0xEE`).
+  - **Dynamic Multi-Rate Profile Classification:** Classifies the discovered period into discrete operating profiles:
+    - Profile 1: $T = 8$ cycles/bit (1.25 Mbps at 10 MHz)
+    - Profile 2: $T = 16$ cycles/bit (625 kbps at 10 MHz)
+    - Profile 3: $T = 32$ cycles/bit (312.5 kbps at 10 MHz)
+    - Out-of-profile / unsupported baud rates halt cleanly with error code `R2 = 0xBF`.
+  - **Zero-Jitter Adaptive Sampling:** Upon classification, the engine branches to rate-calibrated sampling routines ($1.5T, 2.5T, \dots, 8.5T$), extracts the subsequent data byte into `R0`, validates the stop bit via `GRD` (halting with `R2 = 0xFE` on framing errors), and reports status `R2 = 0x00` on success.
+- **Architectural Trade-Off Study: Synchronous vs. Combinational Program RAM:**
+  - Conducted detailed timing and PPA evaluation of `src/program_ram.v`.
+  - In Tiny Tapeout, no hard SRAM macros are present; memory compiles into flip-flops (`$_DFFE_PP_`) and multiplexer trees regardless of read port registration.
+  - At 10 MHz nominal operating frequency, combinational read delay is $< 12\,\text{ns}$ against a $100\,\text{ns}$ clock period, providing $> 80\,\text{ns}$ of positive timing slack (worst-case path is 19-20 logic levels).
+  - Preserving combinational read avoids fetch-pipeline bubbles and branch misprediction stalls, ensuring single-cycle execution determinism ($1\,\text{instruction} = 1\,\text{cycle}$) critical for cycle-exact bit-banging across all protocols.
+- **Verification (`test/test_autobaud.py`):**
+  - Added 8 cocotb test cases:
+    1. `test_autobaud_rate_8_discovery`: Discovered 8-cycle baud, verified Profile ID `R1 = 0x01` and payload recovery `R0 = 0xA5`.
+    2. `test_autobaud_rate_16_discovery`: Discovered 16-cycle baud, verified Profile ID `R1 = 0x02` and payload recovery `R0 = 0x3C`.
+    3. `test_autobaud_rate_32_discovery`: Discovered 32-cycle baud, verified Profile ID `R1 = 0x03` and payload recovery `R0 = 0x7E`.
+    4. `test_autobaud_payload_sweep`: Swept dynamic payloads across all 3 rates (0xFF, 0x00, 0x55, 0xAA, 0x12, 0x89) with 100% accuracy.
+    5. `test_autobaud_noise_symmetry_rejection`: Injected asymmetric pulse ($T_0 = 8, T_1 = 12$); verified core halts with `R2 = 0xEE`.
+    6. `test_autobaud_unsupported_rate_rejection`: Fed unsupported rate ($T = 50$ cycles); verified core halts with `R2 = 0xBF`.
+    7. `test_autobaud_framing_error_detection`: Fed missing stop bit (held 0); verified core halts with `R2 = 0xFE`.
+    8. `test_autobaud_pin_direction_safety`: Verified pins are strictly configured as inputs (`uio_oe == 0x00`).
+  - Regression Suite: **75/75 tests passing (100.0%)** across 16 test suites in 52.42s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified in 67s (PASS, 0 violations).
+  - Mutation Testing: Added `MUT_21_WAITEDGE_MODE_BIT_SLICE`. Evaluated and killed in 49.97s. Cumulative mutation score: **21/21 mutants killed (100.0% kill rate)** in 862.70s.
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).

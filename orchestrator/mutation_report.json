@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-15T04:21:27Z",
+  "timestamp": "2026-09-15T04:33:34Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 47.34,
+  "campaign_time_sec": 50.02,
   "mutants": [
     {
-      "id": "MUT_20_WAITEDGE_DURATION_OFF_BY_ONE",
+      "id": "MUT_21_WAITEDGE_MODE_BIT_SLICE",
       "category": "Timing / Edge-Detect",
       "file": "src/core.v",
-      "description": "WAITEDGE timing calculation bug: omits single-cycle edge detection latency from measured pulse width",
+      "description": "WAITEDGE decode bug: edge_mode sliced from operand[5:4] instead of operand[4:3]",
       "status": "KILLED",
-      "elapsed_sec": 47.28
+      "elapsed_sec": 49.97
     }
   ]
 }

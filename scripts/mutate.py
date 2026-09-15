@@ -185,6 +185,14 @@ MUTANTS = [
         "replacement": "write_rd(rd_idx, edge_wait_cnt);",
         "description": "WAITEDGE timing calculation bug: omits single-cycle edge detection latency from measured pulse width",
     },
+    {
+        "id": "MUT_21_WAITEDGE_MODE_BIT_SLICE",
+        "category": "Timing / Edge-Detect",
+        "file": "src/core.v",
+        "target": "wire [1:0] edge_mode = operand[4:3];",
+        "replacement": "wire [1:0] edge_mode = operand[5:4];",
+        "description": "WAITEDGE decode bug: edge_mode sliced from operand[5:4] instead of operand[4:3]",
+    },
 ]
 
 

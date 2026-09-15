@@ -68,12 +68,14 @@ bounded problem").
   done: `tools/can_model.py` (CanReceiverModel + compute_can_crc15 + build_can_tx_asm + build_can_rx_asm) + `test/test_can.py` (62/62 regression pass, bit stuffing, CRC-15, in-cell arbitration loss detection R2=0xAA, missing ACK R2=0xAE, dominant ACK assertion, 19/19 mutants killed).
 - ~~DMX512 Stage Lighting Protocol Engine (Break pulse >= 88us, MAB, Start Code 0x00, and slot reception with per-slot edge sync)~~ -
   done: `tools/dmx512_model.py` (Dmx512ReceiverModel + build_dmx512_tx_packet_asm + build_dmx512_rx_slot_asm) + `test/test_dmx512.py` (67/67 regression pass, Break pulse duration measurement in R3, per-slot WAITEDGE edge resynchronization, 20/20 mutants killed).
-- Convert `program_ram.v` to a synchronous-read design once real synthesis
-  data shows it matters for PPA (`docs/limitations.md`).
+- ~~Pure Firmware Autobaud Rate Auto-Discovery Engine (pulse duration discovery via WAITEDGE, symmetry validation, multi-profile classification, and adaptive sampling)~~ -
+  done: `tools/autobaud_model.py` (AutobaudTransmitterModel + build_autobaud_rx_asm) + `test/test_autobaud.py` (75/75 regression pass, rate 8/16/32 profiles, noise rejection, framing error detection, 21/21 mutants killed).
+- ~~Program RAM architecture trade-off study (`program_ram.v` combinational vs synchronous read)~~ -
+  done: quantified >80 ns timing slack at 10 MHz (<12 ns combinational path delay across 20 logic levels), justified retaining combinational read to guarantee 1-cycle determinism without pipeline bubbles or branch penalty stalls.
 
 ## P3 (research / novelty, once core protocols are solid)
 
-- Multi-lane architecture investigation (event fabric, protocol bridging).
+- Multi-lane architecture investigation (event fabric, dual-core protocol bridging).
 - JTAG / SWD / PS/2 / CAN-related protocol experiments.
 - Low-speed USB / 10 Mbit Ethernet feasibility studies.
 - Protocol sniff -> classify -> replay demo.

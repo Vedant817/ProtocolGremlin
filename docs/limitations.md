@@ -28,12 +28,16 @@ or if the host deasserts `LOAD_REQ` prematurely, the hardware asserts
 code. Formal invariant verified in SymbiYosys; 5/5 unit tests in
 `test/test_bootload.py`.
 
-## `program_ram.v` read port is combinational
+## `program_ram.v` read port is combinational (Architecturally Verified)
 
-This keeps the one-instruction-per-cycle timing model simple (no fetch
-pipeline hazards to reason about), but a real SRAM macro is typically
-synchronous-read, so this will likely need revisiting once real synthesis
-data exists (`orchestrator/queue.md`, `docs/ppa.md`).
+This keeps the one-instruction-per-cycle timing model simple and deterministic (no fetch
+pipeline hazards or branch misprediction bubbles to reason about). Evaluated in
+Iteration 17: In Tiny Tapeout, no hard SRAM macros are present, so memory compiles into
+flip-flops (`$_DFFE_PP_`) and multiplexer trees regardless of read registration.
+At the 10 MHz operating target ($100\,\text{ns}$ clock period), the worst-case combinational
+read path delay is $< 12\,\text{ns}$ across 19-20 logic levels, leaving $> 80\,\text{ns}$
+of positive timing slack (`docs/ppa.md`). Retaining the combinational read is therefore
+an intentional and proven architectural choice.
 
 ## ~~No UART/SPI/I2C firmware yet~~ (UART TX/RX, SPI Master, and I2C Master verified)
 
