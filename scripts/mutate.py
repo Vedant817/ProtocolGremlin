@@ -217,6 +217,14 @@ MUTANTS = [
         "replacement": "OP_JNZ: if (z) pc <= operand[ADDR_WIDTH-1:0];",
         "description": "Branch condition inversion in OP_JNZ (branches on z instead of !z)",
     },
+    {
+        "id": "MUT_25_BRANCH_JZ_INVERT",
+        "category": "Control / Branch",
+        "file": "src/core.v",
+        "target": "OP_JZ: if (z) pc <= operand[ADDR_WIDTH-1:0];",
+        "replacement": "OP_JZ: if (!z) pc <= operand[ADDR_WIDTH-1:0];",
+        "description": "Branch condition inversion in OP_JZ (branches on !z instead of z)",
+    },
 ]
 
 

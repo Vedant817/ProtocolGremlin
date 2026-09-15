@@ -83,7 +83,8 @@ bounded problem").
   done: `test/simcells_timing.v` (calibrated CMOS standard cell specify timing models: 50-80 ps gate, 200 ps clock-to-Q) + `test/test_gate_level.py` (8/8 tests pass in 23.10s: bootload, CRC-8 lock, UART TX, SPI Master, Manchester, DMX512, HDLC, open-drain bus safety) + `scripts/test_gl.sh`.
 - ~~Deterministic protocol fault injection & protocol stress engine (intentional CAN stuff errors, CRC corruption, I2C collision, UART framing error, HDLC aborts)~~ -
   done: `tools/fault_injector_model.py` (generators for CAN stuff error, CRC-15 corruption, EOF dominant glitch, HDLC abort, stuff omission, corrupted flag, UART framing error, sub-baud glitch, Manchester biphase violation) + `test/test_fault_injection.py` (9/9 cocotb tests pass, 100% detection by independent protocol models, MUT_24 killed).
-- Multi-lane architecture investigation (dual-core protocol bridging, event fabric within 8x4 Tiny Tapeout footprint).
+- ~~Multi-lane architecture investigation (dual-core protocol bridging, event fabric within 8x4 Tiny Tapeout footprint)~~ -
+  done: `docs/multilane_study.md` (PPA feasibility proof: Split Memory 2x128x16 adds only 1,775 cells, +9.2% area overhead, ~40.5 kGE total, <65% placement density), `tools/multilane_model.py` (DualCoreSystem, single-cycle event fabric, lock-free mailbox with overflow/underflow protection, build_dual_core_bridge_asm), `test/test_multilane.py` (6/6 cocotb tests pass: concurrent execution, 1-cycle event strobe wakeup, lock-free mailbox transfer, overflow/underflow protection, end-to-end Manchester-to-SPI bridge, pin isolation), `MUT_25` killed.
 - Low-speed USB / 10 Mbit Ethernet feasibility studies.
 - End-to-end Protocol Sniff -> Classify -> Replay pipeline demo.
 

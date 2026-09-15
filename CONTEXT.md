@@ -17,7 +17,7 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 
 ## Current status
 
-- **Phase:** ISA v1 complete — Iterations 1–21 complete (Deterministic Fault Injection & Protocol Stress Engine, Gate-Level Simulation Suite with Real Standard Cell Timing Models GATES=yes, Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine, High-Level Data Link Control HDLC / SDLC ISO/IEC 13239 Bit-Oriented Protocol Engine, Pure Firmware Autobaud Rate Auto-Discovery Engine & Program RAM Architecture Study, DMX512 ANSI E1.11 / USITT DMX512-A Stage Lighting Protocol Engine, CAN 2.0A Controller Physical-Layer Protocol Engine, Manchester Biphase-L IEEE 802.3 / MIL-STD-1553 Encoder & Decoder Engine, ARM SWD Interface Engine & DPIDR Readout, JTAG IEEE 1149.1 TAP Controller Engine with 32-bit IDCODE Readout & BYPASS Verification, PS/2 Bidirectional Host Controller Engine, Dallas 1-Wire Master with Single-Cycle Presence Pulse Discovery, Zero-Jitter UART RX with WAITEDGE, Bootloader CRC-8 Hardware Protection, I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART TX, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
+- **Phase:** ISA v1 complete — Iterations 1–22 complete (Multi-Lane Dual-Core Protocol Processor Architecture & Physical PPA Feasibility Study, Deterministic Fault Injection & Protocol Stress Engine, Gate-Level Simulation Suite with Real Standard Cell Timing Models GATES=yes, Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine, High-Level Data Link Control HDLC / SDLC ISO/IEC 13239 Bit-Oriented Protocol Engine, Pure Firmware Autobaud Rate Auto-Discovery Engine & Program RAM Architecture Study, DMX512 ANSI E1.11 / USITT DMX512-A Stage Lighting Protocol Engine, CAN 2.0A Controller Physical-Layer Protocol Engine, Manchester Biphase-L IEEE 802.3 / MIL-STD-1553 Encoder & Decoder Engine, ARM SWD Interface Engine & DPIDR Readout, JTAG IEEE 1149.1 TAP Controller Engine with 32-bit IDCODE Readout & BYPASS Verification, PS/2 Bidirectional Host Controller Engine, Dallas 1-Wire Master with Single-Cycle Presence Pulse Discovery, Zero-Jitter UART RX with WAITEDGE, Bootloader CRC-8 Hardware Protection, I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART TX, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
 - **What exists:**
   1. **Core:** 24 opcodes, 4 registers, bidirectional GPIO bus on `uio[7:0]`,
      `SHIFTOUT`/`SHIFTIN` with MSB/LSB direction select (`imm8[3]`), `WAITEDGE`
@@ -48,21 +48,23 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
      Autobaud Rate Auto-Discovery Engine with pulse symmetry noise rejection and multi-rate classification (`tools/autobaud_model.py`),
      HDLC / SDLC ISO/IEC 13239 bit-oriented framing engine with NRZI line coding, dynamic zero-bit insertion (stuffing) and deletion (destuffing), flag delimiters (`0x7E`), and abort detection (`tools/hdlc_model.py`),
      Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine (`tools/classifier_model.py`) fingerprinting UART, Manchester, 1-Wire, DMX512, HDLC, and noise via `WAITEDGE` pulse measurement and two's-complement bounds checking,
-     and Deterministic Fault Injection & Protocol Stress Engine (`tools/fault_injector_model.py`) generating intentional protocol violations across CAN, HDLC, UART, and Manchester standards,
-     paired with independent `UartReceiver`, `UartTransmitter`, `SpiSlave`, `I2cSlave`, `OneWireSlave`, `PS2Device`, `JtagTarget`, `SwdTarget`, `ManchesterDecoder`, `CanReceiverModel`, `Dmx512ReceiverModel`, `AutobaudTransmitterModel`, `HdlcTransmitter`, `HdlcReceiver`, and `TrafficGenerator` verification models.
-  6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 24
-     architectural fault categories, measuring **100.0% kill rate (24/24 killed)**
+     Deterministic Fault Injection & Protocol Stress Engine (`tools/fault_injector_model.py`) generating intentional protocol violations across CAN, HDLC, UART, and Manchester standards,
+     and Multi-Lane Dual-Core Architecture Simulator & Full-Duplex Bridge Engine (`tools/multilane_model.py`, `docs/multilane_study.md`) supporting concurrent execution, 1-cycle event strobe wakeup, and lock-free mailbox byte transfers,
+     paired with independent `UartReceiver`, `UartTransmitter`, `SpiSlave`, `I2cSlave`, `OneWireSlave`, `PS2Device`, `JtagTarget`, `SwdTarget`, `ManchesterDecoder`, `CanReceiverModel`, `Dmx512ReceiverModel`, `AutobaudTransmitterModel`, `HdlcTransmitter`, `HdlcReceiver`, `TrafficGenerator`, and `DualCoreSystem` verification models.
+  6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 25
+     architectural fault categories, measuring **100.0% kill rate (25/25 killed)**
      (citing Huang et al. 2015, Firefly 2025).
   7. **Constrained-Random Fuzzing:** Automated instruction fuzzer (`tools/fuzzer.py`)
      with delta-debugging program shrinker, verified in `test/test_fuzz.py`.
   8. **Gate-Level Timing Verification:** Full post-synthesis physical netlist simulation
      with calibrated CMOS standard cell timing models (`test/simcells_timing.v`, `scripts/test_gl.sh`)
-     verifying 8/8 physical protocol tests across external chip pins in 23.10s.
+     verifying 8/8 physical protocol tests across external chip pins in 29.33s.
   9. **Real PPA Baseline:** Mapped with Yosys 0.69+ (`scripts/synth.sh`), measuring
      19,291 CMOS cells (37,832 GE). Active processor logic is only 1,580 cells
      (~2.2 kGE) with 91.8% of cells in the synthesized flip-flop RAM matrix.
-     Fits the 8x4 competition tile footprint with >80 ns timing slack at 10 MHz.
-- **What's verified:** 98/98 RTL tests pass via `scripts/regress.sh` and 8/8 gate-level timing tests pass via `scripts/test_gl.sh`:
+     Multi-lane study proves Split Memory ($2 \times 128 \times 16$) adds only 1,775 cells
+     (+9.2% area, ~40.5 kGE total) and fits comfortably in 8x4 tiles (<65% density).
+- **What's verified:** 104/104 RTL tests pass via `scripts/regress.sh` and 8/8 gate-level timing tests pass via `scripts/test_gl.sh`:
   (1) cycle-by-cycle differential test (`test/test.py`),
   (2) UART TX edge-case verification (`0x00`, `0xFF`, `0x55`, `0xAA` at 4, 8, 16 cycles/bit),
   (3) UART TX pseudorandom frames,
@@ -160,7 +162,13 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
   (95) UART framing error injection (forced low stop bit raises UartFramingError),
   (96) UART sub-baud noise glitch rejection (1-cycle runt pulse ignored),
   (97) Manchester biphase violation injection,
-  (98) Fault injection pin electrical safety.
+  (98) Fault injection pin electrical safety,
+  (99) Dual-core concurrent execution and independent PC advancement,
+  (100) 1-cycle inter-core event strobe synchronization and WAITEDGE wakeup,
+  (101) Lock-free mailbox atomic byte transfer with FULL/EMPTY status flags,
+  (102) Mailbox overflow and underflow fault protection with state preservation,
+  (103) End-to-end full-duplex protocol bridge (Manchester Ingress -> Mailbox -> SPI Master Mode 0 Egress) verified against independent SpiSlave,
+  (104) Strict physical pin isolation and electrical safety between Lane 0 (uio[3:0]) and Lane 1 (uio[7:4]).
 - **Git:** Sequence of small, reviewable commits (`git log`).
 
 ## Repository map
@@ -168,11 +176,11 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 ```text
 src/            RTL: project.v (TT wrapper), core.v, alu.v, gpio.v, program_ram.v
 firmware/       Assembly programs (loop_demo.asm)
-tools/          assembler.py, isa_model.py, uart_model.py, spi_model.py, i2c_model.py, onewire_model.py, ps2_model.py, jtag_model.py, swd_model.py, manchester_model.py, can_model.py, dmx512_model.py, autobaud_model.py, hdlc_model.py, classifier_model.py, fault_injector_model.py, fuzzer.py
-test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz, test_spi, test_i2c, test_bootload, test_onewire, test_ps2, test_jtag, test_swd, test_manchester, test_can, test_dmx512, test_autobaud, test_hdlc, test_classifier, test_fault_injection, test_gate_level)
+tools/          assembler.py, isa_model.py, uart_model.py, spi_model.py, i2c_model.py, onewire_model.py, ps2_model.py, jtag_model.py, swd_model.py, manchester_model.py, can_model.py, dmx512_model.py, autobaud_model.py, hdlc_model.py, classifier_model.py, fault_injector_model.py, multilane_model.py, fuzzer.py
+test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz, test_spi, test_i2c, test_bootload, test_onewire, test_ps2, test_jtag, test_swd, test_manchester, test_can, test_dmx512, test_autobaud, test_hdlc, test_classifier, test_fault_injection, test_multilane, test_gate_level)
 formal/         SymbiYosys formal harness (core.sby, core_formal.v)
 scripts/        setup_env.sh, regress.sh, test_gl.sh, mutate.py, synth.sh, synth.ys
-docs/           architecture, ISA, verification, toolchain, PPA, limitations
+docs/           architecture, ISA, verification, toolchain, PPA, limitations, multilane_study
 orchestrator/   Durable state (decisions.md, queue.md, metrics.json, experiments.jsonl)
 ```
 
@@ -180,10 +188,10 @@ orchestrator/   Durable state (decisions.md, queue.md, metrics.json, experiments
 
 ```bash
 bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
-bash scripts/regress.sh     # runs all 98 cocotb regression tests (~60s)
+bash scripts/regress.sh     # runs all 104 cocotb regression tests (~60s)
 bash scripts/test_gl.sh     # runs gate-level timing simulation (8/8 tests pass, ~30s)
 sby -f formal/core.sby      # runs SymbiYosys formal verification with Z3 (20 steps pass)
-python3 scripts/mutate.py   # runs RTL mutation testing campaign (24/24 killed)
+python3 scripts/mutate.py   # runs RTL mutation testing campaign (25/25 killed)
 bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 ```
 
@@ -197,14 +205,15 @@ bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
   safety proofs, independent protocol decoders, 100% mutation kill rate,
   constrained-random fuzzing with automated shrinking, and gate-level timing simulation.
 - Synthesized PPA measured: active core is 1,580 cells (~2.2 kGE), RAM is 17,757 cells.
+- Multi-lane architecture verified feasible inside 8x4 tiles (<65% density, Split Memory 2x128x16, +9.2% area overhead).
 
 ## What to work on next
 
 Full prioritized backlog: `orchestrator/queue.md`. Entering continuous loop:
 
-1. Iteration 22: Multi-Lane Architecture & Dual-Core PPA Feasibility Study (bridging & synchronization within 8x4 Tiny Tapeout footprint).
-2. Iteration 23: Low-speed USB 1.1 / 10 Mbit Ethernet physical signaling exploration.
-3. Iteration 24: End-to-end Protocol Sniff -> Classify -> Replay pipeline demo.
+1. Iteration 23: Low-speed USB 1.1 / 10 Mbit Ethernet physical signaling exploration.
+2. Iteration 24: End-to-end Protocol Sniff -> Classify -> Replay pipeline demo.
+3. Iteration 25: Automated Protocol Fuzzing & Anomaly Injection Campaign.
 
 
 

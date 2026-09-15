@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-15T11:46:03Z",
+  "timestamp": "2026-09-15T12:26:11Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 72.55,
+  "campaign_time_sec": 65.48,
   "mutants": [
     {
-      "id": "MUT_24_BRANCH_JNZ_INVERT",
+      "id": "MUT_25_BRANCH_JZ_INVERT",
       "category": "Control / Branch",
       "file": "src/core.v",
-      "description": "Branch condition inversion in OP_JNZ (branches on z instead of !z)",
+      "description": "Branch condition inversion in OP_JZ (branches on !z instead of z)",
       "status": "KILLED",
-      "elapsed_sec": 72.49
+      "elapsed_sec": 65.42
     }
   ]
 }
