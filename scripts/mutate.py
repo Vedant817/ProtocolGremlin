@@ -241,6 +241,14 @@ MUTANTS = [
         "replacement": "OP_OR:   result = a & b;",
         "description": "ALU logic bug: OR opcode executes bitwise AND instead of bitwise OR",
     },
+    {
+        "id": "MUT_28_ALU_XOR_TO_XNOR",
+        "category": "Datapath / ALU",
+        "file": "src/alu.v",
+        "target": "OP_XOR:  result = a ^ b;",
+        "replacement": "OP_XOR:  result = a ~^ b;",
+        "description": "ALU logic bug: XOR opcode executes bitwise XNOR instead of bitwise XOR",
+    },
 ]
 
 

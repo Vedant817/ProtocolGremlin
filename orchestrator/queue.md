@@ -89,8 +89,7 @@ bounded problem").
   done: `tools/usb_model.py` (differential line states J/K/SE0/SE1, NRZI modulation, dynamic bit stuffing and destuffing, CRC-5/CRC-16 algorithms, independent `UsbReceiver` cycle-accurate monitor, `build_usb_tx_packet_asm` transmitter, `build_usb_rx_packet_asm` receiver) + `test/test_usb.py` (6/6 cocotb tests pass: ACK/NAK/STALL handshakes, SETUP token with CRC-5, bit stuffing on 0xFF, multi-byte DATA0 sweeps, continuous SE0 bus reset detection, electrical safety), `MUT_26` killed.
 - ~~End-to-end Protocol Sniff -> Classify -> Ingress -> Replay pipeline demo & cross-protocol bridge~~ -
   done: `tools/pipeline_model.py` (`build_pipeline_uart_echo_asm`, `build_pipeline_manchester_echo_asm`, `build_pipeline_uart_to_spi_bridge_asm`) + `test/test_pipeline.py` (4/4 cocotb tests pass: UART sniff->classify->echo, UART ingress to Lane 1 SPI Master egress bridge, noise rejection Class 0xFF, passive-to-active pin safety), `MUT_27` killed.
-- Automated Protocol Fuzzing & Anomaly Injection Campaign (combining constrained-random fuzzing with protocol fault injection models to stress test core recovery states).
+- ~~Automated Protocol Fuzzing & Anomaly Injection Campaign (combining constrained-random fuzzing with protocol fault injection models to stress test core recovery states)~~ -
+  done: `tools/protocol_fuzzer.py` (`ProtocolFuzzer` with phase-bounded edge jitter, false-start glitch injection, framing error corruption, Manchester biphase violation, multi-frame recovery sequence generator) + `test/test_protocol_fuzz.py` (6/6 cocotb tests pass: UART jitter tolerance across pseudorandom payloads, UART false-start runt glitch rejection R2=0xFF, UART framing error detection R2=0xFE, Manchester jitter tolerance 0x96, multi-frame recovery Valid->Corrupted->Valid, and physical electrical safety uio_oe=0x00), `MUT_28` killed.
 - 10 Mbit Ethernet physical signaling feasibility study (Manchester / NLP).
-
-
-
+- Multi-Protocol Bus Bridging Matrix (I2C-to-SPI, UART-to-CAN, 1-Wire-to-UART).

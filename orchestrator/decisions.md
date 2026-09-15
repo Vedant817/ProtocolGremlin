@@ -854,3 +854,30 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 31.49s.
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-15 - Iteration 25: Automated Protocol Fuzzing & Anomaly Injection Campaign
+
+- **Context & Motivation:**
+  - Real-world physical channels suffer from transmission line anomalies: capacitive clock/data slew, transceiver clock jitter, false start glitches from EMI, corrupted stop bits, and biphase transition violations.
+  - Previous testbenches validated nominal protocol waveforms and fixed deterministic single faults.
+  - An industrial-grade verification qualification requires an automated protocol fuzzing campaign that stresses receiver timing margins dynamically, injects parameterized physical distortions, and verifies immediate recovery without hardware reset.
+- **Implementation (`tools/protocol_fuzzer.py`):**
+  - Implemented `ProtocolFuzzer` generating constrained-random protocol waveforms with parameterized physical and framing anomalies:
+    1. Phase-bounded edge timing jitter: dynamically perturbs transition positions within $\pm 1$ cycle ($\pm 12.5\%$ to $\pm 25\%$ per bit/half-bit cell) while preventing unphysical unbounded phase diffusion.
+    2. False-start runt glitches: sub-baud 1-cycle glitch low during start bit to qualify false-start filter logic.
+    3. Framing anomalies: inverted stop bits (stop bit 0) to qualify framing error detection.
+    4. Manchester biphase violations: holds signal level across nominal mid-bit transition window.
+    5. Multi-frame recovery sequences: streams back-to-back valid frames interleaved with corrupt frames to prove 100% state recovery.
+- **Verification Suite (`test/test_protocol_fuzz.py`):**
+  - Added 6 comprehensive cocotb test cases:
+    1. `test_fuzz_uart_timing_jitter_tolerance`: Verified UART RX decodes correctly under $\pm 1$ cycle transition jitter across pseudorandom payloads (`0x55`, `0xAA`, `0x3C`, `0xA5`) with `R2 = 0x00`. **PASS** (1.05 ms).
+    2. `test_fuzz_uart_false_start_glitch_rejection`: Verified false-start 1-cycle runt glitch is trapped with `R2 = 0xFF` without hanging. **PASS** (0.31 ms).
+    3. `test_fuzz_uart_framing_error_anomaly`: Verified corrupted stop bit is trapped with `R2 = 0xFE` framing error status. **PASS** (0.26 ms).
+    4. `test_fuzz_manchester_timing_jitter`: Verified Manchester Biphase-L decoder tolerates $\pm 1$ cycle half-bit jitter with exact payload recovery (`0x96`). **PASS** (0.23 ms).
+    5. `test_fuzz_multi_frame_recovery`: Verified back-to-back sequence (Valid `0xA5` -> Corrupted Framing Error `0x55` -> Valid Recovery `0x3C`) with 100% clean recovery. **PASS** (0.78 ms).
+    6. `test_fuzz_electrical_safety`: Verified `uio_oe` direction register remains strictly input (`0x00`) throughout fuzzed stimulus. **PASS** (0.32 ms).
+  - Full Regression Suite: **120/120 tests passing (100.0%)** across 23 test modules.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 100s).
+  - Mutation Testing: Added `MUT_28_ALU_XOR_TO_XNOR` in `scripts/mutate.py`. Cumulative score: **28/28 mutants killed (100.0% kill rate)** in 157.95s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 38.99s.
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).

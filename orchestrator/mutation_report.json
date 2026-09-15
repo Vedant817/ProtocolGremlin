@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-15T13:56:49Z",
+  "timestamp": "2026-09-15T14:39:37Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 66.44,
+  "campaign_time_sec": 158.0,
   "mutants": [
     {
-      "id": "MUT_27_ALU_OR_TO_AND",
+      "id": "MUT_28_ALU_XOR_TO_XNOR",
       "category": "Datapath / ALU",
       "file": "src/alu.v",
-      "description": "ALU logic bug: OR opcode executes bitwise AND instead of bitwise OR",
+      "description": "ALU logic bug: XOR opcode executes bitwise XNOR instead of bitwise XOR",
       "status": "KILLED",
-      "elapsed_sec": 66.39
+      "elapsed_sec": 157.95
     }
   ]
 }
