@@ -1,11 +1,12 @@
 {
-  "phase": "isa-v1-can-controller-verified",
+  "phase": "isa-v1-dmx512-engine-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 15 complete (CAN 2.0A Controller Physical-Layer Protocol Engine). Next: Iteration 16 (DMX512 Stage Lighting Protocol Engine).",
+  "active_objective": "Continuous engineering loop: Iteration 16 complete (DMX512 Stage Lighting Protocol Engine). Next: Iteration 17 (Synchronous Program RAM Upgrade / PPA Timing Analysis).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 15,
+  "iterations": 16,
   "halt": false,
-  "notes": "Iteration 15 complete: Created tools/can_model.py (CanReceiverModel reference model with destuffing, CanBusModel wired-AND open-drain model, compute_can_crc15, build_can_tx_asm with in-cell arbitration checks and ACK monitoring, build_can_rx_asm with WAITEDGE SOF sync and dominant ACK assertion) and test/test_can.py (5/5 tests: standard frame TX with bit stuffing and CRC-15 into independent CanReceiverModel, arbitration collision detection aborting with R2=0xAA, missing ACK detection flagging R2=0xAE, standard frame RX with WAITEDGE SOF sync and dominant ACK pulse, and open-drain electrical safety). Added test_can to test/Makefile. All 62 regression tests pass (100%). SymbiYosys formal BMC passed (20-step Z3, 0 violations). Added MUT_19_GODRI_DISABLE in scripts/mutate.py, achieving 19/19 mutants killed (100.0% kill rate) in 765.45s. Synthesis cell count unchanged at 19,291 CMOS cells (active logic 1,580 cells)."
+  "notes": "Iteration 16 complete: Created tools/dmx512_model.py (Dmx512ReceiverModel reference model, build_dmx512_tx_packet_asm transmitter, build_dmx512_rx_slot_asm receiver with Break pulse duration measurement in R3 and per-slot WAITEDGE edge resynchronization) and test/test_dmx512.py (5/5 tests: TX packet waveform against Dmx512ReceiverModel, channel intensity pattern sweeps, RX channel 1 extraction and Break duration measurement, RX channel 2 extraction skipping channel 1, and pin electrical safety). Added test_dmx512 to test/Makefile. All 67 regression tests pass (100%). SymbiYosys formal BMC passed (20-step Z3, 0 violations). Added MUT_20_WAITEDGE_DURATION_OFF_BY_ONE in scripts/mutate.py, achieving 20/20 mutants killed (100.0% kill rate) in 812.73s. Synthesis cell count unchanged at 19,291 CMOS cells (active logic 1,580 cells)."
 }
+

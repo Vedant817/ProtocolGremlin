@@ -177,6 +177,14 @@ MUTANTS = [
         "replacement": "OP_GODRI: gpio_od_mode <= 8'h00;",
         "description": "Open-drain configuration bug: GODRI fails to set open-drain mode (pins remain push-pull)",
     },
+    {
+        "id": "MUT_20_WAITEDGE_DURATION_OFF_BY_ONE",
+        "category": "Timing / Edge-Detect",
+        "file": "src/core.v",
+        "target": "write_rd(rd_idx, edge_wait_cnt + 8'd1);",
+        "replacement": "write_rd(rd_idx, edge_wait_cnt);",
+        "description": "WAITEDGE timing calculation bug: omits single-cycle edge detection latency from measured pulse width",
+    },
 ]
 
 

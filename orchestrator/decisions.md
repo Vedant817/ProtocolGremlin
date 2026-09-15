@@ -541,4 +541,30 @@ mutation-kill rates.
   - Mutation Testing: Added `MUT_19_GODRI_DISABLE`. Evaluated and killed in 42.47s. Cumulative mutation score: **19/19 mutants killed (100.0% kill rate)** in 765.45s.
   - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).
 
+## 2026-09-15 - Iteration 16: DMX512 (ANSI E1.11 / USITT DMX512-A) Stage Lighting Protocol Engine
 
+- **Motivation & Protocol Overview:**
+  - DMX512 (ANSI E1.11 / USITT DMX512-A) is the ubiquitous entertainment, stage lighting, and architectural automation control protocol.
+  - Key architectural properties:
+    - Asynchronous physical framing: Break pulse (long low pulse $\ge 88\,\mu\text{s}$), Mark-After-Break (MAB, high pulse $\ge 8\,\mu\text{s}$), followed by Start Code (slot 0, typically `0x00` for dimmer data) and up to 512 sequential channel intensity slots (1 to 512).
+    - Slot format: Asynchronous UART framing with 1 start bit (low), 8 data bits (LSB-first), and 2 stop bits (high) (8-N-2).
+    - Strict timing constraints: Bit period is $4\,\mu\text{s}$ (250 kbaud).
+- **Novelty Highlight (Hardware Break Measurement & Per-Slot Edge Resynchronization):**
+  - **Single-Cycle Break Duration Measurement:** Using the hardware `WAITEDGE` primitive (mode 1, rising edge), the core measures the exact duration of the external Break pulse into register `R3` with single-cycle resolution (96 cycles in test at 8 cycles/bit period). This enables automated detection of non-standard break pulses (e.g. RDM discovery vs standard DMX).
+  - **Per-Slot Clock Recovery via `WAITEDGE`:** When decoding sequential slots in software on traditional microcontrollers without hardware UARTs, cumulative timer quantization error causes fatal sampling drift across subsequent channels. The protocol emulator receiver solves this by synchronizing to each individual slot's start bit falling edge using `WAITEDGE` (mode 0), perfectly resetting phase alignment before sampling data bits with `SHIFTIN`.
+- **Firmware & Models (`tools/dmx512_model.py`):**
+  - `Dmx512ReceiverModel`: Cycle-accurate reference model validating Break, MAB, Start Code, channel count, and 8-N-2 framing.
+  - `build_dmx512_tx_packet_asm`: Generates cycle-exact DMX512 packet transmission firmware for Break, MAB, Start Code, and arbitrary channel payloads.
+  - `build_dmx512_rx_slot_asm`: Generates DMX512 receiver firmware that measures Break duration into `R3`, validates Start Code, strides past unselected channels, and captures target channel intensity into `R0`.
+- **Verification (`test/test_dmx512.py`):**
+  - Added 5 cocotb test cases:
+    1. `test_dmx512_tx_waveform`: Verified transmitter generates exact Break (96 cycles), MAB (16 cycles), Start Code 0x00, and 3 channel slots ([255, 128, 0]), decoded and verified with 100% validity by `Dmx512ReceiverModel`.
+    2. `test_dmx512_tx_channel_sweep`: Swept dynamic intensity channel patterns ([230, 32, 161], [85, 170, 51], [1, 2, 3]), confirming framing integrity.
+    3. `test_dmx512_rx_channel_1`: Verified receiver measures Break duration (96 cycles in `R3`) and extracts Channel 1 intensity (`0xCC` in `R0`).
+    4. `test_dmx512_rx_channel_2`: Verified receiver skips Channel 1 and extracts Channel 2 intensity (`0x77` in `R0`) without timing drift.
+    5. `test_dmx512_pin_direction_safety`: Verified electrical direction safety: strictly input in RX mode, strictly output on designated pin in TX mode.
+  - Regression Suite: **67/67 tests passing (100.0%)** across 15 test suites in 47.88s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified in 71s (PASS, 0 violations).
+  - Mutation Testing: Added `MUT_20_WAITEDGE_DURATION_OFF_BY_ONE`. Evaluated and killed in 47.28s. Cumulative mutation score: **20/20 mutants killed (100.0% kill rate)** in 812.73s.
+  - Area: Zero additional silicon gates required (19,291 CMOS cells, 37,832 GE; active processor logic remains 1,580 cells, ~2.2 kGE).

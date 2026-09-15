@@ -1,162 +1,18 @@
 {
-  "timestamp": "2026-09-15T04:14:46Z",
-  "total_mutants": 19,
-  "killed": 19,
+  "timestamp": "2026-09-15T04:21:27Z",
+  "total_mutants": 1,
+  "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 765.45,
+  "campaign_time_sec": 47.34,
   "mutants": [
     {
-      "id": "MUT_01_BRANCH_JZ_INVERT",
-      "category": "Control / Branch",
-      "file": "src/core.v",
-      "description": "Invert branch condition in OP_JZ (jump on !z instead of z)",
-      "status": "KILLED",
-      "elapsed_sec": 43.43
-    },
-    {
-      "id": "MUT_02_WAIT_OFF_BY_ONE",
-      "category": "Timing / Wait",
-      "file": "src/core.v",
-      "description": "Off-by-one decrement in WAIT countdown (-2 instead of -1)",
-      "status": "KILLED",
-      "elapsed_sec": 23.99
-    },
-    {
-      "id": "MUT_03_ALU_ADD_CORRUPT",
-      "category": "Datapath / ALU",
-      "file": "src/alu.v",
-      "description": "Arithmetic bug: OP_ADD adds 1 to calculated sum",
-      "status": "KILLED",
-      "elapsed_sec": 42.44
-    },
-    {
-      "id": "MUT_04_ALU_SUB_TO_ADD",
-      "category": "Datapath / ALU",
-      "file": "src/alu.v",
-      "description": "Operator replacement: OP_SUB computes sum instead of diff",
-      "status": "KILLED",
-      "elapsed_sec": 45.5
-    },
-    {
-      "id": "MUT_05_RESET_PC_CORRUPT",
-      "category": "Reset / Initialization",
-      "file": "src/core.v",
-      "description": "Reset corruption: PC initializes to 1 instead of 0",
-      "status": "KILLED",
-      "elapsed_sec": 39.1
-    },
-    {
-      "id": "MUT_06_DECJNZ_NO_BRANCH",
-      "category": "Control / Loop",
-      "file": "src/core.v",
-      "description": "Branch condition inversion in DECJNZ loop termination",
-      "status": "KILLED",
-      "elapsed_sec": 42.73
-    },
-    {
-      "id": "MUT_07_SHIFTOUT_MSB_FIRST",
-      "category": "Protocol / Bit-Serial",
-      "file": "src/core.v",
-      "description": "Serial shift bug: SHIFTOUT transmits MSB instead of LSB",
-      "status": "KILLED",
-      "elapsed_sec": 43.33
-    },
-    {
-      "id": "MUT_08_GPIO_OE_INVERT",
-      "category": "Interface / Tri-state",
-      "file": "src/gpio.v",
-      "description": "GPIO bus direction inversion: pin_oe driven inverted",
-      "status": "KILLED",
-      "elapsed_sec": 37.72
-    },
-    {
-      "id": "MUT_09_WAITEDGE_OFF_BY_ONE",
-      "category": "Timing / Autobaud",
-      "file": "src/core.v",
-      "description": "Edge timing bug: WAITEDGE omits edge detection cycle in duration",
-      "status": "KILLED",
-      "elapsed_sec": 44.41
-    },
-    {
-      "id": "MUT_10_BOOTLOADER_REQ_IGNORE",
-      "category": "System / Bootloader",
-      "file": "src/core.v",
-      "description": "Bootloader FSM bug: core ignores host serial LOAD_REQ signal",
-      "status": "KILLED",
-      "elapsed_sec": 22.34
-    },
-    {
-      "id": "MUT_11_OPEN_DRAIN_DRIVE_HIGH",
-      "category": "Protocol / Open-Drain",
-      "file": "src/gpio.v",
-      "description": "Open-drain electrical bug: pin_out actively drives high in open-drain mode",
-      "status": "KILLED",
-      "elapsed_sec": 45.25
-    },
-    {
-      "id": "MUT_12_BOOTLOADER_CRC_BYPASS",
-      "category": "System / Security",
-      "file": "src/core.v",
-      "description": "Bootloader security bug: core accepts corrupted programs by bypassing CRC-8 verification",
-      "status": "KILLED",
-      "elapsed_sec": 45.4
-    },
-    {
-      "id": "MUT_13_SHIFTIN_BIT_ORDER",
-      "category": "Protocol / Bit-Serial",
-      "file": "src/core.v",
-      "description": "Shift input bug: SHIFTIN LSB mode shifts left instead of right (reverses bit order)",
-      "status": "KILLED",
-      "elapsed_sec": 34.08
-    },
-    {
-      "id": "MUT_14_OPEN_DRAIN_OE_POLARITY",
-      "category": "Protocol / Open-Drain",
-      "file": "src/gpio.v",
-      "description": "Open-drain OE polarity inversion: pin_oe asserts on out_val=1 instead of out_val=0",
-      "status": "KILLED",
-      "elapsed_sec": 42.47
-    },
-    {
-      "id": "MUT_15_WAITEDGE_POLARITY_INVERT",
+      "id": "MUT_20_WAITEDGE_DURATION_OFF_BY_ONE",
       "category": "Timing / Edge-Detect",
       "file": "src/core.v",
-      "description": "WAITEDGE polarity inversion: falling edge mode triggers on rising edge",
+      "description": "WAITEDGE timing calculation bug: omits single-cycle edge detection latency from measured pulse width",
       "status": "KILLED",
-      "elapsed_sec": 41.56
-    },
-    {
-      "id": "MUT_16_ALU_XOR_TO_OR",
-      "category": "Core / Arithmetic",
-      "file": "src/alu.v",
-      "description": "ALU logic bug: XOR opcode executes bitwise OR instead of bitwise XOR",
-      "status": "KILLED",
-      "elapsed_sec": 43.31
-    },
-    {
-      "id": "MUT_17_GDIRI_INVERT",
-      "category": "Interface / Tri-state",
-      "file": "src/core.v",
-      "description": "GPIO direction bug: GDIRI inverts direction mask (inputs become outputs and vice versa)",
-      "status": "KILLED",
-      "elapsed_sec": 41.28
-    },
-    {
-      "id": "MUT_18_SHIFTIN_MSB_INVERT",
-      "category": "Protocol / Bit-Serial",
-      "file": "src/core.v",
-      "description": "Shift input bug: SHIFTIN MSB mode inverts incoming pin data bit",
-      "status": "KILLED",
-      "elapsed_sec": 43.41
-    },
-    {
-      "id": "MUT_19_GODRI_DISABLE",
-      "category": "Protocol / Open-Drain",
-      "file": "src/core.v",
-      "description": "Open-drain configuration bug: GODRI fails to set open-drain mode (pins remain push-pull)",
-      "status": "KILLED",
-      "elapsed_sec": 42.47
+      "elapsed_sec": 47.28
     }
   ]
 }

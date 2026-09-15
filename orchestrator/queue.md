@@ -66,7 +66,8 @@ bounded problem").
   done: `tools/manchester_model.py` (ManchesterDecoder + ManchesterTransmitter + build_manchester_tx_asm + build_manchester_rx_asm) + `test/test_manchester.py` (57/57 regression pass, 4-cycle symmetric half-bit waveform, standard/pseudorandom RX into R0, biphase violation detection, 18/18 mutants killed).
 - ~~CAN Bus Physical-Layer Controller (Dominant/Recessive Bit Timing, Bit Stuffing & Arbitration via `GRD`)~~ -
   done: `tools/can_model.py` (CanReceiverModel + compute_can_crc15 + build_can_tx_asm + build_can_rx_asm) + `test/test_can.py` (62/62 regression pass, bit stuffing, CRC-15, in-cell arbitration loss detection R2=0xAA, missing ACK R2=0xAE, dominant ACK assertion, 19/19 mutants killed).
-- DMX512 Stage Lighting Protocol Engine (Break pulse >= 88us, MAB, Start Code 0x00, and 512-slot data frame reception).
+- ~~DMX512 Stage Lighting Protocol Engine (Break pulse >= 88us, MAB, Start Code 0x00, and slot reception with per-slot edge sync)~~ -
+  done: `tools/dmx512_model.py` (Dmx512ReceiverModel + build_dmx512_tx_packet_asm + build_dmx512_rx_slot_asm) + `test/test_dmx512.py` (67/67 regression pass, Break pulse duration measurement in R3, per-slot WAITEDGE edge resynchronization, 20/20 mutants killed).
 - Convert `program_ram.v` to a synchronous-read design once real synthesis
   data shows it matters for PPA (`docs/limitations.md`).
 

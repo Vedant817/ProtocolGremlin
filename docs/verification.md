@@ -107,9 +107,10 @@ injects seeded, first-order architectural faults across all major RTL modules
 | `MUT_17_GDIRI_INVERT` | Interface / Tri-state | GPIO direction bug: GDIRI inverts direction mask | **KILLED** | 37.86s |
 | `MUT_18_SHIFTIN_MSB_INVERT` | Protocol / Bit-Serial | Shift input bug: SHIFTIN MSB mode inverts incoming pin data bit | **KILLED** | 41.01s |
 | `MUT_19_GODRI_DISABLE` | Protocol / Open-Drain | Open-drain bug: GODRI fails to set open-drain mode register | **KILLED** | 42.47s |
+| `MUT_20_WAITEDGE_DURATION_OFF_BY_ONE` | Timing / Edge-Detect | WAITEDGE timing bug: omits single-cycle edge detection latency | **KILLED** | 47.28s |
 
-- **Empirical Mutation Kill Rate: 19/19 (100.0%)**
-- Total campaign duration: ~12.5 minutes
+- **Empirical Mutation Kill Rate: 20/20 (100.0%)**
+- Total campaign duration: ~13.3 minutes
 - Result log: `orchestrator/mutation_report.json`
 
 ### 7. Independent Protocol Verification Engines
@@ -123,6 +124,7 @@ The test suite pairs firmware with independent cycle-accurate Python simulation 
 - **ARM SWD (`tools/swd_model.py`, `test/test_swd.py`):** Line reset, JTAG-to-SWD 0x79E7 switching, packet request header with even parity, 3-bit ACK, 32-bit DPIDR readout into `R0..R3`, and dynamic tri-state contention avoidance against `SwdTarget`.
 - **Manchester Biphase-L (`tools/manchester_model.py`, `test/test_manchester.py`):** IEEE 802.3 / MIL-STD-1553 self-clocking transmitter with zero jitter, edge-synchronized receiver via `WAITEDGE` and `SHIFTIN MSB`, and biphase violation detection against `ManchesterDecoder`.
 - **CAN 2.0A Controller (`tools/can_model.py`, `test/test_can.py`):** ISO 11898-1 open-drain physical layer, 15-bit CRC, bit stuffing, cycle-exact in-cell arbitration loss detection, and dominant ACK assertion against `CanReceiverModel`.
+- **DMX512 Engine (`tools/dmx512_model.py`, `test/test_dmx512.py`):** ANSI E1.11 / USITT DMX512-A transmitter (Break, MAB, Start Code 0x00, 8-N-2 UART slots) and receiver with single-cycle Break pulse duration measurement in `R3` and per-slot `WAITEDGE` edge synchronization against `Dmx512ReceiverModel`.
 
 ### 8. Constrained-Random Instruction Fuzzing with Shrinking (`tools/fuzzer.py`, `test/test_fuzz.py`)
 To discover corner cases not anticipated by hand-written tests, `tools/fuzzer.py`
@@ -135,16 +137,13 @@ generates legal, randomized programs with bounded loops and forward branches.
 
 ```bash
 bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
-bash scripts/regress.sh     # runs the complete regression suite (62/62 tests pass)
+bash scripts/regress.sh     # runs the complete regression suite (67/67 tests pass)
 sby -f formal/core.sby      # runs the SymbiYosys formal proof with Z3 (20 steps pass)
-python3 scripts/mutate.py   # runs the seeded RTL mutation testing campaign (19/19 killed)
+python3 scripts/mutate.py   # runs the seeded RTL mutation testing campaign (20/20 killed)
 bash scripts/synth.sh       # runs Yosys synthesis and logs area/cell metrics
 ```
 
 ## Remaining Verification Queue (Future Work)
 
 - Gate-level simulation against mapped netlist with real cell timing (`GATES=yes`).
-- DMX512 stage lighting protocol engine.
-
-
-
+- Multi-lane cross-core formal assertions.
