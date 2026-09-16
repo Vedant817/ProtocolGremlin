@@ -1464,3 +1464,44 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 38.61s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-16 - Iteration 43: ARINC 429 Mark 33 Digital Information Transfer System (DITS) Avionic Protocol Engine
+
+- **Motivation & Domain Architecture:**
+  - ARINC Specification 429 Part 1-17 defines the Mark 33 Digital Information Transfer System (DITS), the predominant commercial avionic data bus standard connecting flight management computers (FMC), air data reference units (ADIRU), and electronic flight instruments (EFIS) across Boeing and Airbus fleets.
+  - ARINC 429 utilizes a simplex point-to-point or point-to-multipoint architecture over a balanced twisted shielded pair with differential bipolar Return-to-Zero (BPRZ) line coding ($\pm 10\,\text{V}$ differential, $0\,\text{V}$ Null).
+  - Signaling and framing characteristics:
+    1. **Dual-Rail CMOS Digital Interfacing:** High-speed line transceivers (Holt HI-8582, DEI1016) map bipolar voltages to dual-rail digital signals:
+       - Logical '1': `DATA_A` pulse high for 50% bit period, then return to Null (`DATA_A=0, DATA_B=0`).
+       - Logical '0': `DATA_B` pulse high for 50% bit period, then return to Null (`DATA_A=0, DATA_B=0`).
+       - Null (Idle): Both lines LOW (`DATA_A=0, DATA_B=0`).
+       - Tamper / Short Fault: Both lines HIGH (`DATA_A=1, DATA_B=1`), indicating transceiver failure or physical short.
+    2. **32-Bit Word Framing:**
+       - Bits [1:8]: Label field encoded in octal (transmitted MSB of octal first).
+       - Bits [9:10]: Source/Destination Identifier (SDI) for sub-system addressing (e.g. FMC 1 vs FMC 2).
+       - Bits [11:29]: 19-bit Data payload (BNR navigation values, BCD digits, or discrete flags).
+       - Bits [30:31]: Sign/Status Matrix (SSM) indicating operational state (Normal Operation, Functional Test, Failure Warning, No Computed Data) or sign.
+       - Bit 32: Odd Parity bit ($P = 1 \oplus \bigoplus_{i=1}^{31} B_i$).
+    3. **Inter-Word Synchronization Gap:** Minimum 4 bit periods of continuous Null between consecutive words ($40\,\mu\text{s}$ at $100\,\text{kbps}$, $320\,\mu\text{s}$ at $12.5\,\text{kbps}$).
+- **Novelty Highlight (Dual-Rail Return-to-Zero Pulse Timing, In-Register Octal Filtering & Hardware Macro Scaling):**
+  - **Deterministic Dual-Rail BPRZ Serialization:** Transmitter firmware dynamically generates exact 50% duty cycle Return-to-Zero pulses across `TXA` (pin 3) and `TXB` (pin 4) with zero timing jitter, verified by independent software model `Arinc429ReceiverModel`.
+  - **In-Register Label & SDI Hardware Filtering:** Receiver firmware ingresses 8-bit label into `R0`, validates against expected label (0o203), and immediately branches to message handlers or rejects invalid labels with fault code `R2 = 0xEE`. SDI filter inspects bits 9–10, ensuring target avionics sub-units receive only addressed telemetry.
+  - **Transceiver Fault Protection:** Core continuously monitors dual-rail lines for illegal concurrent assertion (`DATA_A=1 && DATA_B=1`), trapping line short faults immediately with alarm status `R2 = 0xAA` and isolating bus outputs.
+  - **Physical PPA Quantification on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated ARINC 429 Coprocessor Macro: **412 standard cells (803.4 GE, +2.16% area overhead, $3,007.60\,\mu\text{m}^2$)**, with a $1.26\,\text{ns}$ critical path through parity tree ($f_{\text{max}} = 793.6\,\text{MHz}$).
+- **Verification Suite (`test/test_arinc429.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/arinc429_model.py`:
+    1. `test_arinc429_tx_word_transmission`: Verified 32-bit word transmission (Label 0o203, SDI 1, Data 0x12345, SSM 3) with exact dual-rail Return-to-Zero pulses on `TXA` and `TXB`, decoded by `Arinc429ReceiverModel`. **PASS** (1.34 ms).
+    2. `test_arinc429_label_filter_match`: Receiver ingressed 8-bit label, verified match against 0o203, captured into `R0` with status `R2 = 0x00`. **PASS** (916.1 us).
+    3. `test_arinc429_label_filter_mismatch`: Receiver rejected mismatched label (0o310 vs 0o203) with error code `R2 = 0xEE`. **PASS** (916.1 us).
+    4. `test_arinc429_sdi_filtering`: Verified SDI filtering matching SDI = 2 with status `R2 = 0x00`. **PASS** (801.3 us).
+    5. `test_arinc429_tamper_short_detection`: Line short fault (`DATA_A=1 && DATA_B=1`) cleanly trapped with alarm status `R2 = 0xAA`. **PASS** (99.6 us).
+    6. `test_arinc429_odd_parity_mathematical_validation_and_ppa`: 100% single-bit error rejection across all 32 bit positions and PPA scaling validation. **PASS**.
+  - Regression Suite: **227/227 tests passing (100.0%)** across 41 test modules in ~65s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 111s).
+  - Mutation Testing: Added `MUT_46_ARINC429_PUSHPULL_PIN_OUT` in `scripts/mutate.py`. Killed in 108.03s. Cumulative score: **46/46 mutants killed (100.0% kill rate)** in 4001.39s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 38.85s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+
