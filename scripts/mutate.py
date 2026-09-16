@@ -329,6 +329,14 @@ MUTANTS = [
         "replacement": "              OP_JMP: pc <= operand[ADDR_WIDTH-1:0] ^ 8'h01;",
         "description": "MPU partition dispatch bug: OP_JMP jumps to operand ^ 8'h01 instead of operand, corrupting jump table dispatch and violating partition boundaries",
     },
+    {
+        "id": "MUT_39_CRC_POLYNOMIAL_TAP",
+        "category": "CRC / Hardware Verification",
+        "file": "src/core.v",
+        "target": "        crc8_step = {c[6:0], 1'b0} ^ 8'h07;",
+        "replacement": "        crc8_step = {c[6:0], 1'b0} ^ 8'h09;",
+        "description": "CRC LFSR polynomial tap bug: crc8_step uses wrong polynomial 0x09 instead of 0x07, causing all hardware bootloader CRC calculations to mismatch and reject valid bitstreams",
+    },
 ]
 
 

@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-09-15T22:10:34Z",
-  "total_mutants": 38,
-  "killed": 38,
+  "timestamp": "2026-09-15T22:20:00Z",
+  "total_mutants": 39,
+  "killed": 39,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 3128.07,
+  "campaign_time_sec": 3180.85,
   "mutants": [
     {
       "id": "MUT_01_BRANCH_JZ_INVERT",
@@ -309,6 +309,14 @@
       "description": "MPU partition dispatch bug: OP_JMP jumps to operand ^ 8'h01 instead of operand, corrupting jump table dispatch and violating partition boundaries",
       "status": "KILLED",
       "elapsed_sec": 80.64
+    },
+    {
+      "id": "MUT_39_CRC_POLYNOMIAL_TAP",
+      "category": "CRC / Hardware Verification",
+      "file": "src/core.v",
+      "description": "CRC LFSR polynomial tap bug: crc8_step uses wrong polynomial 0x09 instead of 0x07, causing all hardware bootloader CRC calculations to mismatch and reject valid bitstreams",
+      "status": "KILLED",
+      "elapsed_sec": 52.78
     }
   ]
 }
