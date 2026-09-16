@@ -345,6 +345,14 @@ MUTANTS = [
         "replacement": "  assign pin_oe  = (dir & ~od_mode) | (dir & od_mode & out_val);",
         "description": "Open-drain arbitration control bug: inverts active pull-down condition in open-drain mode, asserting pin_oe when out_val=1 instead of out_val=0, corrupting I3C DAA arbitration and I2C ACK detection",
     },
+    {
+        "id": "MUT_41_QEI_VELOCITY_PERIOD_CAPTURE",
+        "category": "Motion / Velocity Feedback",
+        "file": "src/core.v",
+        "target": "                  write_rd(rd_idx, edge_wait_cnt + 8'd1);",
+        "replacement": "                  write_rd(rd_idx, 8'h00);",
+        "description": "QEI motion velocity feedback bug: WAITEDGE fails to write elapsed wait cycles to rd (always writes 0), breaking quadrature velocity and acceleration measurement",
+    },
 ]
 
 
