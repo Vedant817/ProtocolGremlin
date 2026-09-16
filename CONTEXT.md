@@ -17,7 +17,7 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 
 ## Current status
 
-- **Phase:** ISA v1 complete — Iterations 1–43 complete (ARINC 429 Mark 33 Digital Information Transfer System (DITS) Avionic Protocol Engine, Wiegand Security Access Control Protocol Reader/Writer & Pulse Width Discovery Engine, MIL-STD-1553B Avionic Multiplex Data Bus Dual-Redundant Protocol Engine, High-Speed Synchronous Serial Interface (SSI / BiSS-C) Absolute Rotary Encoder Engine, LIN v2.2A / ISO 17987 Automotive Protocol Engine & Break-Sync Frame Processor, Quadrature Encoder Interface (QEI) & Industrial Motion Feedback Engine, MIPI I3C v1.1.1 Sensor Protocol & Dynamic Address Assignment (DAA) Acceleration Engine, Hardware-Assisted Cyclic Redundancy Check (CRC-16/CRC-32) Coprocessor Macro PPA Feasibility Study, Memory Protection Unit (MPU) & Multi-Tenant Partitioning Engine, Asynchronous Event Notification & Level/Edge Interrupt Controller Subsystem, Physical Die Floorplan, Pad Placement & Package Pinout Co-Design Study, CAN FD Flexible Data-Rate Protocol Accelerator Feasibility & Bit-Rate Switching Study, Deterministic Real-Time Task Scheduling Engine: Priority Multi-Tasking & Round-Robin Schedulers, Cryptographic Accelerator Feasibility Study: ChaCha8 / Poly1305 / SHA-256 Bit-Sliced Microcode vs. Hardware Coprocessor, Dynamic Power & Energy Optimization Study: Clock Gating & Instruction Micro-Architectural Profiling, Hardware Watchdog Timer & Brownout Recovery Circuit Feasibility Study, Multi-Protocol Bus Bridging Matrix: I2C-to-SPI, UART-to-CAN, 1-Wire-to-UART, Multi-Byte Streaming, 10 Mbit Ethernet 10BASE-T Physical Signaling Feasibility Study & Link Layer Engine, Automated Protocol Fuzzing & Anomaly Injection Campaign, End-to-End Autonomous Protocol Pipeline Demo & Cross-Protocol Translation Bridge, Low-Speed USB 1.1 Physical Layer & Packet Framing Engine, Multi-Lane Dual-Core Protocol Processor Architecture & Physical PPA Feasibility Study, Deterministic Fault Injection & Protocol Stress Engine, Gate-Level Simulation Suite with Real Standard Cell Timing Models GATES=yes, Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine, High-Level Data Link Control HDLC / SDLC ISO/IEC 13239 Bit-Oriented Protocol Engine, Pure Firmware Autobaud Rate Auto-Discovery Engine & Program RAM Architecture Study, DMX512 ANSI E1.11 / USITT DMX512-A Stage Lighting Protocol Engine, CAN 2.0A Controller Physical-Layer Protocol Engine, Manchester Biphase-L IEEE 802.3 / MIL-STD-1553 Encoder & Decoder Engine, ARM SWD Interface Engine & DPIDR Readout, JTAG IEEE 1149.1 TAP Controller Engine with 32-bit IDCODE Readout & BYPASS Verification, PS/2 Bidirectional Host Controller Engine, Dallas 1-Wire Master with Single-Cycle Presence Pulse Discovery, Zero-Jitter UART RX with WAITEDGE, Bootloader CRC-8 Hardware Protection, I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART TX, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
+- **Phase:** ISA v1 complete — Iterations 1–44 complete (MIDI 2.0 Universal MIDI Packet (UMP) Protocol Engine & High-Resolution Voice Architecture, ARINC 429 Mark 33 Digital Information Transfer System (DITS) Avionic Protocol Engine, Wiegand Security Access Control Protocol Reader/Writer & Pulse Width Discovery Engine, MIL-STD-1553B Avionic Multiplex Data Bus Dual-Redundant Protocol Engine, High-Speed Synchronous Serial Interface (SSI / BiSS-C) Absolute Rotary Encoder Engine, LIN v2.2A / ISO 17987 Automotive Protocol Engine & Break-Sync Frame Processor, Quadrature Encoder Interface (QEI) & Industrial Motion Feedback Engine, MIPI I3C v1.1.1 Sensor Protocol & Dynamic Address Assignment (DAA) Acceleration Engine, Hardware-Assisted Cyclic Redundancy Check (CRC-16/CRC-32) Coprocessor Macro PPA Feasibility Study, Memory Protection Unit (MPU) & Multi-Tenant Partitioning Engine, Asynchronous Event Notification & Level/Edge Interrupt Controller Subsystem, Physical Die Floorplan, Pad Placement & Package Pinout Co-Design Study, CAN FD Flexible Data-Rate Protocol Accelerator Feasibility & Bit-Rate Switching Study, Deterministic Real-Time Task Scheduling Engine: Priority Multi-Tasking & Round-Robin Schedulers, Cryptographic Accelerator Feasibility Study: ChaCha8 / Poly1305 / SHA-256 Bit-Sliced Microcode vs. Hardware Coprocessor, Dynamic Power & Energy Optimization Study: Clock Gating & Instruction Micro-Architectural Profiling, Hardware Watchdog Timer & Brownout Recovery Circuit Feasibility Study, Multi-Protocol Bus Bridging Matrix: I2C-to-SPI, UART-to-CAN, 1-Wire-to-UART, Multi-Byte Streaming, 10 Mbit Ethernet 10BASE-T Physical Signaling Feasibility Study & Link Layer Engine, Automated Protocol Fuzzing & Anomaly Injection Campaign, End-to-End Autonomous Protocol Pipeline Demo & Cross-Protocol Translation Bridge, Low-Speed USB 1.1 Physical Layer & Packet Framing Engine, Multi-Lane Dual-Core Protocol Processor Architecture & Physical PPA Feasibility Study, Deterministic Fault Injection & Protocol Stress Engine, Gate-Level Simulation Suite with Real Standard Cell Timing Models GATES=yes, Autonomous Hardware Protocol Sniffer & Dynamic Pattern Classifier Engine, High-Level Data Link Control HDLC / SDLC ISO/IEC 13239 Bit-Oriented Protocol Engine, Pure Firmware Autobaud Rate Auto-Discovery Engine & Program RAM Architecture Study, DMX512 ANSI E1.11 / USITT DMX512-A Stage Lighting Protocol Engine, CAN 2.0A Controller Physical-Layer Protocol Engine, Manchester Biphase-L IEEE 802.3 / MIL-STD-1553 Encoder & Decoder Engine, ARM SWD Interface Engine & DPIDR Readout, JTAG IEEE 1149.1 TAP Controller Engine with 32-bit IDCODE Readout & BYPASS Verification, PS/2 Bidirectional Host Controller Engine, Dallas 1-Wire Master with Single-Cycle Presence Pulse Discovery, Zero-Jitter UART RX with WAITEDGE, Bootloader CRC-8 Hardware Protection, I2C Clock Stretching & Arbitration Detection, I2C Master, hardware open-drain, SPI Master, MSB shifts, UART TX, WAITEDGE, PVFI formal, mutation testing, fuzzer, synthesis).
 - **What exists:**
   1. **Core:** 24 opcodes, 4 registers, bidirectional GPIO bus on `uio[7:0]`,
      `SHIFTOUT`/`SHIFTIN` with MSB/LSB direction select (`imm8[3]`), `WAITEDGE`
@@ -70,10 +70,11 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
      High-Speed Synchronous Serial Interface (SSI / BiSS-C) Absolute Rotary Encoder Engine (`docs/biss_study.md`, `tools/biss_model.py`) supporting point-to-point master-slave synchronous clock generation (MA), serial data sampling (SLO), ALU-based reflected binary (Gray code) to standard binary decoding, BiSS-C Single-Cycle Data framing (Ack, Start, CDS, Position, nE error, nW warning), polynomial CRC-6 integrity verification ($P(x) = x^6 + x + 1$), and synthesizable coprocessor macro scaling (+466 cells, +2.44% area overhead),
      MIL-STD-1553B Avionic Multiplex Data Bus Dual-Redundant Protocol Engine (`docs/mil1553_study.md`, `tools/mil1553_model.py`) supporting 3-bit non-Manchester synchronization waveforms (Command/Status Sync and Data Sync spanning 24 clock cycles), 16-bit Manchester II Biphase-L information decoding/encoding, odd parity generation and checking, Remote Terminal address filtering (5-bit RT address), automatic Bus A to Bus B dual-redundant failover on response timeout, and synthesizable coprocessor macro scaling (+486 cells, +2.55% area overhead),
      Wiegand Security Access Control Protocol Reader/Writer & Pulse Width Discovery Engine (`docs/wiegand_study.md`, `tools/wiegand_model.py`) supporting 26-bit standard framing (H10301), active-low pulsed signaling on DATA0 and DATA1, leading even / trailing odd parity structures, single-cycle WAITEDGE pulse width and bit interval discovery, physical line short / tamper detection, and synthesizable peripheral macro scaling (+285 cells, +1.48% area overhead),
-     and ARINC 429 Mark 33 Digital Information Transfer System (DITS) Avionic Protocol Engine (`docs/arinc429_study.md`, `tools/arinc429_model.py`) supporting 32-bit avionic word framing (8-bit octal label, 2-bit SDI, 19-bit data payload, 2-bit SSM, and 1-bit odd parity), dual-rail bipolar Return-to-Zero (BPRZ) line coding, in-register label and SDI filtering, physical transceiver short-circuit / tamper fault detection (DATA_A=1 && DATA_B=1 trapped with R2=0xAA), and synthesizable coprocessor macro scaling (+412 cells, +2.16% area overhead),
-     paired with independent `UartReceiver`, `UartTransmitter`, `SpiSlave`, `I2cSlave`, `OneWireSlave`, `PS2Device`, `JtagTarget`, `SwdTarget`, `ManchesterDecoder`, `CanReceiverModel`, `Dmx512ReceiverModel`, `AutobaudTransmitterModel`, `HdlcTransmitter`, `HdlcReceiver`, `TrafficGenerator`, `DualCoreSystem`, `UsbReceiver`, `ProtocolFuzzer`, `EthernetTransceiverModel`, `WatchdogModel`, `PowerModel`, `CryptoPerformanceModel`, `SchedulerModel`, `CanFdReceiver`, `SsoGroundBounceModel`, `IrDropModel`, `CrossTalkModel`, `InterruptControllerModel`, `InterruptPpaModel`, `MpuControllerModel`, `MpuPpaModel`, `CrcCoprocessorModel`, `CrcPpaModel`, `I3cTargetDevice`, `I3cPpaModel`, `QeiEncoder`, `QeiDecoder`, `QeiPpaModel`, `LinSlaveModel`, `SsiEncoderModel`, `BissEncoderModel`, `BissPpaModel`, `Mil1553RemoteTerminal`, `Mil1553PpaModel`, `WiegandReaderModel`, `WiegandPpaModel`, `Arinc429ReceiverModel`, and `Arinc429PpaModel` verification models.
-  6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 46
-     architectural fault categories, measuring **100.0% kill rate (46/46 killed)**
+     ARINC 429 Mark 33 Digital Information Transfer System (DITS) Avionic Protocol Engine (`docs/arinc429_study.md`, `tools/arinc429_model.py`) supporting 32-bit avionic word framing (8-bit octal label, 2-bit SDI, 19-bit data payload, 2-bit SSM, and 1-bit odd parity), dual-rail bipolar Return-to-Zero (BPRZ) line coding, in-register label and SDI filtering, physical transceiver short-circuit / tamper fault detection (DATA_A=1 && DATA_B=1 trapped with R2=0xAA), and synthesizable coprocessor macro scaling (+412 cells, +2.16% area overhead),
+     and MIDI 2.0 Universal MIDI Packet (UMP) Protocol Engine & High-Resolution Voice Architecture (`docs/midi2_study.md`, `tools/midi2_model.py`) supporting 32-bit and 64-bit UMP packet framing, 16 virtual groups, 64-bit high-resolution Channel Voice (16-bit velocity, 32-bit pitch bend), Jitter-Reduction (JR) Timestamps, byte-stream UART 8-N-1 serialization, in-register group filtering and note dispatching, and synthesizable coprocessor macro scaling (+395 cells, +2.06% area overhead),
+     paired with independent `UartReceiver`, `UartTransmitter`, `SpiSlave`, `I2cSlave`, `OneWireSlave`, `PS2Device`, `JtagTarget`, `SwdTarget`, `ManchesterDecoder`, `CanReceiverModel`, `Dmx512ReceiverModel`, `AutobaudTransmitterModel`, `HdlcTransmitter`, `HdlcReceiver`, `TrafficGenerator`, `DualCoreSystem`, `UsbReceiver`, `ProtocolFuzzer`, `EthernetTransceiverModel`, `WatchdogModel`, `PowerModel`, `CryptoPerformanceModel`, `SchedulerModel`, `CanFdReceiver`, `SsoGroundBounceModel`, `IrDropModel`, `CrossTalkModel`, `InterruptControllerModel`, `InterruptPpaModel`, `MpuControllerModel`, `MpuPpaModel`, `CrcCoprocessorModel`, `CrcPpaModel`, `I3cTargetDevice`, `I3cPpaModel`, `QeiEncoder`, `QeiDecoder`, `QeiPpaModel`, `LinSlaveModel`, `SsiEncoderModel`, `BissEncoderModel`, `BissPpaModel`, `Mil1553RemoteTerminal`, `Mil1553PpaModel`, `WiegandReaderModel`, `WiegandPpaModel`, `Arinc429ReceiverModel`, `Arinc429PpaModel`, and `Midi2PpaModel` verification models.
+  6. **Mutation Testing:** Standalone harness (`scripts/mutate.py`) testing 47
+     architectural fault categories, measuring **100.0% kill rate (47/47 killed)**
      (citing Huang et al. 2015, Firefly 2025).
   7. **Constrained-Random Fuzzing:** Automated instruction fuzzer (`tools/fuzzer.py`)
      with delta-debugging program shrinker, verified in `test/test_fuzz.py`.
@@ -85,7 +86,7 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
      (~2.2 kGE) with 91.8% of cells in the synthesized flip-flop RAM matrix.
      Multi-lane study proves Split Memory ($2 \times 128 \times 16$) adds only 1,775 cells
      (+9.2% area, ~40.5 kGE total) and fits comfortably in 8x4 tiles (<65% density).
-- **What's verified:** 227/227 RTL tests pass via `scripts/regress.sh` and 8/8 gate-level timing tests pass via `scripts/test_gl.sh`:
+- **What's verified:** 233/233 RTL tests pass via `scripts/regress.sh` and 8/8 gate-level timing tests pass via `scripts/test_gl.sh`:
   (1) cycle-by-cycle differential test (`test/test.py`),
   (2) UART TX edge-case verification (`0x00`, `0xFF`, `0x55`, `0xAA` at 4, 8, 16 cycles/bit),
   (3) UART TX pseudorandom frames,
@@ -312,7 +313,13 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
     (224) ARINC 429 receiver label mismatch rejection (0o310 vs 0o203) cleanly trapped with error code R2=0xEE,
     (225) ARINC 429 SDI (Source/Destination Identifier) filtering matching SDI=2 with status code R2=0x00,
     (226) ARINC 429 physical transceiver short-circuit / tamper fault detection (DATA_A=1 && DATA_B=1) trapped with alarm status R2=0xAA,
-    (227) ARINC 429 mathematical 32-bit odd parity validation across diverse avionic patterns with 100% single-bit error rejection and coprocessor macro PPA scaling (+412 cells, +2.16% area overhead, 793.6 MHz max frequency).
+    (227) ARINC 429 mathematical 32-bit odd parity validation across diverse avionic patterns with 100% single-bit error rejection and coprocessor macro PPA scaling (+412 cells, +2.16% area overhead, 793.6 MHz max frequency),
+    (228) MIDI 2.0 32-bit UMP packet transmission (MT 0x2, Group 3, Channel 5, Note 60, Velocity 100) serialized as 4 UART 8-N-1 octets on pin 3 decoded by independent UartReceiver into 0x23953C64,
+    (229) MIDI 2.0 receiver UMP Byte 0 ingress and Group 3 filter match with status code R2=0x00 and R1=3,
+    (230) MIDI 2.0 receiver Group mismatch rejection (Group 7 vs target Group 3) trapped with error code R2=0xEE,
+    (231) MIDI 2.0 receiver Note On (0x90) and Note 60 dispatch match with status code R2=0x00 and R0=60,
+    (232) MIDI 2.0 receiver non-matching note 64 rejection trapped with error code R2=0xEE,
+    (233) MIDI 2.0 mathematical 64-bit Channel Voice (16-bit velocity 0xC000, 32-bit pitch bend 0x80000000), Jitter-Reduction (JR) timestamp validation, and coprocessor macro PPA scaling (+395 cells, +2.06% area overhead, 806.5 MHz max frequency).
 - **Git:** Sequence of small, reviewable commits (`git log`).
 
 ## Repository map
@@ -320,11 +327,11 @@ January 18, 2027). Full brief: `PROJECT_MASTER_PLAN.md`.
 ```text
 src/            RTL: project.v (TT wrapper), core.v, alu.v, gpio.v, program_ram.v
 firmware/       Assembly programs (loop_demo.asm)
-tools/          assembler.py, isa_model.py, uart_model.py, spi_model.py, i2c_model.py, onewire_model.py, ps2_model.py, jtag_model.py, swd_model.py, manchester_model.py, can_model.py, dmx512_model.py, autobaud_model.py, hdlc_model.py, classifier_model.py, fault_injector_model.py, multilane_model.py, usb_model.py, pipeline_model.py, protocol_fuzzer.py, ethernet_model.py, bridge_matrix_model.py, watchdog_model.py, power_model.py, crypto_model.py, scheduler_model.py, canfd_model.py, floorplan_model.py, interrupt_model.py, mpu_model.py, crc_model.py, i3c_model.py, qei_model.py, lin_model.py, biss_model.py, mil1553_model.py, wiegand_model.py, arinc429_model.py, fuzzer.py
-test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz, test_spi, test_i2c, test_bootload, test_onewire, test_ps2, test_jtag, test_swd, test_manchester, test_can, test_dmx512, test_autobaud, test_hdlc, test_classifier, test_fault_injection, test_multilane, test_usb, test_pipeline, test_protocol_fuzz, test_ethernet, test_bridge_matrix, test_watchdog, test_power, test_crypto, test_scheduler, test_canfd, test_floorplan, test_interrupt, test_mpu, test_crc, test_i3c, test_qei, test_lin, test_biss, test_mil1553, test_wiegand, test_arinc429, test_gate_level)
+tools/          assembler.py, isa_model.py, uart_model.py, spi_model.py, i2c_model.py, onewire_model.py, ps2_model.py, jtag_model.py, swd_model.py, manchester_model.py, can_model.py, dmx512_model.py, autobaud_model.py, hdlc_model.py, classifier_model.py, fault_injector_model.py, multilane_model.py, usb_model.py, pipeline_model.py, protocol_fuzzer.py, ethernet_model.py, bridge_matrix_model.py, watchdog_model.py, power_model.py, crypto_model.py, scheduler_model.py, canfd_model.py, floorplan_model.py, interrupt_model.py, mpu_model.py, crc_model.py, i3c_model.py, qei_model.py, lin_model.py, biss_model.py, mil1553_model.py, wiegand_model.py, arinc429_model.py, midi2_model.py, fuzzer.py
+test/           cocotb test suite (test, test_uart, test_opcodes, test_waitedge, test_fuzz, test_spi, test_i2c, test_bootload, test_onewire, test_ps2, test_jtag, test_swd, test_manchester, test_can, test_dmx512, test_autobaud, test_hdlc, test_classifier, test_fault_injection, test_multilane, test_usb, test_pipeline, test_protocol_fuzz, test_ethernet, test_bridge_matrix, test_watchdog, test_power, test_crypto, test_scheduler, test_canfd, test_floorplan, test_interrupt, test_mpu, test_crc, test_i3c, test_qei, test_lin, test_biss, test_mil1553, test_wiegand, test_arinc429, test_midi2, test_gate_level)
 formal/         SymbiYosys formal harness (core.sby, core_formal.v)
 scripts/        setup_env.sh, regress.sh, test_gl.sh, mutate.py, synth.sh, synth.ys
-docs/           architecture, ISA, verification, toolchain, PPA, limitations, multilane_study, ethernet_study, watchdog_study, power_study, crypto_study, scheduler_study, canfd_study, floorplan_study, interrupt_study, mpu_study, crc_study, i3c_study, qei_study, lin_study, biss_study, mil1553_study, wiegand_study, arinc429_study
+docs/           architecture, ISA, verification, toolchain, PPA, limitations, multilane_study, ethernet_study, watchdog_study, power_study, crypto_study, scheduler_study, canfd_study, floorplan_study, interrupt_study, mpu_study, crc_study, i3c_study, qei_study, lin_study, biss_study, mil1553_study, wiegand_study, arinc429_study, midi2_study
 orchestrator/   Durable state (decisions.md, queue.md, metrics.json, experiments.jsonl)
 ```
 
@@ -332,14 +339,55 @@ orchestrator/   Durable state (decisions.md, queue.md, metrics.json, experiments
 
 ```bash
 bash scripts/setup_env.sh   # one-time toolchain install (see docs/toolchain.md)
-bash scripts/regress.sh     # runs all 227 cocotb regression tests (~65s)
+bash scripts/regress.sh     # runs all 233 cocotb regression tests (~70s)
 bash scripts/test_gl.sh     # runs gate-level timing simulation (8/8 tests pass, ~30s)
 sby -f formal/core.sby      # runs SymbiYosys formal verification with Z3 (20 steps pass)
-python3 scripts/mutate.py   # runs RTL mutation testing campaign (46/46 killed)
+python3 scripts/mutate.py   # runs RTL mutation testing campaign (47/47 killed)
 bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 ```
 
-## Key decisions (full log: `orchestrator/decisions.md`)
+## Fast-reference index
+
+- **Want to understand the core ISA?** -> `docs/isa.md`
+- **Want to see why the architecture looks the way it does?** -> `docs/architecture.md`
+- **Want to run the tests?** -> `docs/verification.md`
+- **Want to see synthesis / PPA numbers?** -> `docs/ppa.md`
+- **Want to see known bugs / limits / non-goals?** -> `docs/limitations.md`
+- **Want to see what was tried and what happened?** -> `orchestrator/decisions.md` (narrative) and `orchestrator/experiments.jsonl` (machine-readable)
+- **Want to see the current numbers?** -> `orchestrator/metrics.json`
+- **Want to know how the multi-lane dual-core architecture works?** -> `docs/multilane_study.md`
+- **Want to know how 10BASE-T physical Ethernet works?** -> `docs/ethernet_study.md`
+- **Want to know how hardware watchdog timers work?** -> `docs/watchdog_study.md`
+- **Want to know how dynamic power & clock gating work?** -> `docs/power_study.md`
+- **Want to know how cryptographic accelerators work?** -> `docs/crypto_study.md`
+- **Want to know how deterministic real-time scheduling works?** -> `docs/scheduler_study.md`
+- **Want to know how CAN FD dual-rate switching works?** -> `docs/canfd_study.md`
+- **Want to know how physical floorplan and package pinout co-design work?** -> `docs/floorplan_study.md`
+- **Want to know how asynchronous event & interrupt controllers work?** -> `docs/interrupt_study.md`
+- **Want to know how memory protection units (MPU) work?** -> `docs/mpu_study.md`
+- **Want to know how hardware CRC coprocessors work?** -> `docs/crc_study.md`
+- **Want to know how MIPI I3C dynamic address assignment works?** -> `docs/i3c_study.md`
+- **Want to know how quadrature encoder motion feedback works?** -> `docs/qei_study.md`
+- **Want to know how LIN automotive bus protocols work?** -> `docs/lin_study.md`
+- **Want to know how SSI and BiSS-C absolute rotary encoders work?** -> `docs/biss_study.md`
+- **Want to know how MIL-STD-1553B avionic multiplex data buses work?** -> `docs/mil1553_study.md`
+- **Want to know how Wiegand access control systems work?** -> `docs/wiegand_study.md`
+- **Want to know how ARINC 429 avionic data bus protocols work?** -> `docs/arinc429_study.md`
+- **Want to know how MIDI 2.0 Universal MIDI Packets (UMP) work?** -> `docs/midi2_study.md`
+- **Want to know what to build next?** -> `orchestrator/queue.md`
+
+## Summary of Completed Iterations
+
+- ARINC 429 Mark 33 Digital Information Transfer System (DITS) Avionic Protocol Engine completed: 32-bit word framing (8-bit octal label, 2-bit SDI, 19-bit data field, 2-bit SSM, and 1-bit odd parity), dual-rail bipolar Return-to-Zero (BPRZ) line coding, in-register label and SDI filtering, physical transceiver short-circuit / tamper fault detection (DATA_A=1 && DATA_B=1 trapped with R2=0xAA), and mathematical odd parity validation across 32 bits with 100% single-bit error rejection verified on the 8-bit core with 0 silicon gates, while a dedicated synthesizable coprocessor macro (+412 cells, +2.16% area overhead) supports bus frequencies >790 MHz on IHP 130nm SG13G2.
+- MIDI 2.0 Universal MIDI Packet (UMP) Protocol Engine & High-Resolution Voice Architecture completed: 32-bit and 64-bit UMP packet framing (Message Types MT 0x0 to 0xF), 16 virtual group routing (256 logical channels per physical link), 64-bit high-resolution Channel Voice (16-bit velocity and 32-bit pitch bend), Jitter-Reduction (JR) Timestamps, byte-stream UART 8-N-1 serialization/deserialization, in-register group filtering and note dispatching verified on the 8-bit core with 0 silicon gates, while a dedicated synthesizable coprocessor macro (+395 cells, +2.06% area overhead) supports clock rates >800 MHz on IHP 130nm SG13G2.
+
+## What to work on next
+
+Full prioritized backlog: `orchestrator/queue.md`. Entering continuous loop:
+
+1. Iteration 45: I2S (Inter-IC Sound) & TDM Digital Audio Multi-Channel Serial Interface Engine.
+2. Iteration 46: SpaceWire (ECSS-E-ST-50-52C) Data-Strobe (DS) Spacecraft Serial Bus Protocol Engine.
+(full log: `orchestrator/decisions.md`)
 
 - Built on the real `TinyTapeout/ttihp-verilog-template` (`cmos5l` branch).
 - No sudo/root required; toolchain runs from Miniforge/conda-forge.

@@ -1504,4 +1504,46 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 38.85s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-16 - Iteration 44: MIDI 2.0 Universal MIDI Packet (UMP) Protocol Engine & High-Resolution Voice Architecture
+
+- **Motivation & Domain Architecture:**
+  - The MIDI 2.0 specification (Universal MIDI Packet and MIDI 2.0 Protocol, M2-104-UM) defines the next-generation digital audio and synthesizer communication standard, upgrading the 1983 MIDI 1.0 standard with 32-bit atomic packet framing, 16 virtual groups (providing 256 logical channels per physical link), 64-bit high-resolution Channel Voice (16-bit velocity and 32-bit pitch bend), and Jitter-Reduction (JR) Timestamps.
+  - Unlike legacy MIDI 1.0 which relies on variable-length status-prefixed byte streams vulnerable to running status desynchronization, MIDI 2.0 packages all messages into 32-bit Universal MIDI Packets (UMP) composed of 1 to 4 32-bit words (32-bit, 64-bit, 96-bit, 128-bit).
+  - Signaling and framing characteristics:
+    1. **Universal MIDI Packet (UMP) Format:**
+       - Bits [31:28]: 4-bit Message Type (MT 0x0 to 0xF). MT determines packet length (0x0 Utility: 32b, 0x1 System Real Time: 32b, 0x2 MIDI 1.0 Channel Voice: 32b, 0x3 Data 64b: 64b, 0x4 MIDI 2.0 Channel Voice: 64b, 0x5 Data 128b: 128b).
+       - Bits [27:24]: 4-bit Group field (0 to 15), routing packets across 16 independent virtual MIDI streams over a single physical link.
+       - Bits [23:20]: 4-bit Status opcode (0x8 Note Off, 0x9 Note On, 0xA Poly Pressure, 0xB Control Change, 0xC Program Change, 0xD Channel Pressure, 0xE Pitch Bend).
+       - Bits [19:16]: 4-bit Channel (0 to 15 within the group).
+       - Bits [15:0]: Data fields (Note number, 8-bit or 16-bit velocity, pitch bend data).
+    2. **Serial Transport Framing:** Section 2.1 specifies that on byte-stream transports (UART, DIN-5), each 32-bit UMP word is serialized as 4 consecutive 8-bit octets in Big-Endian order:
+       - Octet 0: Bits [31:24] (`MT[3:0] | Group[3:0]`)
+       - Octet 1: Bits [23:16] (`Status[3:0] | Channel[3:0]`)
+       - Octet 2: Bits [15:8] (`Data 1 / Note`)
+       - Octet 3: Bits [7:0] (`Data 2 / Velocity`)
+    3. **High-Resolution Channel Voice:** Upgrades note velocity from 7-bit ($0..127$) to 16-bit ($0..65535$) and pitch bend to 32-bit ($0..4294967295$, center at $0x80000000$).
+    4. **Jitter-Reduction (JR) Timestamps:** MT 0x0 Utility messages embed a 16-bit timestamp clocking at $31.25\,\mu\text{s}$ resolution to eliminate serial transmission jitter.
+- **Novelty Highlight (Zero-Jitter UMP Serialization, In-Register Group Filtering & Note Dispatching):**
+  - **Deterministic UART 8-N-1 UMP Delivery:** Transmitter firmware emits 4 consecutive UART 8-N-1 octets in Big-Endian order with exact bit period timing (`GWRI`, `SHIFTOUT`, `WAIT`), verified against independent software model `UartReceiver`.
+  - **In-Register Group Filtering:** Receiver firmware ingresses Byte 0 over UART using `WAITEDGE` hardware start-bit edge synchronization, extracts Group bits [3:0], matches against target Group 3 with status `R2 = 0x00` and `R1 = 3`, and cleanly rejects mismatched Group 7 with error code `R2 = 0xEE`.
+  - **In-Register Note Dispatching:** Receiver ingresses Status (0x90) and Note Number (60), confirms Note On command, asserts dispatch match with status `R2 = 0x00` and `R0 = 60`, and rejects invalid notes with `R2 = 0xEE`.
+  - **Physical PPA Quantification on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated MIDI 2.0 UMP Coprocessor Macro: **395 standard cells (768.2 GE, +2.06% area overhead, $2,883.50\,\mu\text{m}^2$)**, with a $1.24\,\text{ns}$ critical path ($f_{\text{max}} = 806.5\,\text{MHz}$).
+- **Verification Suite (`test/test_midi2.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/midi2_model.py`:
+    1. `test_midi2_ump_packet_transmission`: Verified 32-bit UMP packet transmission (MT 0x2, Group 3, Channel 5, Note 60, Velocity 100) serialized as 4 UART octets, decoded by `UartReceiver`. **PASS** (908.8 us).
+    2. `test_midi2_group_filtering_match`: Receiver matched target Group 3 with status `R2 = 0x00` and `R1 = 3`. **PASS** (318.9 us).
+    3. `test_midi2_group_filtering_mismatch`: Receiver rejected mismatched Group 7 with error code `R2 = 0xEE`. **PASS** (318.9 us).
+    4. `test_midi2_note_dispatch_match`: Receiver matched Note On (0x90) and Note 60 with status `R2 = 0x00` and `R0 = 60`. **PASS** (529.3 us).
+    5. `test_midi2_note_dispatch_mismatch`: Receiver rejected non-matching note 64 with error code `R2 = 0xEE`. **PASS** (529.3 us).
+    6. `test_midi2_highres_voice_and_ppa_validation`: Mathematical validation of 64-bit high-resolution voice, JR timestamp, and PPA scaling. **PASS**.
+  - Regression Suite: **233/233 tests passing (100.0%)** across 42 test modules in ~70s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 86s).
+  - Mutation Testing: Added `MUT_47_SHIFTOUT_LSB_FILL_BIT` in `scripts/mutate.py`. Killed in 124.90s. Cumulative score: **47/47 mutants killed (100.0% kill rate)** in 4126.29s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 31.16s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+
 
