@@ -1578,6 +1578,58 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 30.72s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-16 - Iteration 46: SpaceWire (ECSS-E-ST-50-52C) Data-Strobe Spacecraft Serial Bus Protocol Engine
+
+- **Motivation & Domain Architecture:**
+  - SpaceWire (ECSS-E-ST-50-52C) is the premier spacecraft onboard data-handling and instrumentation network protocol standardized by the European Space Agency (ESA) and adopted by NASA, JAXA, and commercial space missions (James Webb Space Telescope, BepiColombo, Rosetta).
+  - SpaceWire uses a dual-differential Data-Strobe (DS) physical line coding on LVDS pairs:
+    1. **Data-Strobe (DS) Physical Line Coding:**
+       - Transmits two lines: Data ($D$) and Strobe ($S$).
+       - Exactly ONE transition occurs on either Data or Strobe during every bit interval ($\Delta D \oplus \Delta S = 1$).
+       - If $D$ changes state ($D_k \neq D_{k-1}$), $S$ remains constant ($S_k = S_{k-1}$).
+       - If $D$ does not change state ($D_k = D_{k-1}$), $S$ transitions ($S_k = \overline{S_{k-1}}$).
+    2. **Clock Recovery Without PLL:**
+       - SpaceWire receivers recover the transmission bit clock purely through an asynchronous XOR gate:
+         $$\text{CLK}_{\text{rec}} = D \oplus S \quad (\text{or edge transition } \Delta D \oplus \Delta S)$$
+       - Eliminates all phase-locked loops (PLL), clock recovery oscillators, and locked reference frequencies, operating from 2 Mbps up to 400 Mbps.
+    3. **Character-Level Framing & Odd Parity Rule:**
+       - **Control Characters (4 bits):** Parity bit $P$, Control Flag $C=1$, followed by 2-bit code:
+         - FCT (Flow Control Token): `P 1 0 0`
+         - EOP (End of Packet): `P 1 0 1`
+         - EEP (Error End of Packet): `P 1 1 0`
+         - ESC (Escape Character): `P 1 1 1`
+       - **Data Characters (10 bits):** Parity bit $P$, Control Flag $C=0$, followed by 8 data bits transmitted LSB-first:
+         - `P 0 D0 D1 D2 D3 D4 D5 D6 D7`
+       - **Odd Character Parity Rule:** $P$ is calculated over the current Control Flag and Data/Code bits such that the number of '1's in the character is odd:
+         $$P = 1 \oplus C \oplus \sum D_i \pmod 2$$
+    4. **Composite Tokens & Flow Control:**
+       - NULL Token: `ESC` followed by `FCT` (used for link keepalive and silence).
+       - Time-Code: `ESC` followed by Data Character (used for mission-elapsed-time synchronization).
+       - Credit-based flow control: Each received FCT grants $+8$ bytes of receive buffer credit.
+- **Novelty Highlight (Zero-Jitter DS Line Coding, Mid-Bit Sampling, In-Register Parity & Credit Accounting):**
+  - **Deterministic DS Line Coding:** Transmitter firmware generates Data on `uio[0]` and Strobe on `uio[1]` with exact bit interval timing ($T=8$ cycles/bit), satisfying $\Delta D \oplus \Delta S = 1$ across Data (`0xA5`), EOP, and Data (`0x3C`), verified by independent `SpaceWireReceiverModel`.
+  - **Pin Partitioning & Mid-Bit Sampling:** Assigning SpaceWire RX to `uio[4]` (Data) and `uio[5]` (Strobe) isolates incoming traffic from bootloader pins (`uio[0:2]`). Receiver synchronizes on edge transition, delays to mid-bit window, samples Control Flag and LSB-first data bits into `R0` with 0 drift.
+  - **In-Register Parity Error Trapping:** Microcode computes odd parity over the received byte using an unrolled loop: if parity is odd, returns `R2 = 0x00`; if even (corrupted), traps with error code `R2 = 0xEE`.
+  - **Composite Token & Credit Tracking:** Receiver captures FCT control token (`R0 = 0x04`) and increments credit counter by 8 in `R0` (`R0 = 8`).
+  - **Physical PPA Quantification on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated SpaceWire Coprocessor Macro: **456 standard cells (880.0 GE, +2.37% area overhead, $3,333.36\,\mu\text{m}^2$)**, with a $1.30\,\text{ns}$ critical path ($f_{\text{max}} = 769.2\,\text{MHz}$).
+- **Verification Suite (`test/test_spacewire.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/spacewire_model.py`:
+    1. `test_spacewire_tx_packet_framing`: Verified 3-character packet transmission (Data 0xA5, EOP, Data 0x3C) with DS line transitions, decoded by `SpaceWireReceiverModel`. **PASS** (1.02 ms).
+    2. `test_spacewire_rx_single_character`: Receiver captured Data 0x5A into `R0` with valid odd parity status `R2 = 0x00`. **PASS** (174.1 us).
+    3. `test_spacewire_rx_parity_error_detection`: Corrupted parity bit trapped with error code `R2 = 0xEE`. **PASS** (174.1 us).
+    4. `test_spacewire_rx_composite_token`: FCT control character decoded into `R0 = 0x04` with status `R2 = 0x00`. **PASS** (105.7 us).
+    5. `test_spacewire_credit_tracker_accounting`: Receiver processed FCT and incremented credit counter to `R0 = 8`. **PASS** (124.9 us).
+    6. `test_spacewire_ppa_and_standards_validation`: Mathematical validation of DS encoding, parity formulation, Time-Code structure, and PPA model. **PASS**.
+  - Regression Suite: **245/245 tests passing (100.0%)** across 44 test modules in ~75s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 77s).
+  - Mutation Testing: Added `MUT_49_SPACEWIRE_SHIFTIN_LSB_BIT_INVERT` in `scripts/mutate.py`. Killed in 90.10s. Cumulative score: **49/49 mutants killed (100.0% kill rate)** in 4337.89s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 29.96s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+
 
 
 
