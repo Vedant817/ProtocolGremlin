@@ -1337,8 +1337,40 @@ mutation-kill rates.
 - **Formal Verification, Mutation & PPA:**
   - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 98s).
   - Mutation Testing: Added `MUT_41_QEI_VELOCITY_PERIOD_CAPTURE` in `scripts/mutate.py`. Killed in 158.14s. Cumulative score: **41/41 mutants killed (100.0% kill rate)** in 3445.78s.
-  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 32.09s.
+## 2026-09-16 - Iteration 39: LIN (Local Interconnect Network v2.2A / ISO 17987) Automotive Protocol Engine
+
+- **Context & Motivation:**
+  - The Local Interconnect Network (LIN) is an ISO 17987 standardized single-wire open-drain automotive sub-bus protocol used across vehicle body domains (doors, seats, mirrors, climate control, lighting).
+  - LIN operates at up to 20 kbps (strictly bounded to mitigate radiated EMI) over a single-wire physical medium, requiring precise master Synch Break generation ($\ge 13$ bit times dominant low), Synch byte (`0x55`) with 5 falling edges for slave clock calibration, Protected Identifier (PID) encoding with mixed $P_0 / P_1$ parity bits, and inverted ones' complement checksum computation (Classic vs Enhanced with carry wrap-around).
+- **Architectural Design & Technical Highlights (`docs/lin_study.md`, `tools/lin_model.py`):**
+  - **Master Frame Generation & Break-Sync Processing:**
+    - Master drives single-wire bus in open-drain mode (`GODRI 0x01`).
+    - Generates Synch Break field: pulls bus LOW (`GWRI 0x00`) for 104 cycles ($13 \times 8$ bit times) to unambiguously violate standard UART framing and wake all cluster slaves.
+    - Releases bus for Break Delimiter (1 bit time), then emits Synch Byte `0x55` using standard 8-N-1 UART framing (`SHIFTOUT`).
+    - Transmits 8-bit PID ($P_0 = ID_0 \oplus ID_1 \oplus ID_2 \oplus ID_4$, $P_1 = \overline{ID_1 \oplus ID_3 \oplus ID_4 \oplus ID_5}$), followed by payload data and checksum.
+  - **Slave Break Pulse Duration Capture via WAITEDGE:**
+    - Slave firmware synchronizes to falling edge of Break pulse, then captures elapsed dominant low duration directly into register `R0` upon rising edge of Break Delimiter with single-cycle precision (`R0 = 104` cycles, flag `R2 = 1`).
+  - **Mathematical PID Parity & Ones' Complement Checksum:**
+    - Validated all 64 LIN Frame IDs ($0 \dots 63$) with 100% single-bit and double-bit parity error detection.
+    - Verified inverted ones' complement checksums with carry wrap-around: both Classic (LIN 1.3: data only) and Enhanced (LIN 2.2A: PID + data). Summing all protected bytes with the checksum modulo-256 yields `0xFF`.
+  - **Physical PPA Quantification on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated LIN Hardware Coprocessor Macro: **351 standard cells (684.4 GE, +1.84% area overhead, $2,559.84\,\mu\text{m}^2$)**, with a $1.38\,\text{ns}$ critical path in carry wrap-around adder ($f_{\text{max}} = 724.6\,\text{MHz}$).
+- **Verification Suite (`test/test_lin.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/lin_model.py`:
+    1. `test_lin_master_frame_transmission`: Master frame generation (Break 104 cycles, Sync 0x55, PID 0x97, Data [0x3A, 0xC5], Enhanced checksum). **PASS** (1.19 ms).
+    2. `test_lin_break_pulse_detection`: Slave Break detection capturing duration `R0 = 104` cycles, flag `R2 = 1`. **PASS** (83.2 us).
+    3. `test_lin_pid_parity_validation`: Mathematical validation of LIN P0/P1 parity across all 64 IDs. **PASS**.
+    4. `test_lin_checksum_classic_and_enhanced`: Inverted ones' complement carry-wrap checksums (Classic and Enhanced). **PASS**.
+    5. `test_lin_slave_frame_ingress`: Slave payload ingress and clean reception status (`R2 = 0x00`). **PASS** (122.8 us).
+    6. `test_lin_ppa_and_open_drain_safety`: PPA scaling validation and safe open-drain High-Z bus release (`uio_oe == 0x00`). **PASS** (954.7 us).
+  - Regression Suite: **203/203 tests passing (100.0%)** across 37 test modules.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 80s).
+  - Mutation Testing: Added `MUT_42_LIN_BREAK_WAIT_TIMING` in `scripts/mutate.py`. Killed in 83.53s. Cumulative score: **42/42 mutants killed (100.0% kill rate)** in 3529.31s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 39.14s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
 
 
 
