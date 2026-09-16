@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-09-16T08:45:50Z",
-  "total_mutants": 46,
-  "killed": 46,
+  "timestamp": "2026-09-16T09:22:12Z",
+  "total_mutants": 47,
+  "killed": 47,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 4001.39,
+  "campaign_time_sec": 4126.29,
   "mutants": [
     {
       "id": "MUT_01_BRANCH_JZ_INVERT",
@@ -373,6 +373,14 @@
       "description": "Push-pull GPIO output bug: masks pin_out with od_mode instead of ~od_mode, suppressing all active push-pull high outputs (pin_out always 0 in push-pull mode), breaking ARINC 429 dual-rail BPRZ pulses and SPI/UART transmission",
       "status": "KILLED",
       "elapsed_sec": 108.03
+    },
+    {
+      "id": "MUT_47_SHIFTOUT_LSB_FILL_BIT",
+      "category": "Bit-Serial / Transmit Shift",
+      "file": "src/core.v",
+      "description": "Serial transmitter shift bug: OP_SHIFTOUT in LSB mode shifts in 1b1 instead of 1b0 ({1b1, rd_val[7:1]}), corrupting subsequent transmitted bits across MIDI 2.0 UMP, UART, and LIN frames",
+      "status": "KILLED",
+      "elapsed_sec": 124.9
     }
   ]
 }

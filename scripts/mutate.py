@@ -393,6 +393,14 @@ MUTANTS = [
         "replacement": "assign pin_out = out_val & od_mode;",
         "description": "Push-pull GPIO output bug: masks pin_out with od_mode instead of ~od_mode, suppressing all active push-pull high outputs (pin_out always 0 in push-pull mode), breaking ARINC 429 dual-rail BPRZ pulses and SPI/UART transmission",
     },
+    {
+        "id": "MUT_47_SHIFTOUT_LSB_FILL_BIT",
+        "category": "Bit-Serial / Transmit Shift",
+        "file": "src/core.v",
+        "target": "                  write_rd(rd_idx, {1'b0, rd_val[7:1]});",
+        "replacement": "                  write_rd(rd_idx, {1'b1, rd_val[7:1]});",
+        "description": "Serial transmitter shift bug: OP_SHIFTOUT in LSB mode shifts in 1'b1 instead of 1'b0 ({1'b1, rd_val[7:1]}), corrupting subsequent transmitted bits across MIDI 2.0 UMP, UART, and LIN frames",
+    },
 ]
 
 
