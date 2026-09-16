@@ -353,6 +353,14 @@ MUTANTS = [
         "replacement": "                  write_rd(rd_idx, 8'h00);",
         "description": "QEI motion velocity feedback bug: WAITEDGE fails to write elapsed wait cycles to rd (always writes 0), breaking quadrature velocity and acceleration measurement",
     },
+    {
+        "id": "MUT_42_LIN_BREAK_WAIT_TIMING",
+        "category": "Timing / Wait State",
+        "file": "src/core.v",
+        "target": "              OP_WAIT: wait_remaining <= operand;",
+        "replacement": "              OP_WAIT: wait_remaining <= operand + 8'h02;",
+        "description": "Deterministic protocol wait timing bug: OP_WAIT loads operand + 2 instead of operand, stretching bit times, violating LIN Break duration constraints, and introducing baud rate phase errors",
+    },
 ]
 
 

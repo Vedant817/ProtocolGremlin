@@ -1,10 +1,10 @@
 {
   "timestamp": "2026-09-15T22:20:00Z",
-  "total_mutants": 41,
-  "killed": 41,
+  "total_mutants": 42,
+  "killed": 42,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 3445.78,
+  "campaign_time_sec": 3529.31,
   "mutants": [
     {
       "id": "MUT_01_BRANCH_JZ_INVERT",
@@ -333,6 +333,14 @@
       "description": "QEI motion velocity feedback bug: WAITEDGE fails to write elapsed wait cycles to rd (always writes 0), breaking quadrature velocity and acceleration measurement",
       "status": "KILLED",
       "elapsed_sec": 158.14
+    },
+    {
+      "id": "MUT_42_LIN_BREAK_WAIT_TIMING",
+      "category": "Timing / Wait State",
+      "file": "src/core.v",
+      "description": "Deterministic protocol wait timing bug: OP_WAIT loads operand + 2 instead of operand, stretching bit times, violating LIN Break duration constraints, and introducing baud rate phase errors",
+      "status": "KILLED",
+      "elapsed_sec": 83.53
     }
   ]
 }
