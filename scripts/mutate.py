@@ -385,6 +385,14 @@ MUTANTS = [
         "replacement": "                      (edge_mode == 2'b01) ? edge_fall :",
         "description": "Wiegand pulse timing discovery bug: WAITEDGE rising-edge mode (mode 1) triggers on edge_fall instead of edge_rise, terminating pulse-width wait on leading edge instead of trailing edge and corrupting discovered pulse width and interval timing",
     },
+    {
+        "id": "MUT_46_ARINC429_PUSHPULL_PIN_OUT",
+        "category": "IO / Push-Pull GPIO",
+        "file": "src/gpio.v",
+        "target": "assign pin_out = out_val & ~od_mode;",
+        "replacement": "assign pin_out = out_val & od_mode;",
+        "description": "Push-pull GPIO output bug: masks pin_out with od_mode instead of ~od_mode, suppressing all active push-pull high outputs (pin_out always 0 in push-pull mode), breaking ARINC 429 dual-rail BPRZ pulses and SPI/UART transmission",
+    },
 ]
 
 
