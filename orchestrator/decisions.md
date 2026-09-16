@@ -1629,6 +1629,54 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 29.96s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-17 - Iteration 47: SAE J2716 SENT Automotive Sensor Protocol Engine
+
+- **Motivation & Domain Architecture:**
+  - SAE J2716 SENT (Single Edge Nibble Transmission) is the preeminent automotive point-to-point digital sensor interface standard for safety-critical powertrain and chassis sensors (throttle position, mass airflow, manifold absolute pressure, torque, steering angle).
+  - SENT replaces analog 0-5V signaling with digital single-wire transmission resilient to ground offsets and EMC noise:
+    1. **Falling-to-Falling Edge Pulse-Period Modulation (PPM):**
+       - Information is transmitted purely in the duration between consecutive falling edges.
+       - Each nibble begins with a fixed low pulse of $\ge 5$ ticks (nominally 5 ticks), followed by a variable high period such that the total falling-to-falling period encodes the 4-bit nibble value ($N \in [0, 15]$):
+         $$T_{\text{nibble}} = (12 + N) \times t_{\text{tick}}$$
+       - The minimum period is $12 \times t_{\text{tick}}$ ($N=0$), and the maximum is $27 \times t_{\text{tick}}$ ($N=15$).
+    2. **56-Tick Synchronization / Calibration Pulse:**
+       - Every SENT frame begins with a calibration pulse precisely 56 ticks wide from falling edge to falling edge ($T_{\text{sync}} = 56 \times t_{\text{tick}}$).
+       - Receivers derive the local clock tick duration:
+         $$t_{\text{tick}} = \frac{T_{\text{sync}}}{56}$$
+       - Compensates for up to $\pm 20\%$ transmitter clock drift over temperature and voltage variations without crystals.
+    3. **Frame Structure & Nibble Order:**
+       - Calibration / Sync Pulse: 56 ticks
+       - Status & Communication Nibble: 1 nibble (12 to 27 ticks)
+       - Data Nibbles: 6 nibbles (Fast Channel 1 and Fast Channel 2, e.g., two 12-bit sensor signals)
+       - Checksum (CRC-4) Nibble: 1 nibble (12 to 27 ticks)
+       - Optional Pause Pulse: variable ticks to enforce constant frame period.
+    4. **Mathematical CRC-4 Formulation:**
+       - Generator polynomial: $P(x) = x^4 + x^3 + x^2 + 1$ (`0b11101` / `0x1D`).
+       - Initial seed: `0b0101` (`5`).
+       - Computed over all 6 data nibbles (or status + data nibbles per J2716 version).
+- **Novelty Highlight (Zero-Jitter PPM Synthesis, WAITEDGE Period Decoding, In-Register CRC-4 Validation):**
+  - **Deterministic PPM Pulse Synthesis:** Transmitter firmware generates falling-to-falling pulses on `uio[3]` with exact cycle counts ($t_{\text{tick}} = 10$ cycles): sync (56 ticks = 560 cycles), status (12 ticks = 120 cycles), data nibbles 1..6 (13..18 ticks = 130..180 cycles), and CRC-4 (24 ticks = 240 cycles), verified by independent `SentReceiverModel`.
+  - **Single-Cycle PPM Timing Recovery via WAITEDGE:** Receiver firmware synchronizes on the first falling edge, then executes `WAITEDGE R0, pin, mode=0` to capture the sync pulse period into `R0` (560 cycles). Subsequent falling edge captures measure nibble duration into `R1` (e.g., 170 cycles), decoding nibble value $N = (170 / 10) - 12 = 5$ with zero cumulative jitter.
+  - **In-Register CRC-4 Verification:** Firmware implements an unrolled Galois LFSR in microcode, computing CRC-4 over the 6 data nibbles and matching against the received CRC nibble, returning status `R2 = 0x00`.
+  - **Physical PPA Quantification on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated SENT Coprocessor Macro: **415 standard cells (812.0 GE, +2.15% area overhead, $3,033.65\,\mu\text{m}^2$)**, with a $1.28\,\text{ns}$ critical path ($f_{\text{max}} = 781.3\,\text{MHz}$).
+- **Verification Suite (`test/test_sent.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/sent_model.py`:
+    1. `test_sent_tx_frame`: Verified SENT transmission decoded by `SentReceiverModel` into Status 0, Data [1, 2, 3, 4, 5, 6], CRC 12. **PASS** (0.63s).
+    2. `test_sent_rx_sync_and_nibble`: Receiver captured sync period (560 cycles in `R0`) and nibble period (170 cycles in `R1`, $N=5$) via `WAITEDGE` with status `R2 = 0x00`. **PASS**.
+    3. `test_sent_crc4_mathematical_validation`: Verified mathematical CRC-4 polynomial against diverse sensor vectors with 100% single-bit corruption detection. **PASS**.
+    4. `test_sent_crc4_validator_firmware`: In-register CRC-4 validator verified against reference vectors with status `R2 = 0x00`. **PASS**.
+    5. `test_sent_pause_pulse_handling`: Verified acquisition and parsing of SENT frame with 120-tick pause pulse. **PASS**.
+    6. `test_sent_ppa_and_standards_validation`: Validated SAE J2716 standard parameters, tick tolerances, and coprocessor PPA scaling model. **PASS**.
+  - Regression Suite: **251/251 tests passing (100.0%)** across 45 test modules in ~75s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 80s).
+  - Mutation Testing: Added `MUT_50_SENT_WAITEDGE_FALLING_POLARITY` in `scripts/mutate.py`. Killed in 97.22s. Cumulative score: **50/50 mutants killed (100.0% kill rate)** in 4435.11s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 25.15s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+
 
 
 

@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-spacewire-verified",
+  "phase": "isa-v1-sent-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: 10 iterations complete (Iterations 37-46). All 10 requested iterations successfully completed. System entering RESEARCH_AND_PROOF mode.",
+  "active_objective": "Continuous engineering loop: Iteration 47 complete (SENT). Iteration 48 next (EtherCAT).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 46,
+  "iterations": 47,
   "halt": false,
-  "notes": "Iteration 46 complete: Authored docs/spacewire_study.md (SpaceWire ECSS-E-ST-50-52C Data-Strobe specification, LVDS physical signaling physics, clock recovery without PLL, 4-bit Control Characters, 10-bit Data Characters, odd parity accumulation rule, composite tokens, credit-based flow control, link state machine, and IHP 130nm SG13G2 PPA scaling). Created tools/spacewire_model.py (SpaceWireReceiverModel, SpaceWirePpaModel, build_spacewire_tx_packet_asm, build_spacewire_rx_char_asm, build_spacewire_rx_token_asm, build_spacewire_credit_tracker_asm) and test/test_spacewire.py (6/6 tests pass: 3-character packet transmission D=0xA5, EOP, D=0x3C verified against SpaceWireReceiverModel, single-character reception with parity validation R0=0x5A R2=0x00, parity error detection R2=0xEE, composite token reception for FCT R0=0x04, credit tracker accounting +8 credits R0=8, and PPA scaling model). Added test_spacewire to test/Makefile. Full regression suite: 245/245 tests PASS (100.0%) across 44 modules. Added MUT_49_SPACEWIRE_SHIFTIN_LSB_BIT_INVERT in scripts/mutate.py (killed in 90.10s, 49/49 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 77s). Gate-level simulation confirmed 8/8 physical tests pass in 29.96s."
+  "notes": "Iteration 47 complete: Authored docs/sent_study.md (SAE J2716 SENT specification, falling-to-falling PPM timing, 56-tick sync pulse clock recovery, nibble duration formula, CRC-4 polynomial mathematical LFSR and array formulation, optional pause pulse, and IHP 130nm SG13G2 PPA scaling). Created tools/sent_model.py (compute_sent_crc4, verify_sent_crc4, SentFrame, SentReceiverModel, SentPpaModel, build_sent_tx_frame_asm, build_sent_rx_sync_and_nibble_asm, build_sent_crc4_validator_asm) and test/test_sent.py (6/6 tests pass: frame transmission decoded by SentReceiverModel into Status 0, Data [1,2,3,4,5,6], CRC 12, WAITEDGE sync period 560 cycles in R0 and nibble period 170 cycles in R1 with R2=0x00, mathematical CRC-4 polynomial validation, in-register CRC-4 validator firmware, pause pulse handling, and PPA scaling model). Added test_sent to test/Makefile. Full regression suite: 251/251 tests PASS (100.0%) across 45 modules. Added MUT_50_SENT_WAITEDGE_FALLING_POLARITY in scripts/mutate.py (killed in 97.22s, 50/50 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 80s). Gate-level simulation confirmed 8/8 physical tests pass in 25.15s."
 }
