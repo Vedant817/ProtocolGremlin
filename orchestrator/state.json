@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-biss-verified",
+  "phase": "isa-v1-mil1553-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 40 complete (SSI / BiSS-C Absolute Rotary Encoder Engine). Next: Iteration 41 (MIL-STD-1553B Avionic Multiplex Data Bus Dual-Redundant Protocol Engine).",
+  "active_objective": "Continuous engineering loop: Iteration 41 complete (MIL-STD-1553B Avionic Multiplex Data Bus Dual-Redundant Protocol Engine). Next: Iteration 42 (Wiegand Security Access Control Protocol Reader/Writer & Pulse Width Discovery Engine).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 40,
+  "iterations": 41,
   "halt": false,
-  "notes": "Iteration 40 complete: Authored docs/biss_study.md (SSI and BiSS-C specifications, Single-Cycle Data framing, mathematical Gray-to-binary formulation, CRC-6 LFSR equations, and IHP 130nm PPA scaling). Created tools/biss_model.py (gray_to_binary, binary_to_gray, compute_biss_crc6, verify_biss_crc6, SsiEncoderModel, BissEncoderModel, BissPpaModel, build_ssi_gray_to_binary_asm, build_ssi_master_asm, build_biss_master_asm) and test/test_biss.py (6/6 tests pass: ALU Gray-to-binary decoding across 10 vectors, SSI master position sampling R0=0xD4, BiSS-C frame acquisition R0=0x9B, R1=0x03, R2=0x20, CRC-6 polynomial integrity and corruption detection, fault ingress for nE/nW flags R1=0x00, and PPA scaling). Added test_biss to test/Makefile. Full regression suite: 209/209 tests PASS (100.0%) across 38 modules. Added MUT_43_BISS_SHIFTIN_DIR in scripts/mutate.py (killed in 98.12s, 43/43 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 87s). Gate-level simulation confirmed 8/8 physical tests pass in 26.72s."
+  "notes": "Iteration 41 complete: Authored docs/mil1553_study.md (MIL-STD-1553B Notice 2 avionic specification, 20-bit word structure, 3-bit non-Manchester sync waveform physics, dual-redundant bus failover mechanics, RT response latency bounds, and IHP 130nm PPA scaling). Created tools/mil1553_model.py (compute_1553_parity, verify_1553_parity, build_command_word, parse_command_word, build_status_word, Mil1553RemoteTerminal, Mil1553PpaModel, build_1553_bc_command_tx_asm, build_1553_rt_rx_asm, build_1553_dual_bus_failover_asm) and test/test_mil1553.py (6/6 tests pass: BC Command Word waveform transmission with 24-cycle sync, RT command reception with address match and Status Word generation, mathematical odd parity validation with 100% single-bit error rejection, RT address filtering trapping mismatches with 0xEE, BC dual-redundant automatic failover to Bus B with 0xBB status code, and PPA scaling). Added test_mil1553 to test/Makefile. Full regression suite: 215/215 tests PASS (100.0%) across 39 modules. Added MUT_44_1553_ALU_ORI_DECODE in scripts/mutate.py (killed in 113.91s, 44/44 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 78s). Gate-level simulation confirmed 8/8 physical tests pass in 26.90s."
 }
