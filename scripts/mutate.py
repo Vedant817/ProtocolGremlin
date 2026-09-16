@@ -369,6 +369,14 @@ MUTANTS = [
         "replacement": "                  write_rd(rd_idx, {rd_val[6:0], ~gpio_in[pin_idx]});",
         "description": "SSI / BiSS-C serial data shift bug: OP_SHIFTIN in MSB mode inverts sampled GPIO pin value (~gpio_in[pin_idx]), corrupting serial encoder position, status flags, and CRC reception",
     },
+    {
+        "id": "MUT_44_1553_ALU_ORI_DECODE",
+        "category": "Core / ALU Logic",
+        "file": "src/core.v",
+        "target": "      OP_ORI:  alu_op = ALU_OR;",
+        "replacement": "      OP_ORI:  alu_op = ALU_AND;",
+        "description": "ALU logic decode bug: OP_ORI decodes to ALU_AND instead of ALU_OR, corrupting bitwise OR operations, register bit setting, and protocol parity/flag accumulation",
+    },
 ]
 
 

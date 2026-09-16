@@ -1,10 +1,10 @@
 {
   "timestamp": "2026-09-15T22:20:00Z",
-  "total_mutants": 43,
-  "killed": 43,
+  "total_mutants": 44,
+  "killed": 44,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 3627.43,
+  "campaign_time_sec": 3741.34,
   "mutants": [
     {
       "id": "MUT_01_BRANCH_JZ_INVERT",
@@ -349,6 +349,14 @@
       "description": "SSI / BiSS-C serial data shift bug: OP_SHIFTIN in MSB mode inverts sampled GPIO pin value (~gpio_in[pin_idx]), corrupting serial encoder position, status flags, and CRC reception",
       "status": "KILLED",
       "elapsed_sec": 98.12
+    },
+    {
+      "id": "MUT_44_1553_ALU_ORI_DECODE",
+      "category": "Core / ALU Logic",
+      "file": "src/core.v",
+      "description": "ALU logic decode bug: OP_ORI decodes to ALU_AND instead of ALU_OR, corrupting bitwise OR operations, register bit setting, and protocol parity/flag accumulation",
+      "status": "KILLED",
+      "elapsed_sec": 113.91
     }
   ]
 }
