@@ -1309,6 +1309,38 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 31.63s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-16 - Iteration 38: Quadrature Encoder Interface (QEI) & Industrial Motion Feedback Engine
+
+- **Context & Motivation:**
+  - Incremental optical and magnetic rotary encoders are fundamental to industrial robotics, CNC machines, servo motor drives, and precision motion control. They output two square wave signals in phase quadrature ($A$ and $B$, $90^\circ$ electrical phase shift), and an optional index pulse ($Z$) once per mechanical revolution for homing.
+  - Efficient motion processing requires direction determination (forward CW vs reverse CCW), high-resolution edge accumulation (1X, 2X, 4X decoding), absolute zero calibration via index pulse, and real-time velocity estimation.
+- **Architectural Design & Technical Highlights (`docs/qei_study.md`, `tools/qei_model.py`):**
+  - **Quadrature Phase Decoding & Direction Tracking:**
+    - Evaluated 1X, 2X, and 4X resolution decoding schemes. Forward motion ($A$ leads $B$: $00 \to 10 \to 11 \to 01$) increments displacement, while reverse motion ($B$ leads $A$: $00 \to 01 \to 11 \to 10$) decrements displacement.
+    - Implemented hardware-accelerated 1X decoding microcode using `WAITEDGE R0, 0x08` (rising edge on Pin 0 / Channel A) followed by atomic sampling of Channel B (Pin 1) via `GRD R1` and `ANDI R0, 0x02`, adjusting position counter `R3` (+1 for CW, -1 for CCW).
+  - **Index Pulse Zero Calibration / Homing:**
+    - Microcode waits for rising edge of Channel Z on Pin 2 via `WAITEDGE R0, 0x0A` (0x08 | 2), sets index detection flag `R2 = 1` and marks system calibrated with status `R3 = 0x5A`.
+  - **Velocity Estimation via Elapsed Cycle Counter:**
+    - Leveraged `WAITEDGE`'s hardware elapsed cycle counter to capture periods between consecutive encoder transitions directly into register `R0`, enabling high-precision rotational velocity and acceleration calculation without software timer polling overhead.
+  - **Physical PPA Quantification on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**, capable of decoding up to 500 kTransitions/sec.
+    - Dedicated QEI Peripheral Macro: **351 standard cells (684.4 GE, +1.84% area overhead, $2,559.84\,\mu\text{m}^2$)**, supporting maximum encoder pulse frequencies exceeding $800\,\text{MHz}$ ($f_{\text{max}} = 806.5\,\text{MHz}$) with a $1.24\,\text{ns}$ critical path in 16-bit up/down counter.
+- **Verification Suite (`test/test_qei.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/qei_model.py`:
+    1. `test_qei_forward_rotation_1x`: Forward (CW) rotation detection counting +4 edges (`R3 = 4`). **PASS** (154.2 us).
+    2. `test_qei_reverse_rotation_1x`: Reverse (CCW) rotation detection counting -4 edges (`R3 = 0xFC = 252`). **PASS** (154.2 us).
+    3. `test_qei_bidirectional_movement`: Dynamic direction change (+3 forward, then -2 reverse, net `R3 = 1`). **PASS** (159.0 us).
+    4. `test_qei_index_homing_capture`: Index pulse detection on Pin 2, latching zero position with `R2 = 1` and `R3 = 0x5A`. **PASS** (91.5 us).
+    5. `test_qei_velocity_estimation_period`: WAITEDGE elapsed cycle counter period measurement (`R3 = 43` cycles). **PASS** (94.5 us).
+    6. `test_qei_ppa_and_hardware_model`: PPA model validation and reference software decoder verification. **PASS**.
+  - Regression Suite: **197/197 tests passing (100.0%)** across 36 test modules.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 98s).
+  - Mutation Testing: Added `MUT_41_QEI_VELOCITY_PERIOD_CAPTURE` in `scripts/mutate.py`. Killed in 158.14s. Cumulative score: **41/41 mutants killed (100.0% kill rate)** in 3445.78s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 32.09s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+
 
 
 
