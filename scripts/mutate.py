@@ -377,6 +377,14 @@ MUTANTS = [
         "replacement": "      OP_ORI:  alu_op = ALU_AND;",
         "description": "ALU logic decode bug: OP_ORI decodes to ALU_AND instead of ALU_OR, corrupting bitwise OR operations, register bit setting, and protocol parity/flag accumulation",
     },
+    {
+        "id": "MUT_45_WIEGAND_WAITEDGE_RISE_POLARITY",
+        "category": "Timing / Edge Capture",
+        "file": "src/core.v",
+        "target": "                      (edge_mode == 2'b01) ? edge_rise :",
+        "replacement": "                      (edge_mode == 2'b01) ? edge_fall :",
+        "description": "Wiegand pulse timing discovery bug: WAITEDGE rising-edge mode (mode 1) triggers on edge_fall instead of edge_rise, terminating pulse-width wait on leading edge instead of trailing edge and corrupting discovered pulse width and interval timing",
+    },
 ]
 
 

@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-09-15T22:20:00Z",
-  "total_mutants": 44,
-  "killed": 44,
+  "timestamp": "2026-09-16T08:45:50Z",
+  "total_mutants": 45,
+  "killed": 45,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 3741.34,
+  "campaign_time_sec": 3893.36,
   "mutants": [
     {
       "id": "MUT_01_BRANCH_JZ_INVERT",
@@ -357,6 +357,14 @@
       "description": "ALU logic decode bug: OP_ORI decodes to ALU_AND instead of ALU_OR, corrupting bitwise OR operations, register bit setting, and protocol parity/flag accumulation",
       "status": "KILLED",
       "elapsed_sec": 113.91
+    },
+    {
+      "id": "MUT_45_WIEGAND_WAITEDGE_RISE_POLARITY",
+      "category": "Timing / Edge Capture",
+      "file": "src/core.v",
+      "description": "Wiegand pulse timing discovery bug: WAITEDGE rising-edge mode (mode 1) triggers on edge_fall instead of edge_rise, terminating pulse-width wait on leading edge instead of trailing edge and corrupting discovered pulse width and interval timing",
+      "status": "KILLED",
+      "elapsed_sec": 152.02
     }
   ]
 }
