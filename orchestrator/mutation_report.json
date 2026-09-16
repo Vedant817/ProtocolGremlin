@@ -1,10 +1,10 @@
 {
   "timestamp": "2026-09-15T22:20:00Z",
-  "total_mutants": 42,
-  "killed": 42,
+  "total_mutants": 43,
+  "killed": 43,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 3529.31,
+  "campaign_time_sec": 3627.43,
   "mutants": [
     {
       "id": "MUT_01_BRANCH_JZ_INVERT",
@@ -341,6 +341,14 @@
       "description": "Deterministic protocol wait timing bug: OP_WAIT loads operand + 2 instead of operand, stretching bit times, violating LIN Break duration constraints, and introducing baud rate phase errors",
       "status": "KILLED",
       "elapsed_sec": 83.53
+    },
+    {
+      "id": "MUT_43_BISS_SHIFTIN_DIR",
+      "category": "Serial / Shift Engine",
+      "file": "src/core.v",
+      "description": "SSI / BiSS-C serial data shift bug: OP_SHIFTIN in MSB mode inverts sampled GPIO pin value (~gpio_in[pin_idx]), corrupting serial encoder position, status flags, and CRC reception",
+      "status": "KILLED",
+      "elapsed_sec": 98.12
     }
   ]
 }

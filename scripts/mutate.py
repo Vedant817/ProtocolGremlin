@@ -361,6 +361,14 @@ MUTANTS = [
         "replacement": "              OP_WAIT: wait_remaining <= operand + 8'h02;",
         "description": "Deterministic protocol wait timing bug: OP_WAIT loads operand + 2 instead of operand, stretching bit times, violating LIN Break duration constraints, and introducing baud rate phase errors",
     },
+    {
+        "id": "MUT_43_BISS_SHIFTIN_DIR",
+        "category": "Serial / Shift Engine",
+        "file": "src/core.v",
+        "target": "                  write_rd(rd_idx, {rd_val[6:0], gpio_in[pin_idx]});",
+        "replacement": "                  write_rd(rd_idx, {rd_val[6:0], ~gpio_in[pin_idx]});",
+        "description": "SSI / BiSS-C serial data shift bug: OP_SHIFTIN in MSB mode inverts sampled GPIO pin value (~gpio_in[pin_idx]), corrupting serial encoder position, status flags, and CRC reception",
+    },
 ]
 
 
