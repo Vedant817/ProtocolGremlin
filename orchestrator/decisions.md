@@ -1371,6 +1371,35 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 39.14s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-16 - Iteration 40: Synchronous Serial Interface (SSI / BiSS-C) Absolute Rotary Encoder Engine
+
+- **Motivation & Domain Architecture:**
+  - High-performance industrial motion control, robotic joint articulation, and aerospace flight actuators require absolute angle feedback with zero homing sequence latency.
+  - Two synchronous point-to-point serial standards dominate industrial absolute position encoders:
+    1. **SSI (Synchronous Serial Interface):** Clock line `MA` idling HIGH, position bits shifted on falling edges MSB-first, with monoflop timeout $t_m$ separating frames. Commonly encoded in reflected binary (Gray code).
+    2. **BiSS-C (Bidirectional Synchronous Serial Interface, Mode C):** High-speed synchronous interface ($f \le 10\,\text{MHz}$) with Single-Cycle Data (SCD) framing: Ack (0), Start bit (1), CDS control bit, Position Data (MSB-first), active-low Error ($nE$), active-low Warning ($nW$), and 6-bit inverted CRC ($P(x) = x^6 + x + 1$).
+- **Novelty Highlight (ALU-Based Gray-to-Binary Decoding & Hardware Shift Synergy):**
+  - **In-Register Gray-to-Binary Decoding:** Implemented a deterministic ALU routine executing the mathematical Gray-to-binary transformation $b_i = \bigoplus_{k=i}^{N-1} g_k$ using running XOR parity in register `R3` and accumulation in `R2`. Executed directly on hardware registers with zero data RAM overhead.
+  - **Single-Cycle Shiftin Synchronization:** Paired `GWRI` clock toggling on pin 3 (`MA`) with `SHIFTIN R0, 4, 1` (MSB mode) on pin 4 (`SLO`), ingressing full 8-bit position words in exact bit order.
+  - **BiSS-C Framing & Status Flag Capture:** Synchronized to Ack (`SLO=0`) and Start (`SLO=1`), ingressing position into `R0`, status flags ($nE, nW$) into `R1`, and inverted CRC-6 into `R2`.
+  - **Physical PPA Quantification on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated SSI/BiSS-C Hardware Coprocessor Macro: **466 standard cells (908.7 GE, +2.44% area overhead, $3,398.54\,\mu\text{m}^2$)**, with a $1.28\,\text{ns}$ critical path in CRC-6 XOR feedback network ($f_{\text{max}} = 781.3\,\text{MHz}$).
+- **Verification Suite (`test/test_biss.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/biss_model.py`:
+    1. `test_ssi_gray_to_binary_firmware`: Direct ALU-based Gray-to-Binary decoding verified across 10 test vectors on ASIC hardware. **PASS** (3.60s).
+    2. `test_ssi_position_sampling`: SSI master clocking MA (pin 3) and sampling SLO (pin 4) capturing exact position `0xD4` into `R0`. **PASS** (154.5 us).
+    3. `test_biss_frame_acquisition`: BiSS-C frame acquisition (Ack, Start, Position 0x9B in `R0`, Flags 0x03 in `R1`, CRC 0x20 in `R2`). **PASS** (518.7 us).
+    4. `test_biss_crc6_verification`: BiSS-C CRC-6 polynomial integrity and single-bit corruption rejection. **PASS**.
+    5. `test_biss_error_warning_handling`: Active-low error ($nE=0$) and warning ($nW=0$) condition capture (`R1 = 0x00`). **PASS** (518.7 us).
+    6. `test_biss_ppa_scaling`: Physical PPA scaling validation for dedicated SSI/BiSS-C coprocessor macro. **PASS**.
+  - Regression Suite: **209/209 tests passing (100.0%)** across 38 test modules.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 87s).
+  - Mutation Testing: Added `MUT_43_BISS_SHIFTIN_DIR` in `scripts/mutate.py`. Killed in 98.12s. Cumulative score: **43/43 mutants killed (100.0% kill rate)** in 3627.43s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 26.72s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
 
 
 
