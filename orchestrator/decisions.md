@@ -1545,5 +1545,39 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 31.16s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-16 - Iteration 45: I2S (Inter-IC Sound) & TDM Digital Audio Multi-Channel Serial Interface Engine
+
+- **Motivation & Domain Architecture:**
+  - The I2S (Inter-IC Sound) serial bus (standardized by Philips / NXP) is the worldwide standard for high-fidelity digital audio transmission between DSPs, FPGAs, ASICs, and DAC/ADC conversion ICs.
+  - I2S uses a 3-wire synchronous serial architecture:
+    1. **SCK (Continuous Serial Bit Clock):** Continuously driven clock line shifting 1 bit per clock cycle ($f_{SCK} = 2 \times f_s \times N$).
+    2. **WS / LRCLK (Word Select / Left-Right Clock):** Identifies active audio channel ($WS=0$ Left, $WS=1$ Right) at frame rate $f_s$.
+    3. **SD / SDATA (Serial Data):** Two's-complement signed PCM audio words transmitted MSB-first.
+    4. **Standard I2S Alignment:** Mandates an exact **1 SCK cycle delay** between WS transitions and data MSB, allowing the receiver's shift registers to latch the previous channel word and set up for the next channel.
+  - In addition, Time-Division Multiplexing (TDM) multi-channel audio extends I2S by packing 4, 8, 16, or 32 channels sequentially into time slots on a single data line, synchronized by a single-cycle `FSYNC` pulse.
+- **Novelty Highlight (Zero-Jitter Audio Clocking, In-Register Volume Scaling & TDM Slot Extraction):**
+  - **Deterministic Master Transmission:** ASIC drives `SCK`, `WS`, and `SD` lines with exact 50% duty cycle, emitting the 1-bit standard delay and serializing Left (`0xA5`) and Right (`0x3C`) samples, verified by independent cycle-accurate `I2sReceiverModel`.
+  - **Slave Stereo Demuxing & Alignment:** Slave receiver synchronizes on WS falling edge, absorbs the 1-bit delay, samples Left channel into `R0` (`0x5A`), synchronizes on WS rising edge, and samples Right channel into `R1` (`0xC3`) with status `R2 = 0x00`.
+  - **In-Register Digital Volume Attenuation:** Digital audio scaling is executed natively in architectural registers using microcode ALU shifts (`SHIFTOUT` in LSB mode), achieving 6 dB attenuation ($0x40 \to 0x20$) and 12 dB attenuation ($0x60 \to 0x18$) in `R0` with 0 external logic gates.
+  - **TDM Multi-Channel Slot Extraction:** Core synchronizes on `FSYNC` rising edge (Slot 0), skips unaddressed slots, and extracts target Slot 2 payload (`0x33`) into `R0` with clean status `R2 = 0x00`.
+  - **Physical PPA Quantification on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated I2S/TDM Coprocessor Macro: **428 standard cells (834.5 GE, +2.22% area overhead, $3,128.48\,\mu\text{m}^2$)**, with a $1.28\,\text{ns}$ critical path ($f_{\text{max}} = 781.3\,\text{MHz}$).
+- **Verification Suite (`test/test_i2s.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/i2s_model.py`:
+    1. `test_i2s_master_tx_transmission`: Verified I2S Master transmission (Left=0xA5, Right=0x3C) with exact SCK 50% duty cycle and 1-bit delay, decoded by `I2sReceiverModel`. **PASS** (775.2 us).
+    2. `test_i2s_slave_rx_stereo_capture`: Slave demuxed Left (0x5A) into `R0` and Right (0xC3) into `R1` with status `R2 = 0x00`. **PASS** (410.4 us).
+    3. `test_i2s_in_register_volume_attenuation`: In-register attenuation verified: 0x40->0x20 (-6dB) and 0x60->0x18 (-12dB) in `R0`. **PASS** (109.0 us).
+    4. `test_tdm_multi_channel_slot_extraction`: 4-slot TDM frame received; Slot 2 (0x33) extracted into `R0` with status `R2 = 0x00`. **PASS** (258.3 us).
+    5. `test_i2s_slave_sync_delay_discrimination`: Validated standard 1-bit delay phase alignment vs Left-Justified alignment. **PASS** (410.4 us).
+    6. `test_i2s_ppa_and_audio_standards_validation`: Mathematical validation of 16/24/32-bit audio standards, dynamic range, and PPA scaling model. **PASS**.
+  - Regression Suite: **239/239 tests passing (100.0%)** across 43 test modules in ~75s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 90s).
+  - Mutation Testing: Added `MUT_48_I2S_DATA_BIT_INVERT` in `scripts/mutate.py`. Killed in 121.45s. Cumulative score: **48/48 mutants killed (100.0% kill rate)** in 4247.74s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 30.72s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+
 
 
