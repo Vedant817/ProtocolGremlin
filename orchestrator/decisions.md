@@ -1430,3 +1430,37 @@ mutation-kill rates.
   - Mutation Testing: Added `MUT_44_1553_ALU_ORI_DECODE` in `scripts/mutate.py`. Killed in 113.91s. Cumulative score: **44/44 mutants killed (100.0% kill rate)** in 3741.34s.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 26.90s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+## 2026-09-16 - Iteration 42: Wiegand Security Access Control Protocol Reader/Writer & Pulse Width Discovery Engine
+
+- **Motivation & Domain Architecture:**
+  - Wiegand protocol is the ubiquitous de facto standard in physical access control, RFID card readers, biometric scanners, and turnstile controller interfaces (HID H10301 26-bit standard).
+  - The physical interface relies on magnetic wire effect physics, utilizing two active-low pulse lines: `DATA0` (low pulse indicates binary '0') and `DATA1` (low pulse indicates binary '1').
+  - Signaling characteristics:
+    1. **Pulsed Signaling:** High-impedance idle state ($+5\,\text{V}$ pull-up). A bit is transmitted as a brief active-low falling pulse ($T_{pw} \approx 20 - 100\,\mu\text{s}$, nominal $50\,\mu\text{s}$), separated by bit intervals ($T_{pi} \approx 200\,\mu\text{s} - 2\,\text{ms}$, nominal $1\,\text{ms}$).
+    2. **26-Bit Standard Framing (H10301):** Bit 25: Leading Even Parity ($EP = \bigoplus_{i=13}^{24} B_i$), Bits [24:17]: 8-bit Facility Code ($FC \in [0, 255]$), Bits [16:1]: 16-bit Card Credential ID ($ID \in [0, 65535]$), Bit 0: Trailing Odd Parity ($OP = 1 \oplus \bigoplus_{i=1}^{12} B_i$).
+    3. **Mathematical Parity Verification:** Provides 100% detection of all single-bit transmission corruption across all 26 bit positions.
+    4. **Pulse Width / Timing Discovery via `WAITEDGE`:** Access control systems must tolerate wide vendor timing variations ($T_{pw}$ from $20\,\mu\text{s}$ to $100\,\mu\text{s}$). The core's single-cycle `WAITEDGE` primitive measures pulse width and pulse interval directly into registers with single-cycle precision.
+    5. **Tamper & Short-Circuit Fault Detection:** Simultaneous assertion of `DATA0=0` and `DATA1=0` represents a physical line fault or cable sever/tamper event. The core detects this condition and transitions to a fail-safe alarm state (`R2 = 0xAA`).
+- **Novelty Highlight (Dual-Line Edge Discrimination, Dynamic Settling & Single-Cycle Discovery):**
+  - **Bootloader Isolation & Line Settling:** Because the on-chip serial bootloader deasserts over the bidirectional GPIO pins, firmware ingressing pulses runs an initial high-level settling loop (`wait_initial_idle`) before edge sampling, preventing transient reset pulses from triggering false reads.
+  - **Cycle-Exact Pulse Serialization:** Transmitter firmware dynamically drives `DATA0` (Pin 3) and `DATA1` (Pin 4) with zero timing jitter, emitting exact pulse widths ($T_{pw}$) and bit intervals ($T_{pi}$) via `GWRI` and `WAIT`.
+  - **In-Register Bit Ingress:** Receiver firmware synchronizes on falling edges of `DATA0` or `DATA1`, shifts decoded bits into registers via `DECJNZ` unrolled loops or `SHIFTIN`, and validates framing.
+  - **Physical PPA Quantification on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated Wiegand Reader/Writer Coprocessor Macro: **285 standard cells (556.8 GE, +1.48% area overhead, $2,080.50\,\mu\text{m}^2$)**, with a $1.22\,\text{ns}$ critical path ($f_{\text{max}} = 819.6\,\text{MHz}$).
+- **Verification Suite (`test/test_wiegand.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/wiegand_model.py`:
+    1. `test_wiegand_tx_credential_transmission`: Verified 26-bit credential transmission ($FC=102, ID=34567$) with exact $T_{pw}=12$ and $T_{pi}=25$ cycles, decoded by `WiegandReaderModel`. **PASS** (1.02 ms).
+    2. `test_wiegand_pulse_width_discovery`: WAITEDGE measured pulse width $T_{pw}=12$ cycles in `R0` and interval $T_{pi}=25$ cycles in `R3`. **PASS** (76.5 us).
+    3. `test_wiegand_parity_mathematical_validation`: 100% single-bit error rejection across all 26 bit positions. **PASS**.
+    4. `test_wiegand_rx_byte_stream_ingress`: Verified 8-bit pulse stream ingress into `R0` (`0x96`) via `GRD` polling. **PASS** (157.0 us).
+    5. `test_wiegand_tamper_short_detection`: Line short fault (`DATA0=0` and `DATA1=0`) trapped with alarm status `R2 = 0xAA`. **PASS** (20.0 us).
+    6. `test_wiegand_ppa_scaling`: Physical PPA scaling validation for dedicated Wiegand peripheral macro. **PASS**.
+  - Regression Suite: **221/221 tests passing (100.0%)** across 40 test modules in ~65s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 108s).
+  - Mutation Testing: Added `MUT_45_WIEGAND_WAITEDGE_RISE_POLARITY` in `scripts/mutate.py`. Killed in 152.02s. Cumulative score: **45/45 mutants killed (100.0% kill rate)** in 3893.36s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 38.61s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+

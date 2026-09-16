@@ -121,11 +121,13 @@ bounded problem").
   done: `docs/biss_study.md` (SSI and BiSS-C specifications, Single-Cycle Data framing, mathematical Gray-to-binary formulation, CRC-6 LFSR equations, and IHP 130nm PPA scaling), `tools/biss_model.py` (`gray_to_binary`, `binary_to_gray`, `compute_biss_crc6`, `verify_biss_crc6`, `SsiEncoderModel`, `BissEncoderModel`, `BissPpaModel`, and firmware generators) + `test/test_biss.py` (6/6 cocotb tests pass: ALU Gray-to-binary decoding across 10 vectors, SSI master position sampling R0=0xD4, BiSS-C frame acquisition R0=0x9B, R1=0x03, R2=0x20, CRC-6 polynomial integrity and corruption detection, fault ingress for nE/nW flags R1=0x00, and PPA scaling), `MUT_43` killed.
 - ~~MIL-STD-1553B Avionic Multiplex Data Bus Dual-Redundant Protocol Engine~~ -
   done: `docs/mil1553_study.md` (MIL-STD-1553B Notice 2 avionic specification, 20-bit word structure, 3-bit non-Manchester sync waveform physics, dual-redundant bus failover mechanics, RT response latency bounds, and IHP 130nm PPA scaling), `tools/mil1553_model.py` (`compute_1553_parity`, `verify_1553_parity`, `build_command_word`, `parse_command_word`, `build_status_word`, `Mil1553RemoteTerminal`, `Mil1553PpaModel`, and firmware generators) + `test/test_mil1553.py` (6/6 cocotb tests pass: BC Command Word waveform transmission with 24-cycle sync, RT command reception with address match and Status Word generation, mathematical odd parity validation with 100% single-bit error rejection, RT address filtering trapping mismatches with 0xEE, BC dual-redundant automatic failover to Bus B with 0xBB status code, and PPA scaling), `MUT_44` killed.
-- Wiegand Security Access Control Protocol Reader/Writer & Pulse Width Discovery Engine.
+- ~~Wiegand Security Access Control Protocol Reader/Writer & Pulse Width Discovery Engine~~ -
+  done: `docs/wiegand_study.md` (Wiegand magnetic wire effect physics, 26-bit standard framing H10301, active-low pulsed signaling, even/odd parity structures, WAITEDGE pulse width discovery, physical line short / tamper detection, and IHP 130nm SG13G2 PPA scaling), `tools/wiegand_model.py` (`compute_wiegand26_parity`, `build_wiegand26_raw`, `verify_wiegand26`, `WiegandReaderModel`, `WiegandPpaModel`, and firmware generators) + `test/test_wiegand.py` (6/6 cocotb tests pass: 26-bit credential transmission FC=102 ID=34567, WAITEDGE pulse width and interval discovery T_pw=12 T_pi=25 cycles, mathematical 26-bit parity validation with 100% single-bit error rejection, 8-bit stream ingress into R0 via GRD polling, line short tamper detection with status code R2=0xAA, and PPA scaling), `MUT_45` killed.
 - ARINC 429 Mark 33 Digital Information Transfer System (DITS) Avionic Protocol Engine.
 - MIDI 2.0 (Universal MIDI Packet - UMP) High-Resolution Synthesizer & Control Protocol Engine.
 - I2S (Inter-IC Sound) & TDM Digital Audio Multi-Channel Serial Interface Engine.
 - SpaceWire (ECSS-E-ST-50-52C) Data-Strobe (DS) Spacecraft Serial Bus Protocol Engine.
+
 
 
 
