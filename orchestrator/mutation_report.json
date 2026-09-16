@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-09-16T13:50:28Z",
-  "total_mutants": 49,
-  "killed": 49,
+  "timestamp": "2026-09-16T20:51:45Z",
+  "total_mutants": 50,
+  "killed": 50,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 4337.89,
+  "campaign_time_sec": 4435.11,
   "latest_mutant": {
-    "id": "MUT_49_SPACEWIRE_SHIFTIN_LSB_BIT_INVERT",
-    "category": "Spacecraft / Serial Ingress Shift",
+    "id": "MUT_50_SENT_WAITEDGE_FALLING_POLARITY",
+    "category": "Automotive / Timing Discovery",
     "file": "src/core.v",
-    "description": "Serial LSB-first shift input bug: OP_SHIFTIN in LSB mode inverts incoming pin bit ({~gpio_in[pin_idx], rd_val[7:1]}), corrupting LSB-first serial character ingress across SpaceWire ECSS Data-Strobe streams and failing odd parity verification",
+    "description": "SAE J2716 SENT timing discovery bug: WAITEDGE falling-edge mode (mode 0) triggers on edge_rise instead of edge_fall, breaking falling-to-falling pulse-period modulation (PPM), calibration pulse recovery, and data nibble extraction across automotive sensor frames",
     "status": "KILLED",
-    "elapsed_sec": 90.1
+    "elapsed_sec": 97.22
   }
 }

@@ -417,6 +417,14 @@ MUTANTS = [
         "replacement": "                  write_rd(rd_idx, {~gpio_in[pin_idx], rd_val[7:1]});",
         "description": "Serial LSB-first shift input bug: OP_SHIFTIN in LSB mode inverts incoming pin bit ({~gpio_in[pin_idx], rd_val[7:1]}), corrupting LSB-first serial character ingress across SpaceWire ECSS Data-Strobe streams and failing odd parity verification",
     },
+    {
+        "id": "MUT_50_SENT_WAITEDGE_FALLING_POLARITY",
+        "category": "Automotive / Timing Discovery",
+        "file": "src/core.v",
+        "target": "  wire edge_matched = (edge_mode == 2'b00) ? edge_fall :",
+        "replacement": "  wire edge_matched = (edge_mode == 2'b00) ? edge_rise :",
+        "description": "SAE J2716 SENT timing discovery bug: WAITEDGE falling-edge mode (mode 0) triggers on edge_rise instead of edge_fall, breaking falling-to-falling pulse-period modulation (PPM), calibration pulse recovery, and data nibble extraction across automotive sensor frames",
+    },
 ]
 
 
