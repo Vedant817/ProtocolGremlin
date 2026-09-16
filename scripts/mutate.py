@@ -409,6 +409,14 @@ MUTANTS = [
         "replacement": "                  write_rd(rd_idx, {rd_val[6:0], ~gpio_in[pin_idx]});",
         "description": "Serial audio shift input bug: OP_SHIFTIN in MSB mode inverts incoming pin bit ({~gpio_in[pin_idx]}), corrupting MSB-first serial digital audio samples across I2S Left/Right channels and TDM multi-channel streams",
     },
+    {
+        "id": "MUT_49_SPACEWIRE_SHIFTIN_LSB_BIT_INVERT",
+        "category": "Spacecraft / Serial Ingress Shift",
+        "file": "src/core.v",
+        "target": "                  write_rd(rd_idx, {gpio_in[pin_idx], rd_val[7:1]});",
+        "replacement": "                  write_rd(rd_idx, {~gpio_in[pin_idx], rd_val[7:1]});",
+        "description": "Serial LSB-first shift input bug: OP_SHIFTIN in LSB mode inverts incoming pin bit ({~gpio_in[pin_idx], rd_val[7:1]}), corrupting LSB-first serial character ingress across SpaceWire ECSS Data-Strobe streams and failing odd parity verification",
+    },
 ]
 
 
