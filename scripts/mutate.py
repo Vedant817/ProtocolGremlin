@@ -337,6 +337,14 @@ MUTANTS = [
         "replacement": "        crc8_step = {c[6:0], 1'b0} ^ 8'h09;",
         "description": "CRC LFSR polynomial tap bug: crc8_step uses wrong polynomial 0x09 instead of 0x07, causing all hardware bootloader CRC calculations to mismatch and reject valid bitstreams",
     },
+    {
+        "id": "MUT_40_I3C_OPEN_DRAIN_ARBITRATION",
+        "category": "IO / Open-Drain Arbitration",
+        "file": "src/gpio.v",
+        "target": "  assign pin_oe  = (dir & ~od_mode) | (dir & od_mode & ~out_val);",
+        "replacement": "  assign pin_oe  = (dir & ~od_mode) | (dir & od_mode & out_val);",
+        "description": "Open-drain arbitration control bug: inverts active pull-down condition in open-drain mode, asserting pin_oe when out_val=1 instead of out_val=0, corrupting I3C DAA arbitration and I2C ACK detection",
+    },
 ]
 
 
