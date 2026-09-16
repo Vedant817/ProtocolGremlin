@@ -111,9 +111,17 @@ bounded problem").
   done: `docs/interrupt_study.md` (asynchronous event handling theory, HIC dual-rank synchronizer architecture, trigger mode selector, priority arbitration, vector dispatch, latency analysis, and PPA scaling on IHP 130nm SG13G2), `tools/interrupt_model.py` (`TriggerMode`, `InterruptChannel`, `InterruptControllerModel`, `InterruptPpaModel`, `build_edge_event_capture_asm`, `build_level_event_handler_asm`, `build_priority_event_dispatcher_asm`, `build_nested_context_preservation_asm`) + `test/test_interrupt.py` (6/6 cocotb tests pass: single-cycle rising edge event capture with timestamp in R3, level-sensitive IRQ detection and ACK handshake, strict priority arbitration between Pin 0 and Pin 1, nested register context preservation, cycle-accurate HIC model and PPA validation, and High-Z electrical pin safety), `MUT_37` killed.
 - ~~Hardware-Assisted Cyclic Redundancy Check (CRC-16/CRC-32) Coprocessor Macro PPA Feasibility Study~~ -
   done: `docs/crc_study.md` (parallel GF(2) matrix compression LFSR formulation, multi-polynomial support for CRC-16/CCITT, CRC-16/MODBUS, CRC-32/IEEE 802.3, residual match constant monitoring, 64x throughput speedup, and synthesizable coprocessor macro PPA scaling on IHP 130nm SG13G2), `tools/crc_model.py` (`CrcPolynomialMode`, `compute_crc16_ccitt`, `compute_crc16_modbus`, `compute_crc32_ieee`, `CrcCoprocessorModel`, `CrcPpaModel`, and firmware generators) + `test/test_crc.py` (6/6 cocotb tests pass: software bitwise Galois CRC accumulation matching RFC reference, coprocessor single-cycle byte streaming, mathematical multi-polynomial RFC vector validation, single-bit error detection and fault code trapping R2=0xCE, coprocessor PPA scaling model, and High-Z pin electrical safety), `MUT_39` killed.
-- I3C (MIPI I3C v1.1.1) Sensor Protocol & Dynamic Address Assignment (DAA) Acceleration Engine.
+- ~~I3C (MIPI I3C v1.1.1) Sensor Protocol & Dynamic Address Assignment (DAA) Acceleration Engine~~ -
+  done: `docs/i3c_study.md` (MIPI I3C v1.1.1 specification, dynamic open-drain to active push-pull line switching physics, ENTDAA broadcast dynamic address assignment, 48-bit Provisional ID wired-AND arbitration, In-Band Interrupt latency bounding, and synthesizable coprocessor macro PPA scaling on IHP 130nm SG13G2), `tools/i3c_model.py` (`I3cTargetDevice`, `I3cPpaModel`, and firmware generators) + `test/test_i3c.py` (6/6 cocotb tests pass: broadcast CCC ENEC with target ACKs, full ENTDAA dynamic address assignment, multi-target Provisional ID open-drain arbitration, active push-pull SDR data transfer, In-Band Interrupt event detection R2=0x1B, coprocessor PPA scaling model, and High-Z pin electrical safety), `MUT_40` killed.
 - Quadrature Encoder Interface (QEI) & Industrial Motion Feedback Engine.
 - LIN (Local Interconnect Network) Automotive Protocol Engine & Break-Sync Frame Processor.
+- High-Speed Synchronous Serial Interface (SSI / BiSS-C) Absolute Rotary Encoder Engine.
+- MIL-STD-1553B Avionic Multiplex Data Bus Dual-Redundant Protocol Engine.
+- Wiegand Security Access Control Protocol Reader/Writer & Pulse Width Discovery Engine.
+- ARINC 429 Mark 33 Digital Information Transfer System (DITS) Avionic Protocol Engine.
+- MIDI 2.0 (Universal MIDI Packet - UMP) High-Resolution Synthesizer & Control Protocol Engine.
+- I2S (Inter-IC Sound) & TDM Digital Audio Multi-Channel Serial Interface Engine.
+- SpaceWire (ECSS-E-ST-50-52C) Data-Strobe (DS) Spacecraft Serial Bus Protocol Engine.
 
 
 

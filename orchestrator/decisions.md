@@ -1274,6 +1274,41 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 25.15s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-16 - Iteration 37: MIPI I3C v1.1.1 Sensor Protocol & Dynamic Address Assignment (DAA) Acceleration Engine
+
+- **Context & Motivation:**
+  - MIPI I3C v1.1.1 upgrades legacy I2C to higher data rates (up to 12.5 MHz SDR, up to 33.3 Mbps HDR) while retaining two-wire (SDA, SCL) physical connectivity and backward compatibility with I2C fast-mode devices.
+  - Legacy I2C is throughput-capped by exponential $R_p \cdot C_b$ RC charging delays on passive open-drain pull-ups. I3C eliminates this via dynamic open-drain to active CMOS push-pull switching during data phases.
+  - Furthermore, I3C replaces static hardware addressing pins with automated broadcast Dynamic Address Assignment (`ENTDAA`) based on 48-bit Provisional ID wired-AND arbitration, and introduces In-Band Interrupts (IBI) over the two-wire bus.
+- **Architectural Design & Technical Highlights (`docs/i3c_study.md`, `tools/i3c_model.py`):**
+  - **Dynamic Open-Drain to Push-Pull Line Switching:**
+    - Utilizes `GODRI 0x03` (open-drain) during START, 0x7E broadcast, and target ACK/arbitration phases.
+    - Dynamically toggles to `GODRI 0x00` (push-pull) for data payload streaming, engaging active CMOS driver stages (`R_{on} \approx 50\,\Omega$) to achieve $t_r \approx 5.5\,\text{ns}$ and enable single-data-rate (SDR) transmission at up to $12.5\,\text{Mbps}$.
+  - **Automated Dynamic Address Assignment (ENTDAA):**
+    - Master issues broadcast command `ENTDAA` (CCC `0x07`) following broadcast address `0x7E+W`.
+    - Targets participate in bit-by-bit open-drain wired-AND arbitration across a 64-bit descriptor (48-bit Provisional ID + 8-bit BCR + 8-bit DCR).
+    - Device with the lowest numerical Provisional ID wins arbitration without bus collision and receives a 7-bit dynamic address with odd parity.
+  - **In-Band Interrupt (IBI) Arbitration:**
+    - Targets request service by pulling SDA low during bus idle. Master samples the line during Start generation and immediately traps event code `R2 = 0x1B` within $\le 18$ clock cycles ($1.8\,\mu\text{s}$ at 10 MHz).
+  - **Physical PPA Quantification on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated SDR DAA Macro: **320 standard cells (620 GE, +1.66% area overhead, $2,318.8\,\mu\text{m}^2$)**, with $2.15\,\text{ns}$ critical path delay.
+    - Full HDR-DDR Macro: **510 standard cells (980 GE, +2.64% area overhead, $3,665.2\,\mu\text{m}^2$)**.
+- **Verification Suite (`test/test_i3c.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/i3c_model.py`:
+    1. `test_i3c_broadcast_ccc_enec`: Master broadcast CCC frame (`0x7E + CCC_ENEC`) with clean target ACKs across all 3 phases (`R0 = 0x00`). **PASS** (698.1 us).
+    2. `test_i3c_dynamic_address_assignment_single_target`: Full ENTDAA sequence successfully assigning dynamic address `0x08` to target. **PASS** (1.47 ms).
+    3. `test_i3c_dynamic_address_assignment_multi_target_arbitration`: Open-drain Provisional ID arbitration between two competing targets (Target 1 with lower ID wins cleanly). **PASS**.
+    4. `test_i3c_push_pull_sdr_transfer`: Dynamic transition from open-drain addressing to active push-pull SDR data transfer (`0xA5`). **PASS** (797.9 us).
+    5. `test_i3c_in_band_interrupt_detection`: In-Band Interrupt detection on SDA low with event code trapping (`R2 = 0x1B`). **PASS** (175.5 us).
+    6. `test_i3c_hardware_accelerator_ppa_and_pin_safety`: Validated analytical PPA scaling models and confirmed safe High-Z pin electrical isolation (`uio_oe == 0x00`) on halt. **PASS** (1.01 ms).
+  - Regression Suite: **191/191 tests passing (100.0%)** across 35 test modules.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 100s).
+  - Mutation Testing: Added `MUT_40_I3C_OPEN_DRAIN_ARBITRATION` in `scripts/mutate.py`. Killed in 106.79s. Cumulative score: **40/40 mutants killed (100.0% kill rate)** in 3287.64s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 31.63s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
 
 
 
