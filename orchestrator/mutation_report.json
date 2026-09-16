@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-09-16T09:22:12Z",
-  "total_mutants": 47,
-  "killed": 47,
+  "timestamp": "2026-09-16T09:38:42Z",
+  "total_mutants": 48,
+  "killed": 48,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 4126.29,
+  "campaign_time_sec": 4247.74,
   "mutants": [
     {
       "id": "MUT_01_BRANCH_JZ_INVERT",
@@ -381,6 +381,14 @@
       "description": "Serial transmitter shift bug: OP_SHIFTOUT in LSB mode shifts in 1b1 instead of 1b0 ({1b1, rd_val[7:1]}), corrupting subsequent transmitted bits across MIDI 2.0 UMP, UART, and LIN frames",
       "status": "KILLED",
       "elapsed_sec": 124.9
+    },
+    {
+      "id": "MUT_48_I2S_DATA_BIT_INVERT",
+      "category": "Audio / Serial Ingress Shift",
+      "file": "src/core.v",
+      "description": "Serial audio shift input bug: OP_SHIFTIN in MSB mode inverts incoming pin bit ({~gpio_in[pin_idx]}), corrupting MSB-first serial digital audio samples across I2S Left/Right channels and TDM multi-channel streams",
+      "status": "KILLED",
+      "elapsed_sec": 121.45
     }
   ]
 }

@@ -401,6 +401,14 @@ MUTANTS = [
         "replacement": "                  write_rd(rd_idx, {1'b1, rd_val[7:1]});",
         "description": "Serial transmitter shift bug: OP_SHIFTOUT in LSB mode shifts in 1'b1 instead of 1'b0 ({1'b1, rd_val[7:1]}), corrupting subsequent transmitted bits across MIDI 2.0 UMP, UART, and LIN frames",
     },
+    {
+        "id": "MUT_48_I2S_DATA_BIT_INVERT",
+        "category": "Audio / Serial Ingress Shift",
+        "file": "src/core.v",
+        "target": "                  write_rd(rd_idx, {rd_val[6:0], gpio_in[pin_idx]});",
+        "replacement": "                  write_rd(rd_idx, {rd_val[6:0], ~gpio_in[pin_idx]});",
+        "description": "Serial audio shift input bug: OP_SHIFTIN in MSB mode inverts incoming pin bit ({~gpio_in[pin_idx]}), corrupting MSB-first serial digital audio samples across I2S Left/Right channels and TDM multi-channel streams",
+    },
 ]
 
 
