@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-09-17T21:45:13Z",
-  "total_mutants": 60,
-  "killed": 60,
+  "timestamp": "2026-09-17T21:57:05Z",
+  "total_mutants": 61,
+  "killed": 61,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 5666.6,
+  "campaign_time_sec": 5768.4,
   "latest_mutant": {
-    "id": "MUT_60_100BASE_TX_WAITEDGE_RISE_INVERT",
-    "category": "Fast Ethernet 100BASE-TX / SSD Rising Edge Detection",
+    "id": "MUT_61_1000BASE_T_MOV_INVERT",
+    "category": "Gigabit Ethernet 1000BASE-T / Register Data Move",
     "file": "src/core.v",
-    "description": "Fast Ethernet 100BASE-TX Start-of-Stream Delimiter detection bug: OP_WAITEDGE rising-edge mode (edge_mode 2'b01) detects falling edges instead of rising edges, causing /J/ /K/ SSD delimiter transition detection on TXP to stall indefinitely",
+    "description": "Gigabit Ethernet 1000BASE-T quad preservation bug: OP_MOV inverts the transferred source register value (~rs_val instead of rs_val), corrupting the preserved 4-pair quad in R1 during slave ingress (MOV R1, R0) and causing packet verification to fail",
     "status": "KILLED",
-    "elapsed_sec": 110.47
+    "elapsed_sec": 101.76
   }
 }

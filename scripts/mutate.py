@@ -505,6 +505,14 @@ MUTANTS = [
         "replacement": "                      (edge_mode == 2'b01) ? edge_fall :  // Mutated: rising-edge mode detects falling edges instead",
         "description": "Fast Ethernet 100BASE-TX Start-of-Stream Delimiter detection bug: OP_WAITEDGE rising-edge mode (edge_mode 2'b01) detects falling edges instead of rising edges, causing /J/ /K/ SSD delimiter transition detection on TXP to stall indefinitely",
     },
+    {
+        "id": "MUT_61_1000BASE_T_MOV_INVERT",
+        "category": "Gigabit Ethernet 1000BASE-T / Register Data Move",
+        "file": "src/core.v",
+        "target": "              OP_MOV: begin\n                write_rd(rd_idx, rs_val);",
+        "replacement": "              OP_MOV: begin\n                write_rd(rd_idx, ~rs_val);  // Mutated: MOV inverts source register value",
+        "description": "Gigabit Ethernet 1000BASE-T quad preservation bug: OP_MOV inverts the transferred source register value (~rs_val instead of rs_val), corrupting the preserved 4-pair quad in R1 during slave ingress (MOV R1, R0) and causing packet verification to fail",
+    },
 ]
 
 
