@@ -1753,6 +1753,45 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 25.21s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-17 - Iteration 50: Ethernet AVB / TSN (IEEE 802.1Qav / IEEE 802.1Qbv) Protocol Engine & Credit-Based Shaper
+
+- **Motivation & Domain Architecture:**
+  - Time-Sensitive Networking (TSN - IEEE 802.1Q-2018 / IEEE 802.1Qav / IEEE 802.1Qbv) extends standard Ethernet to provide deterministic, bounded low-latency, and zero-congestion transmission for mission-critical automotive, industrial, and avionic control applications.
+  - Key technical domains addressed:
+    1. **IEEE 802.1Q VLAN Tagging & Priority Code Point (PCP):**
+       - 16-bit Tag Protocol Identifier TPID (`0x8100`) followed by 16-bit Tag Control Information (TCI).
+       - TCI incorporates 3-bit Priority Code Point (PCP, bits [15:13]), 1-bit Drop Eligible Indicator (DEI, bit 12), and 12-bit VLAN Identifier (VID, bits [11:0]).
+       - Ingress priority classification steers traffic into Stream Reservation Class A (PCP=5, Return Code `0x01`), Class B (PCP=4, Return Code `0x02`), or Best Effort (PCP=0, Return Code `0x00`).
+    2. **IEEE 802.1Qav Credit-Based Shaper (CBS) Algorithm:**
+       - Dynamically regulates traffic bandwidth without dropping packets or burst starvation.
+       - Parameters: $\text{idleSlope} = \text{reservedBW}$, $\text{sendSlope} = \text{idleSlope} - \text{portRate} \le 0$.
+       - Transmission permitted only when credit $\ge 0$.
+       - While transmitting, credit depletes at rate $\text{sendSlope}$; while blocked or waiting, credit replenishes at rate $\text{idleSlope}$.
+    3. **IEEE 802.1Qbv Time-Aware Shaper (TAS) Gate Control:**
+       - In-register microcode evaluates gate control list (GCL) states: OPEN (`0x01`) allows scheduled transmission; CLOSED (`0x00`) gates best-effort traffic to guarantee zero jitter for high-priority streams.
+- **Novelty Highlight (Zero-Jitter VLAN Serialization, Ingress Priority Classifier, In-Register CBS & TAS Microcode):**
+  - **Deterministic 802.1Q Frame Serialization:** Transmitter firmware serializes 7-byte tagged frames (`[0x81, 0x00, 0xA0, 0x02, 0x22, 0xF0, 0x5A]`) over UART on pin 3, verified by independent `UartReceiver` and `TsnFrame` parser.
+  - **PCP Priority Classification:** Receiver firmware ingresses TPID/TCI on pin 4, extracts PCP bits [7:5] from `TCI_H`, latches TCI into `R0/R1`, and outputs traffic class return codes (`0x01` Class A, `0x02` Class B, `0x00` Best Effort).
+  - **In-Register Credit-Based Shaper:** Microcode tracks signed credit using two's complement arithmetic, models frame transmission credit depletion (10 - 25 = -15), detects negative credit, sets gate flag `R1 = 0xFF`, simulates `idleSlope` recovery (+15 -> 0), and asserts transmission permitted status `R2 = 0x00`.
+  - **Time-Aware Gate Control Microcode:** In-register gate evaluation asserts `R2 = 0x01` when OPEN and `R2 = 0x00` when CLOSED.
+  - **Physical PPA Quantification on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated TSN Coprocessor Macro: **492 standard cells (925.0 GE, +2.55% area overhead, $3,596.52\,\mu\text{m}^2$)**, with a $1.32\,\text{ns}$ critical path ($f_{\text{max}} = 757.6\,\text{MHz}$).
+- **Verification Suite (`test/test_tsn.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/tsn_model.py`:
+    1. `test_tsn_tx_vlan_tagged_frame`: ASIC serializes 7-byte 802.1Q tagged frame on pin 3 verified by `UartReceiver` and `TsnFrame` parser. **PASS** (0.74s).
+    2. `test_tsn_rx_priority_classification_class_a`: PCP=5 frame classified as Class A, reporting `R2 = 0x01`, `TCI = 0xA002`. **PASS** (0.42s).
+    3. `test_tsn_rx_priority_classification_class_b`: PCP=4 frame classified as Class B, reporting `R2 = 0x02`, `TCI = 0x8002`. **PASS** (0.42s).
+    4. `test_tsn_rx_priority_classification_best_effort`: PCP=0 frame classified as Best Effort, reporting `R2 = 0x00`, `TCI = 0x0002`. **PASS** (0.43s).
+    5. `test_tsn_cbs_credit_depletion_and_recovery`: In-register CBS credit depletion, queue gating (`R1 = 0xFF`), `idleSlope` recovery, and TAS gate control verified. **PASS** (0.12s).
+    6. `test_tsn_standards_and_ppa`: Validated IEEE 802.1Qav CBS mathematical rate limits, `TsnFrame` serialization, and coprocessor PPA scaling model. **PASS**.
+  - Regression Suite: **269/269 tests passing (100.0%)** across 48 test modules in ~75s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 68s).
+  - Mutation Testing: Added `MUT_53_TSN_ANDI_LOGIC_MASK_CORRUPTION` in `scripts/mutate.py`. Killed in 102.40s. Cumulative score: **53/53 mutants killed (100.0% kill rate)** in 4893.64s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 26.00s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
 
 
 

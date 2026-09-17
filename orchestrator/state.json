@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-profibus-verified",
+  "phase": "isa-v1-tsn-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 49 complete (Profibus DP). Iteration 50 next (Ethernet AVB / TSN IEEE 802.1Qav Time-Sensitive Networking Engine & Credit-Based Shaper).",
+  "active_objective": "Continuous engineering loop: Iteration 50 complete (Ethernet AVB / TSN). Iteration 51 next (Modbus RTU / ASCII Protocol Engine & Serial Bus Master/Slave Controller).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 49,
+  "iterations": 50,
   "halt": false,
-  "notes": "Iteration 49 complete: Authored docs/profibus_study.md (IEC 61158 / EN 50170 specification, RS-485 physical signaling, HD=4 Hamming distance proof, FCS mathematical formulations, and IHP 130nm SG13G2 PPA scaling). Created tools/profibus_model.py (ProfibusDelimiter, compute_profibus_fcs, ProfibusTelegram, ProfibusSlaveModel, ProfibusPpaModel, build_profibus_tx_sd2_asm, build_profibus_slave_rx_asm, build_profibus_token_filter_asm, build_profibus_fcs_validator_asm) and test/test_profibus.py (6/6 tests pass: SD2 telegram master transmission, slave configured address match and payload latching, destination address mismatch bypass, FCS error trapping, SD4 token reception and predecessor capture, and PPA model validation). Added test_profibus to test/Makefile. Full regression suite: 263/263 tests PASS (100.0%) across 47 modules. Added MUT_52_PROFIBUS_JNZ_INVERTED_BRANCH_CONDITION in scripts/mutate.py (killed in 119.52s, 52/52 mutants killed, 100.0% kill rate, cumulative 4791.24s). SymbiYosys formal BMC passed (20 steps Z3, 0 violations). Gate-level simulation confirmed 8/8 physical tests pass in 25.21s."
+  "notes": "Iteration 50 complete: Authored docs/tsn_study.md (IEEE 802.1Qav Credit-Based Shaper, IEEE 802.1Qbv Time-Aware Shaper, IEEE 802.1Q VLAN tagging, IEEE 1722 AVTP encapsulation, and IHP 130nm SG13G2 PPA scaling). Created tools/tsn_model.py (TsnTrafficClass, TsnEtherType, TsnVlanTag, TsnFrame, CreditBasedShaperModel, TsnPpaModel, build_tsn_tx_vlan_frame_asm, build_tsn_rx_priority_classifier_asm, build_tsn_cbs_credit_shaper_asm, build_tsn_gate_control_asm) and test/test_tsn.py (6/6 tests pass: 802.1Q tagged frame transmission, ingress PCP classification into Class A, Class B, and Best Effort, CBS credit depletion and idleSlope recovery with TAS gate control, and PPA model validation). Added test_tsn to test/Makefile. Full regression suite: 269/269 tests PASS (100.0%) across 48 modules. Added MUT_53_TSN_ANDI_LOGIC_MASK_CORRUPTION in scripts/mutate.py (killed in 102.40s, 53/53 mutants killed, 100.0% kill rate, cumulative 4893.64s). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 68s). Gate-level simulation confirmed 8/8 physical tests pass in 26.00s."
 }
