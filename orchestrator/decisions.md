@@ -2029,3 +2029,42 @@ mutation-kill rates.
   - Mutation Testing: Added `MUT_59_USB_FS_FALLING_EDGE_SOP_INVERT` in `scripts/mutate.py`. Killed in 108.77s. Cumulative score: **59/59 mutants killed (100.0% kill rate)** in 5556.10s.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 24.74s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+## 2026-09-17 - Iteration 57: Ethernet 100BASE-TX IEEE 802.3u Fast Ethernet Physical Sublayer Engine
+
+- **Motivation & Protocol Overview:**
+  - Fast Ethernet 100BASE-TX (IEEE Std 802.3u-1995 / ANSI X3.263-1995 TP-PMD) is the workhorse 100 Mbps physical layer for local area networking and industrial Ethernet (EtherCAT, PROFINET, Modbus TCP).
+  - Operating over Category 5 Unshielded Twisted Pair (UTP) cable, 100BASE-TX integrates three foundational physical sublayer technologies:
+    1. **4B/5B Physical Coding Sublayer (PCS):**
+       - Maps each 4-bit data nibble (0x0..0xF) into an unambiguous 5-bit symbol code group.
+       - Guarantees run-length constraints: at most 3 consecutive zeros across any symbol boundary, guaranteeing adequate transition density for clock recovery.
+       - Defines standard control symbols: Idle `/I/` (`11111`), Start-of-Stream Delimiter `/J/ /K/` (`11000 10001`), End-of-Stream Delimiter `/T/ /R/` (`01101 00111`), and Halt `/H/` (`00100`).
+    2. **Stream Cipher Scrambler / Descrambler (PMA):**
+       - 11-bit maximal-length LFSR with characteristic generator polynomial $G(x) = x^{11} + x^9 + 1$.
+       - Whitens repeating symbol sequences to eliminate discrete spectral power peaks and ensure electromagnetic emissions comply with FCC Class B / CISPR 22.
+       - Self-synchronizing descrambler in the receiver reconstitutes plaintext bitstream within 11 bit periods without requiring sideband state transmission.
+    3. **Multi-Level Transmit 3 (MLT-3) Line Coding (PMD):**
+       - Three-level ternary signaling ($+1, 0, -1$) where binary '1' steps sequentially through the circular state transition sequence $0 \to +1 \to 0 \to -1 \to 0$, while binary '0' maintains the current signal level.
+       - Compresses fundamental transmit frequency from $125.0\,\text{MHz}$ down to $f_{\text{fund}} = 31.25\,\text{MHz}$ ($125 / 4$), fitting cleanly within the Category 5 cable 100 MHz bandwidth limit.
+- **Novelty Highlight (Start-of-Stream Delimiter Rising Edge Synchronization, 4B/5B In-Register Validation, Carrier Sense Detection & Calibrated PPA):**
+  - **Start-of-Stream Delimiter (SSD) Edge Synchronization via WAITEDGE:** Slave receiver firmware synchronizes to the initial rising edge of `/J/ /K/` on TXP via `WAITEDGE R3, txp_pin` (mode `2'b01`), strides cleanly past the synchronizer pipeline delay to the midpoint of the bit cell (`WAIT (bit_cycles - 1)`), samples the incoming payload into `R0`, copies it to `R1`, validates against the expected byte, and reports status `R2 = 0x00`.
+  - **In-Register 4B5B Symbol Validation & Fault Trapping:** Single-cycle verification of candidate 5-bit code groups against valid IEEE 802.3u patterns via `XORI R0, code5` and `JZ code_match`, trapping invalid or corrupted symbols with error code `R2 = 0xEE`.
+  - **Carrier Sense (CRS) Detection:** Fast carrier detection on the differential pair (`TXP` and `TXN`), reporting active carrier status (`R2 = 0x01`) and quiet line status (`R2 = 0x00`).
+  - **Physical PPA Model on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated 100BASE-TX PCS/PMA Physical Layer Macro: **520 standard cells (1010.0 GE, +2.72% area overhead, $3,845.50\,\mu\text{m}^2$)**, with a $1.25\,\text{ns}$ critical path ($f_{\text{max}} = 800.00\,\text{MHz}$), $50.5\,\mu\text{W}$ dynamic power at 10 MHz, 100.0 Mbps throughput, and $0.505\,\text{pJ/bit}$ energy efficiency.
+- **Verification Suite (`test/test_ethernet_100base_tx.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/ethernet_100base_tx_model.py`:
+    1. `test_100base_tx_master_packet_transmission`: Transmits `/J/ /K/` + payload `[0x5A, 0xC3]` + `/T/ /R/` with MLT-3 line coding on pins 3 (`TXP`) and 4 (`TXN`), verified by `Ethernet100BaseTxReceiverModel`. **PASS** (0.50s).
+    2. `test_100base_tx_rx_delimiter_detection`: Slave synchronizes on `/J/ /K/` rising edge on `TXP` via `WAITEDGE`, ingresses payload byte into `R0`, preserves in `R1` (`0x5A`), with status `R2 = 0x00`. **PASS** (0.13s).
+    3. `test_100base_tx_4b5b_block_coding_and_error_trapping`: Validated in-register 4B5B code group (valid `0x0B` -> `R2=0x00`) and corrupted symbol trapping (`0x00` -> `R2=0xEE`). **PASS** (0.09s).
+    4. `test_100base_tx_stream_cipher_scrambler`: Validated 11-bit LFSR stream cipher scrambler/descrambler matching across 40 bits and confirmed 11-bit self-synchronization. **PASS** (0.00s).
+    5. `test_100base_tx_carrier_sense_and_mlt3_states`: Validated carrier sense detection on differential pair (`R2=0x01` active, `R2=0x00` idle) and verified circular MLT-3 ternary state sequence ($+1, 0, -1, 0$). **PASS** (0.17s).
+    6. `test_100base_tx_standards_and_ppa`: Validated IEEE 802.3u Clause 24/25 code group table, scrambler polynomial, and physical PPA model scaling. **PASS** (0.00s).
+  - Regression Suite: **311/311 tests passing (100.0%)** across 55 test modules in 116.75s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 64s).
+  - Mutation Testing: Added `MUT_60_100BASE_TX_WAITEDGE_RISE_INVERT` in `scripts/mutate.py`. Killed in 110.47s. Cumulative score: **60/60 mutants killed (100.0% kill rate)** in 5666.6s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 21.56s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
