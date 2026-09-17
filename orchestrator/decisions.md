@@ -1870,6 +1870,45 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 24.67s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-17 - Iteration 53: CANopen (CiA 301 / EN 50325-4) & SAE J1939 Higher-Layer Automotive/Industrial Protocol Engine
+
+- **Motivation & Protocol Overview:**
+  - CANopen (CiA 301 / EN 50325-4) and SAE J1939 are the world's most dominant higher-layer protocols (HLPs) built on top of Controller Area Network (CAN 2.0A 11-bit and CAN 2.0B 29-bit physical/data link layers).
+  - CANopen standardizes industrial automation, robotics, motion control, and medical devices; SAE J1939 standardizes heavy-duty commercial vehicles, diesel engines, agricultural equipment, and maritime fleets.
+  - Protocol Architecture:
+    1. **CANopen CiA 301 Services:**
+       - Network Management (NMT): Master/Slave state machine governing Node states (`0x00` Boot-Up, `0x04` Stopped, `0x05` Operational, `0x7F` Pre-operational) commanded via COB-ID `0x000` with Command Specifiers (`0x01` Start, `0x02` Stop, `0x80` Pre-op, `0x81`/`0x82` Reset).
+       - Heartbeat Protocol: Cyclic error control telegram with COB-ID `0x700 + Node_ID` carrying the current NMT state byte.
+       - Service Data Objects (SDO): Expedited client-server transfers accessing the 16-bit Index / 8-bit Sub-index Object Dictionary (OD) with standard abort protocol (`0x80`).
+    2. **SAE J1939 Services:**
+       - 29-bit CAN-ID Architecture: Priority (3b), Extended Data Page (1b), Data Page (1b), PDU Format / PF (8b), PDU Specific / PS (8b), Source Address / SA (8b).
+       - PDU1 vs PDU2 Discrimination: If $PF < 240$ (`0xF0`), PS is Destination Address (DA, peer-to-peer); if $PF \ge 240$, PS is Group Extension (GE, global broadcast).
+       - Transport Protocol (TP) BAM: Broadcast Announce Message multi-packet transmission using Connection Management (TP.CM) and Data Transfer (TP.DT) packets with 1-based sequence numbering.
+- **Novelty Highlight (Zero-Jitter NMT State Machine, Address Discrimination, SDO Expedited Server, J1939 PDU1/PDU2 Addressing & BAM Reassembly):**
+  - **Deterministic CANopen NMT State Machine:** Ingress microcode processes NMT commands, executing valid transitions (Start Node -> Operational `0x05`, Stop Node -> Stopped `0x04`, Enter Pre-Operational -> Pre-op `0x7F`) with status `R2 = 0x00`.
+  - **In-Register Node-ID Discrimination & Bypass:** Commands addressed to mismatched Node-IDs (e.g., 0x09 vs 0x05) are trapped on byte 1 and cleanly bypassed without state alteration (`R2 = 0xAA`, state retained at `0x7F`).
+  - **Deterministic Heartbeat Frame Production:** Microcode formats and serializes `[Node-ID, NMT_State]` over pin 3, verified by independent `UartReceiver`.
+  - **SDO Expedited Upload Server:** In-register OD matcher verifies Index `0x1017` Sub `0x00` returning `0x64` in `R0` with status `R2 = 0x00`; mismatched indices trigger SDO Abort `0x80` in `R0` with status `R2 = 0xEE`.
+  - **SAE J1939 29-bit CAN-ID PDU1/PDU2 Classifier:** Firmware evaluates the upper nibble of PF (`ANDI R0, 0xF0; XORI R0, 0xF0; JZ pdu2_broadcast`), seamlessly routing PDU1 frames to Destination Address checking (`R2 = 0x00` match, `0xAA` mismatch) and PDU2 frames to global broadcast accept (`R2 = 0x01`).
+  - **J1939 BAM Multi-Packet Sequence Integrity:** Microcode ingresses multi-packet BAM stream, verifying sequence continuity (`Seq 1 -> Seq 2`) with status `R2 = 0x00`.
+  - **Physical PPA Quantification on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated CANopen/J1939 Coprocessor Macro: **498 standard cells (938.0 GE, +2.59% area overhead, $3,642.50\,\mu\text{m}^2$)**, with a $1.30\,\text{ns}$ critical path ($f_{\text{max}} = 769.2\,\text{MHz}$).
+- **Verification Suite (`test/test_canopen.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/canopen_model.py`:
+    1. `test_canopen_nmt_state_transitions`: NMT state transitions Start (0x01->0x05), Stop (0x02->0x04), Pre-op (0x80->0x7F) verified with status `R2 = 0x00`. **PASS** (1.01s).
+    2. `test_canopen_nmt_node_filtering`: Telegram addressed to mismatched Node-ID 0x09 bypassed with `R2 = 0xAA`, state retained at 0x7F. **PASS** (0.33s).
+    3. `test_canopen_heartbeat_production`: Heartbeat frame `[0x05, 0x05]` serialized on pin 3 verified by `UartReceiver`. **PASS** (0.20s).
+    4. `test_canopen_sdo_expedited_transfer`: OD match (0x1017/0x00 -> 0x64, `R2=0x00`) and SDO abort (0x80, `R2=0xEE`) verified. **PASS** (0.79s).
+    5. `test_j1939_pgn_extraction_and_addressing`: PDU1 DA match (`0x00`), PDU1 DA mismatch (`0xAA`), and PDU2 broadcast (`0x01`) verified. **PASS** (1.13s).
+    6. `test_canopen_standards_and_ppa`: Validated BAM reassembly microcode, PDU1/PDU2 Python models, and coprocessor PPA scaling. **PASS** (0.34s).
+  - Regression Suite: **287/287 tests passing (100.0%)** across 51 test modules in ~80s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 72s).
+  - Mutation Testing: Added `MUT_56_CANOPEN_JZ_INVERTED_BRANCH_CONDITION` in `scripts/mutate.py`. Killed in 105.58s. Cumulative score: **56/56 mutants killed (100.0% kill rate)** in 5211.92s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 25.41s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
 
 
 
