@@ -473,6 +473,14 @@ MUTANTS = [
         "replacement": "              OP_JZ: if (!z) pc <= operand[ADDR_WIDTH-1:0];  // Mutated: branches when !z instead of z",
         "description": "CANopen CiA 301 NMT & SAE J1939 control flow bug: OP_JZ branches when z is deasserted (if (!z)) instead of when z is asserted (if (z)), causing equality matches (Node-ID matching, NMT CS decoding 0x01/0x02/0x80, and J1939 PDU2 broadcast detection) to fail to branch and drop into mismatched bypass paths",
     },
+    {
+        "id": "MUT_57_PTP_TIMESTAMP_MODE_DECODE",
+        "category": "IEEE 1588 PTP & Precision Timing / WAITEDGE Decode",
+        "file": "src/core.v",
+        "target": "                if (edge_mode == 2'b11) begin",
+        "replacement": "                if (edge_mode == 2'b10) begin  // Mutated: timestamp mode decodes on 10 instead of 11",
+        "description": "IEEE 1588 PTP & timing discovery bug: OP_WAITEDGE timestamp mode decodes on edge_mode 2'b10 (any-edge stall) instead of 2'b11, breaking single-cycle cycle counter latching (WAITEDGE rd, 0x18) and causing PTP egress/ingress timestamps to hang waiting for pin toggles",
+    },
 ]
 
 

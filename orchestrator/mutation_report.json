@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-09-17T04:35:00Z",
-  "total_mutants": 56,
-  "killed": 56,
+  "timestamp": "2026-09-17T04:52:37Z",
+  "total_mutants": 57,
+  "killed": 57,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 5211.92,
+  "campaign_time_sec": 5331.78,
   "latest_mutant": {
-    "id": "MUT_56_CANOPEN_JZ_INVERTED_BRANCH_CONDITION",
-    "category": "CANopen & Fieldbus / Control Flow",
+    "id": "MUT_57_PTP_TIMESTAMP_MODE_DECODE",
+    "category": "IEEE 1588 PTP & Precision Timing / WAITEDGE Decode",
     "file": "src/core.v",
-    "description": "CANopen CiA 301 NMT & SAE J1939 control flow bug: OP_JZ branches when z is deasserted (if (!z)) instead of when z is asserted (if (z)), causing equality matches (Node-ID matching, NMT CS decoding 0x01/0x02/0x80, and J1939 PDU2 broadcast detection) to fail to branch and drop into mismatched bypass paths",
+    "description": "IEEE 1588 PTP & timing discovery bug: OP_WAITEDGE timestamp mode decodes on edge_mode 2'b10 (any-edge stall) instead of 2'b11, breaking single-cycle cycle counter latching (WAITEDGE rd, 0x18) and causing PTP egress/ingress timestamps to hang waiting for pin toggles",
     "status": "KILLED",
-    "elapsed_sec": 105.58
+    "elapsed_sec": 119.86
   }
 }
