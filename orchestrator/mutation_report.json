@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-09-17T05:11:38Z",
-  "total_mutants": 58,
-  "killed": 58,
+  "timestamp": "2026-09-17T05:33:28Z",
+  "total_mutants": 59,
+  "killed": 59,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 5447.33,
+  "campaign_time_sec": 5556.1,
   "latest_mutant": {
-    "id": "MUT_58_I3C_HDR_DOUBLE_EDGE_CLOCK_INVERT",
-    "category": "MIPI I3C HDR-DDR / Dual-Edge Timing",
+    "id": "MUT_59_USB_FS_FALLING_EDGE_SOP_INVERT",
+    "category": "USB 2.0 Full-Speed / SOP Edge Detection",
     "file": "src/core.v",
-    "description": "MIPI I3C v1.2 HDR-DDR double-edge clocking bug: OP_WAITEDGE any-edge mode (edge_mode 2'b10) detects only rising edges (edge_rise) instead of both edges (edge_any), breaking double data rate reception and causing slave word ingress to drop all odd data bits",
+    "description": "USB 2.0 Full-Speed SOP edge detection bug: OP_WAITEDGE falling-edge mode (edge_mode 2'b00) detects rising edges instead of falling edges, causing Start-of-Packet J-to-K transition detection on D+ to stall indefinitely",
     "status": "KILLED",
-    "elapsed_sec": 115.55
+    "elapsed_sec": 108.77
   }
 }

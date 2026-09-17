@@ -489,6 +489,14 @@ MUTANTS = [
         "replacement": "                      (edge_mode == 2'b10) ? edge_rise : 1'b1;  // Mutated: any-edge mode detects only rising edges instead of both edges",
         "description": "MIPI I3C v1.2 HDR-DDR double-edge clocking bug: OP_WAITEDGE any-edge mode (edge_mode 2'b10) detects only rising edges (edge_rise) instead of both edges (edge_any), breaking double data rate reception and causing slave word ingress to drop all odd data bits",
     },
+    {
+        "id": "MUT_59_USB_FS_FALLING_EDGE_SOP_INVERT",
+        "category": "USB 2.0 Full-Speed / SOP Edge Detection",
+        "file": "src/core.v",
+        "target": "  wire edge_matched = (edge_mode == 2'b00) ? edge_fall :",
+        "replacement": "  wire edge_matched = (edge_mode == 2'b00) ? edge_rise :  // Mutated: falling-edge mode detects rising edges instead",
+        "description": "USB 2.0 Full-Speed SOP edge detection bug: OP_WAITEDGE falling-edge mode (edge_mode 2'b00) detects rising edges instead of falling edges, causing Start-of-Packet J-to-K transition detection on D+ to stall indefinitely",
+    },
 ]
 
 
