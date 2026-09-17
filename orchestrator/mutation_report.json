@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-09-17T04:20:10Z",
-  "total_mutants": 55,
-  "killed": 55,
+  "timestamp": "2026-09-17T04:35:00Z",
+  "total_mutants": 56,
+  "killed": 56,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 5106.34,
+  "campaign_time_sec": 5211.92,
   "latest_mutant": {
-    "id": "MUT_55_FLEXRAY_XORI_ALU_XOR_DECODE",
-    "category": "Automotive Determinism / ALU Logic",
+    "id": "MUT_56_CANOPEN_JZ_INVERTED_BRANCH_CONDITION",
+    "category": "CANopen & Fieldbus / Control Flow",
     "file": "src/core.v",
-    "description": "FlexRay ISO 17458 TDMA slot engine & Frame ID filter bug: OP_XORI executes bitwise OR instead of bitwise XOR in core ALU op decoder, corrupting single-cycle equality checks (XORI R3, assigned_slot_id), causing false matches and breaking TDMA slot synchronization and Frame ID filtering across automotive determinism engines",
+    "description": "CANopen CiA 301 NMT & SAE J1939 control flow bug: OP_JZ branches when z is deasserted (if (!z)) instead of when z is asserted (if (z)), causing equality matches (Node-ID matching, NMT CS decoding 0x01/0x02/0x80, and J1939 PDU2 broadcast detection) to fail to branch and drop into mismatched bypass paths",
     "status": "KILLED",
-    "elapsed_sec": 105.92
+    "elapsed_sec": 105.58
   }
 }

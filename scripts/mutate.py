@@ -465,6 +465,14 @@ MUTANTS = [
         "replacement": "      OP_XORI: alu_op = ALU_OR;  // Mutated: OP_XORI selects ALU_OR instead of ALU_XOR",
         "description": "FlexRay ISO 17458 TDMA slot engine & Frame ID filter bug: OP_XORI executes bitwise OR instead of bitwise XOR in core ALU op decoder, corrupting single-cycle equality checks (XORI R3, assigned_slot_id), causing false matches and breaking TDMA slot synchronization and Frame ID filtering across automotive determinism engines",
     },
+    {
+        "id": "MUT_56_CANOPEN_JZ_INVERTED_BRANCH_CONDITION",
+        "category": "CANopen & Fieldbus / Control Flow",
+        "file": "src/core.v",
+        "target": "              OP_JZ: if (z) pc <= operand[ADDR_WIDTH-1:0];",
+        "replacement": "              OP_JZ: if (!z) pc <= operand[ADDR_WIDTH-1:0];  // Mutated: branches when !z instead of z",
+        "description": "CANopen CiA 301 NMT & SAE J1939 control flow bug: OP_JZ branches when z is deasserted (if (!z)) instead of when z is asserted (if (z)), causing equality matches (Node-ID matching, NMT CS decoding 0x01/0x02/0x80, and J1939 PDU2 broadcast detection) to fail to branch and drop into mismatched bypass paths",
+    },
 ]
 
 
