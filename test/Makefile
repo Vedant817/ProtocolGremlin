@@ -41,7 +41,7 @@ COMPILE_ARGS 		+= -I$(SRC_DIR)
 VERILOG_SOURCES += $(PWD)/tb.v
 TOPLEVEL = tb
 
-COCOTB_TEST_MODULES = test,test_uart,test_opcodes,test_waitedge,test_fuzz,test_spi,test_i2c,test_bootload,test_onewire,test_ps2,test_jtag,test_swd,test_manchester,test_can,test_dmx512,test_autobaud,test_hdlc,test_classifier,test_fault_injection,test_multilane,test_usb,test_pipeline,test_protocol_fuzz,test_ethernet,test_bridge_matrix,test_watchdog,test_power,test_crypto,test_scheduler,test_canfd,test_floorplan,test_interrupt,test_mpu,test_crc,test_i3c,test_qei,test_lin,test_biss,test_mil1553,test_wiegand,test_arinc429,test_midi2,test_i2s,test_spacewire,test_sent
+COCOTB_TEST_MODULES = test,test_uart,test_opcodes,test_waitedge,test_fuzz,test_spi,test_i2c,test_bootload,test_onewire,test_ps2,test_jtag,test_swd,test_manchester,test_can,test_dmx512,test_autobaud,test_hdlc,test_classifier,test_fault_injection,test_multilane,test_usb,test_pipeline,test_protocol_fuzz,test_ethernet,test_bridge_matrix,test_watchdog,test_power,test_crypto,test_scheduler,test_canfd,test_floorplan,test_interrupt,test_mpu,test_crc,test_i3c,test_qei,test_lin,test_biss,test_mil1553,test_wiegand,test_arinc429,test_midi2,test_i2s,test_spacewire,test_sent,test_ethercat
 
 ifeq ($(GATES),yes)
 MODULE ?= test_gate_level
