@@ -481,6 +481,14 @@ MUTANTS = [
         "replacement": "                if (edge_mode == 2'b10) begin  // Mutated: timestamp mode decodes on 10 instead of 11",
         "description": "IEEE 1588 PTP & timing discovery bug: OP_WAITEDGE timestamp mode decodes on edge_mode 2'b10 (any-edge stall) instead of 2'b11, breaking single-cycle cycle counter latching (WAITEDGE rd, 0x18) and causing PTP egress/ingress timestamps to hang waiting for pin toggles",
     },
+    {
+        "id": "MUT_58_I3C_HDR_DOUBLE_EDGE_CLOCK_INVERT",
+        "category": "MIPI I3C HDR-DDR / Dual-Edge Timing",
+        "file": "src/core.v",
+        "target": "                      (edge_mode == 2'b10) ? edge_any : 1'b1;",
+        "replacement": "                      (edge_mode == 2'b10) ? edge_rise : 1'b1;  // Mutated: any-edge mode detects only rising edges instead of both edges",
+        "description": "MIPI I3C v1.2 HDR-DDR double-edge clocking bug: OP_WAITEDGE any-edge mode (edge_mode 2'b10) detects only rising edges (edge_rise) instead of both edges (edge_any), breaking double data rate reception and causing slave word ingress to drop all odd data bits",
+    },
 ]
 
 
