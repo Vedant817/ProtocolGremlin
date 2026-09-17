@@ -449,6 +449,14 @@ MUTANTS = [
         "replacement": "      OP_ANDI: alu_op = ALU_OR;  // Mutated: OP_ANDI selects ALU_OR instead of ALU_AND",
         "description": "IEEE 802.1Qav/Qbv TSN Priority Classifier & Credit-Based Shaper bug: OP_ANDI executes bitwise OR instead of bitwise AND in ALU operation multiplexer, corrupting 802.1Q PCP priority code point masking (ANDI R3, 0xE0) and CBS negative credit sign evaluation (ANDI R3, 0x80), resulting in incorrect traffic class steering and queue gate misconfiguration",
     },
+    {
+        "id": "MUT_54_MODBUS_SUBI_ALU_SUB_DECODE",
+        "category": "Industrial Fieldbus / ALU Datapath",
+        "file": "src/core.v",
+        "target": "      OP_SUBI: alu_op = ALU_SUB;",
+        "replacement": "      OP_SUBI: alu_op = ALU_ADD;  // Mutated: OP_SUBI selects ALU_ADD instead of ALU_SUB",
+        "description": "Modbus RTU/ASCII & industrial serial bus arithmetic bug: OP_SUBI executes addition instead of subtraction in core ALU op decoder, corrupting Modbus Longitudinal Redundancy Check (LRC) two's complement accumulation and CBS credit consumption",
+    },
 ]
 
 
