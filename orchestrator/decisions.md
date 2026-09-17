@@ -1834,6 +1834,43 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 26.69s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-17 - Iteration 52: FlexRay (ISO 17458) Automotive Deterministic Bus Protocol Engine & Dual-Channel TDMA Controller
+
+- **Motivation & Protocol Overview:**
+  - FlexRay (ISO 17458 Parts 1–5) is the preeminent automotive communication standard for safety-critical steer-by-wire, brake-by-wire, powertrain, and active chassis systems where CAN FD and LIN lack strict deterministic latency and dual-channel fault tolerance.
+  - Features a net data rate of 10 Mbit/s per channel across dual redundant channels (Channel A and Channel B).
+  - Protocol Architecture:
+    1. **Communication Cycle Structure:** Recurring cycles (0..63) divided into Static Segment (deterministic TDMA), Dynamic Segment (minislot priority arbitration), Symbol Window (MTS/Wakeup), and Network Idle Time (NIT).
+    2. **Frame Structure (40-bit Header, Payload, Trailer):**
+       - 5-byte Header: Reserved (1b), PPI (1b), NFI (1b), Sync (1b), Startup (1b), Frame ID (11b), Payload Length (7b), Header CRC-11 (11b), Cycle Count (6b).
+       - Header CRC-11: Polynomial $x^{11} + x^9 + x^8 + x^7 + x^2 + 1$ (`0x385`), Seed `0x01A` over 20 bits.
+       - Frame CRC-24: Polynomial `0x5D6DCB` with channel-differentiated seeds: `0xFEDCBA` for Channel A, `0xABCDEF` for Channel B.
+    3. **Dual-Channel Redundancy & Seamless Failover:** Hot-standby dual-channel monitoring that seamlessly switches between Channel A and Channel B upon physical line faults or open circuits.
+- **Novelty Highlight (Zero-Jitter TDMA Slot Timing, In-Register Frame ID Filtering, Dual-Channel Redundancy & CRC Validation):**
+  - **Deterministic Static Segment TDMA Synchronization:** Microcode tracks static slots 1..4; transmission strobe activates strictly within assigned Slot 3 and remains quiescent in other slots (status `R2 = 0xAA` -> `0x00`).
+  - **In-Register Frame ID Filtering:** Ingress firmware captures Frame ID, matches configured ID 0x05, latches payload octets into `R0` (`0x42`) and `R1` (`0x99`), with status `R2 = 0x00`.
+  - **Frame ID Mismatch Bypass:** Frames addressed to mismatched Frame ID 0x09 are trapped on header byte 1 and rejected with status `R2 = 0xEE`.
+  - **Dual-Channel Seamless Failover:** Receiver monitors Channel A; upon physical line fault (stuck low), instantly switches to Channel B, latches payload `0x77` into `R0`, tags source `R1 = 0x0B`, and halts with `R2 = 0x00`.
+  - **Header CRC-11 and Frame CRC-24 Verification:** Reference models and in-register microcode validate CRC calculations with 100% single-bit error detection.
+  - **Physical PPA Quantification on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated FlexRay Coprocessor Macro: **510 standard cells (960.0 GE, +2.65% area overhead, $3,728.10\,\mu\text{m}^2$)**, with a $1.28\,\text{ns}$ critical path ($f_{\text{max}} = 781.25\,\text{MHz}$).
+- **Verification Suite (`test/test_flexray.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/flexray_model.py`:
+    1. `test_flexray_tx_frame`: ASIC serializes 10-byte frame on pin 3 verified by `UartReceiver` and `FlexRayFrame` parser. **PASS** (0.91s).
+    2. `test_flexray_tdma_slot_tracker`: Static segment slot timing strictly asserts in Slot 3 and quiescent in Slots 1, 2, and 4. **PASS** (0.08s).
+    3. `test_flexray_rx_filter_match`: Frame ID 0x05 match latches payload `0x42` into `R0` and `0x99` into `R1`, status `R2 = 0x00`. **PASS** (0.57s).
+    4. `test_flexray_rx_filter_mismatch`: Frame ID 0x09 mismatch cleanly rejected on header byte 1 with status `R2 = 0xEE`. **PASS** (0.63s).
+    5. `test_flexray_dual_channel_failover`: Physical fault on Channel A triggers seamless failover to Channel B (payload `0x77`, source `0x0B`, status `R2 = 0x00`). **PASS** (0.25s).
+    6. `test_flexray_crc_and_ppa_validation`: Validated Header CRC-11, Frame CRC-24 Channel A/B seeds, and PPA scaling model. **PASS** (0.08s).
+  - Regression Suite: **281/281 tests passing (100.0%)** across 50 test modules in ~75s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 70s).
+  - Mutation Testing: Added `MUT_55_FLEXRAY_XORI_ALU_XOR_DECODE` in `scripts/mutate.py`. Killed in 105.92s. Cumulative score: **55/55 mutants killed (100.0% kill rate)** in 5106.34s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 24.67s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+
 
 
 
