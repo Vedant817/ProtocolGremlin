@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-09-17T04:02:48Z",
-  "total_mutants": 54,
-  "killed": 54,
+  "timestamp": "2026-09-17T04:20:10Z",
+  "total_mutants": 55,
+  "killed": 55,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 5000.42,
+  "campaign_time_sec": 5106.34,
   "latest_mutant": {
-    "id": "MUT_54_MODBUS_SUBI_ALU_SUB_DECODE",
-    "category": "Industrial Fieldbus / ALU Datapath",
+    "id": "MUT_55_FLEXRAY_XORI_ALU_XOR_DECODE",
+    "category": "Automotive Determinism / ALU Logic",
     "file": "src/core.v",
-    "description": "Modbus RTU/ASCII & industrial serial bus arithmetic bug: OP_SUBI executes addition instead of subtraction in core ALU op decoder, corrupting Modbus Longitudinal Redundancy Check (LRC) two's complement accumulation and CBS credit consumption",
+    "description": "FlexRay ISO 17458 TDMA slot engine & Frame ID filter bug: OP_XORI executes bitwise OR instead of bitwise XOR in core ALU op decoder, corrupting single-cycle equality checks (XORI R3, assigned_slot_id), causing false matches and breaking TDMA slot synchronization and Frame ID filtering across automotive determinism engines",
     "status": "KILLED",
-    "elapsed_sec": 106.78
+    "elapsed_sec": 105.92
   }
 }

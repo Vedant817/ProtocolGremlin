@@ -457,6 +457,14 @@ MUTANTS = [
         "replacement": "      OP_SUBI: alu_op = ALU_ADD;  // Mutated: OP_SUBI selects ALU_ADD instead of ALU_SUB",
         "description": "Modbus RTU/ASCII & industrial serial bus arithmetic bug: OP_SUBI executes addition instead of subtraction in core ALU op decoder, corrupting Modbus Longitudinal Redundancy Check (LRC) two's complement accumulation and CBS credit consumption",
     },
+    {
+        "id": "MUT_55_FLEXRAY_XORI_ALU_XOR_DECODE",
+        "category": "Automotive Determinism / ALU Logic",
+        "file": "src/core.v",
+        "target": "      OP_XORI: alu_op = ALU_XOR;",
+        "replacement": "      OP_XORI: alu_op = ALU_OR;  // Mutated: OP_XORI selects ALU_OR instead of ALU_XOR",
+        "description": "FlexRay ISO 17458 TDMA slot engine & Frame ID filter bug: OP_XORI executes bitwise OR instead of bitwise XOR in core ALU op decoder, corrupting single-cycle equality checks (XORI R3, assigned_slot_id), causing false matches and breaking TDMA slot synchronization and Frame ID filtering across automotive determinism engines",
+    },
 ]
 
 
