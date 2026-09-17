@@ -1985,12 +1985,47 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 22.69s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-17 - Iteration 56: USB 2.0 Full-Speed (12 Mbps) NRZI, Dynamic Bit Stuffing/Destuffing, and PID Packet Engine
 
-
-
-
-
-
-
-
-
+- **Motivation & Protocol Overview:**
+  - Universal Serial Bus (USB 2.0) is the dominant universal peripheral interconnect standard across personal computing, embedded instrumentation, and industrial control. Full-Speed mode operates at 12.0 Mbps over a balanced differential pair ($D+$ and $D-$).
+  - Protocol Architecture:
+    1. **Differential Signaling & Line States:**
+       - Differential '1' / Idle $J$ state: $D+ = 1, D- = 0$ (pulled high by $1.5\,\text{k}\Omega$ pull-up on $D+$).
+       - Differential '0' / Active $K$ state: $D+ = 0, D- = 1$.
+       - Single-Ended Zero ($SE0$): $D+ = 0, D- = 0$ (marks End-of-Packet EOP delimiter and Bus Reset).
+       - Single-Ended One ($SE1$): $D+ = 1, D- = 1$ (illegal electrical condition / bus error).
+    2. **NRZI (Non-Return-to-Zero Inverted) Line Coding:**
+       - Binary '0': Inverts differential line state ($J \leftrightarrow K$).
+       - Binary '1': Maintains current line state (no transition).
+    3. **Dynamic Bit Stuffing:**
+       - Forced '0' bit inserted after six consecutive '1' bits to ensure clock synchronization edges across receivers.
+       - Receiver automatically discards the stuffed '0' and detects bit-stuff violations (> 6 consecutive '1's).
+    4. **Packet Identifiers (PIDs):**
+       - 8-bit PID field structured as 4-bit packet type ($P[3:0]$) and 4-bit one's complement check nibble ($P[7:4] = \sim P[3:0]$).
+       - Standard PIDs supported across all 4 groups: Token (`OUT`, `IN`, `SOF`, `SETUP`), Data (`DATA0`, `DATA1`, `DATA2`, `MDATA`), Handshake (`ACK`, `NAK`, `STALL`, `NYET`), and Special (`PRE_ERR`, `SPLIT`, `PING`).
+    5. **Error Detection (CRC-5 & CRC-16):**
+       - Token CRC-5 ($x^5 + x^2 + 1$, seed 0x1F, inverted at end) protects 11-bit address/endpoint fields.
+       - Data CRC-16 ($x^{16} + x^{15} + x^2 + 1$, seed 0xFFFF, inverted at end) protects variable data payload.
+    6. **EOP Delimiter:**
+       - 2 bit periods of $SE0$ followed by 1 bit period of $J$ state.
+- **Novelty Highlight (SOP Edge Synchronization, NRZI Bit-Period Timing, In-Register PID Validation & Dynamic Bit Stuffing):**
+  - **Start-of-Packet (SOP) Ingress Synchronization via WAITEDGE:** Slave receiver firmware synchronizes to the initial falling edge on $D+$ ($J \to K$ transition) via `WAITEDGE R3, dp_pin` (mode `2'b00`), strides to the midpoint of the bit cell with calibrated synchronizer compensation (`WAIT (bit_cycles - 1)`), and captures incoming PID and payload bytes into `R0` and `R1` via `SHIFTIN` (LSB mode).
+  - **In-Register PID Validation:** Simultaneous verification of PID type and inverted check nibble via single-cycle `XORI R0, expected_pid` and `JZ pid_match`, trapping corrupted PIDs with status `R2 = 0xEE`.
+  - **Physical PPA Model on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated USB 2.0 Full-Speed Serial Interface Engine (SIE) Macro: **512 standard cells (985.0 GE, +2.65% area overhead, $3,741.80\,\mu\text{m}^2$)**, with a $1.27\,\text{ns}$ critical path ($f_{\text{max}} = 787.40\,\text{MHz}$), $48.2\,\mu\text{W}$ dynamic power at 10 MHz, 12.0 Mbps throughput, and $4.02\,\text{pJ/bit}$ energy efficiency.
+- **Verification Suite (`test/test_usb_fs.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/usb_fs_model.py`:
+    1. `test_usb_fs_tx_data_packet`: Master Full-Speed DATA0 packet transmission with SYNC `0x80`, PID `0xC3`, payload `0x5A`, CRC-16 `0x84C0`, and EOP verified by independent `UsbFsReceiverModel`. **PASS** (0.39s).
+    2. `test_usb_fs_rx_packet_ingress`: Slave packet ingress via `WAITEDGE` SOP synchronization, capturing PID into `R0` (`0xC3`) and payload into `R1` (`0x5A`) with status `R2 = 0x00`. **PASS** (0.18s).
+    3. `test_usb_fs_pid_validation_and_fault_trapping`: Validated in-register PID validation (DATA0 `0xC3` -> `R2=0x00`) and corrupt PID check nibble fault trapping (`0xC0` -> `R2=0xEE`). **PASS** (0.06s).
+    4. `test_usb_fs_bit_stuffing_and_destuffing`: Dynamic bit stuffing on six consecutive 1s (payloads `0x3F` and `0xFF`) and receiver destuffing confirmation. **PASS** (0.36s).
+    5. `test_usb_fs_eop_and_se0_bus_reset`: EOP detection ($SE0 \to J$) and SE0 bus reset detection (>50 cycles). **PASS** (0.51s).
+    6. `test_usb_fs_standards_and_ppa`: Validated all 15 standard USB 2.0 PIDs, Token CRC-5, Data CRC-16, and hardware coprocessor PPA scaling model. **PASS** (0.00s).
+  - Regression Suite: **305/305 tests passing (100.0%)** across 54 test modules in 119.76s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 71s).
+  - Mutation Testing: Added `MUT_59_USB_FS_FALLING_EDGE_SOP_INVERT` in `scripts/mutate.py`. Killed in 108.77s. Cumulative score: **59/59 mutants killed (100.0% kill rate)** in 5556.10s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 24.74s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
