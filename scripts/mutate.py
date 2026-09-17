@@ -433,6 +433,14 @@ MUTANTS = [
         "replacement": "      default: alu_op = ALU_SUB;  // Mutated: ADDI subtracts instead of adding",
         "description": "EtherCAT Working Counter & arithmetic bug: OP_ADDI selects ALU_SUB instead of ALU_ADD in core ALU op decoder, causing ADDI R1, 1 to decrement WKC (e.g. 0 -> 255) instead of incrementing (+1), breaking EtherCAT in-stream Working Counter accounting and multi-precision carry chains",
     },
+    {
+        "id": "MUT_52_PROFIBUS_JNZ_INVERTED_BRANCH_CONDITION",
+        "category": "Fieldbus / Control Flow",
+        "file": "src/core.v",
+        "target": "              OP_JNZ: if (!z) pc <= operand[ADDR_WIDTH-1:0];",
+        "replacement": "              OP_JNZ: if (z) pc <= operand[ADDR_WIDTH-1:0];",
+        "description": "Profibus DP & industrial fieldbus control flow bug: OP_JNZ branches when z is asserted (if (z)) instead of when z is deasserted (if (!z)), causing valid SD1/SD2/SD3/SD4 telegram delimiters and FCS checksums to trigger spurious fault traps",
+    },
 ]
 
 

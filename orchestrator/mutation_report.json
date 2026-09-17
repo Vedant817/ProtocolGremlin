@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-09-16T21:14:12Z",
-  "total_mutants": 51,
-  "killed": 51,
+  "timestamp": "2026-09-17T03:38:56Z",
+  "total_mutants": 52,
+  "killed": 52,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 4671.72,
+  "campaign_time_sec": 4791.24,
   "latest_mutant": {
-    "id": "MUT_51_ETHERCAT_WKC_INCREMENT_ALU_ADD",
-    "category": "Industrial / ALU Datapath",
+    "id": "MUT_52_PROFIBUS_JNZ_INVERTED_BRANCH_CONDITION",
+    "category": "Fieldbus / Control Flow",
     "file": "src/core.v",
-    "description": "EtherCAT Working Counter & arithmetic bug: OP_ADDI selects ALU_SUB instead of ALU_ADD in core ALU op decoder, causing ADDI R1, 1 to decrement WKC (e.g. 0 -> 255) instead of incrementing (+1), breaking EtherCAT in-stream Working Counter accounting and multi-precision carry chains",
+    "description": "Profibus DP & industrial fieldbus control flow bug: OP_JNZ branches when z is asserted (if (z)) instead of when z is deasserted (if (!z)), causing valid SD1/SD2/SD3/SD4 telegram delimiters and FCS checksums to trigger spurious fault traps",
     "status": "KILLED",
-    "elapsed_sec": 236.61
+    "elapsed_sec": 119.52
   }
 }
