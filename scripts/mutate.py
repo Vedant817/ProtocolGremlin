@@ -425,6 +425,14 @@ MUTANTS = [
         "replacement": "  wire edge_matched = (edge_mode == 2'b00) ? edge_rise :",
         "description": "SAE J2716 SENT timing discovery bug: WAITEDGE falling-edge mode (mode 0) triggers on edge_rise instead of edge_fall, breaking falling-to-falling pulse-period modulation (PPM), calibration pulse recovery, and data nibble extraction across automotive sensor frames",
     },
+    {
+        "id": "MUT_51_ETHERCAT_WKC_INCREMENT_ALU_ADD",
+        "category": "Industrial / ALU Datapath",
+        "file": "src/core.v",
+        "target": "      default: alu_op = ALU_ADD;  // ADDI and DECJNZ's implicit -1 both use ADD path via alu_b",
+        "replacement": "      default: alu_op = ALU_SUB;  // Mutated: ADDI subtracts instead of adding",
+        "description": "EtherCAT Working Counter & arithmetic bug: OP_ADDI selects ALU_SUB instead of ALU_ADD in core ALU op decoder, causing ADDI R1, 1 to decrement WKC (e.g. 0 -> 255) instead of incrementing (+1), breaking EtherCAT in-stream Working Counter accounting and multi-precision carry chains",
+    },
 ]
 
 

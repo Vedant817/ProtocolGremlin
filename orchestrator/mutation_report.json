@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-09-16T20:51:45Z",
-  "total_mutants": 50,
-  "killed": 50,
+  "timestamp": "2026-09-16T21:14:12Z",
+  "total_mutants": 51,
+  "killed": 51,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 4435.11,
+  "campaign_time_sec": 4671.72,
   "latest_mutant": {
-    "id": "MUT_50_SENT_WAITEDGE_FALLING_POLARITY",
-    "category": "Automotive / Timing Discovery",
+    "id": "MUT_51_ETHERCAT_WKC_INCREMENT_ALU_ADD",
+    "category": "Industrial / ALU Datapath",
     "file": "src/core.v",
-    "description": "SAE J2716 SENT timing discovery bug: WAITEDGE falling-edge mode (mode 0) triggers on edge_rise instead of edge_fall, breaking falling-to-falling pulse-period modulation (PPM), calibration pulse recovery, and data nibble extraction across automotive sensor frames",
+    "description": "EtherCAT Working Counter & arithmetic bug: OP_ADDI selects ALU_SUB instead of ALU_ADD in core ALU op decoder, causing ADDI R1, 1 to decrement WKC (e.g. 0 -> 255) instead of incrementing (+1), breaking EtherCAT in-stream Working Counter accounting and multi-precision carry chains",
     "status": "KILLED",
-    "elapsed_sec": 97.22
+    "elapsed_sec": 236.61
   }
 }
