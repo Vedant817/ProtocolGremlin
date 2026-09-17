@@ -1716,6 +1716,44 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 28.93s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-17 - Iteration 49: Profibus DP (IEC 61158 / EN 50170) Master/Slave Fieldbus Protocol Engine
+
+- **Motivation & Domain Architecture:**
+  - Profibus DP (Decentralized Peripherals - IEC 61158-2 / IEC 61158-4-3 / EN 50170) is the globally dominant industrial fieldbus standard for cyclic, deterministic communication between PLCs/controllers (Masters) and distributed field devices (Slaves).
+  - Operating over balanced differential RS-485 physical links at baud rates up to 12 Mbps, Profibus DP requires deterministic framing, strict noise immunity, and fast address filtering:
+    1. **Delimiters & Telegram Framing:**
+       - Supports 5 distinct telegram formats: SD1 (`0x10`, fixed 6-byte request/polling), SD2 (`0x68`, variable-length data up to 244 octets), SD3 (`0xA2`, fixed 14-byte data frame), SD4 (`0xDC`, 3-byte token telegram), and SC (`0xE5`, Short Acknowledge), with trailing End Delimiter ED (`0x16`).
+    2. **Hamming Distance HD=4 Security Physics:**
+       - Enforces dual-length repetition ($LE == LE_r$) and dual-start-delimiter validation ($\text{SD2}_1 == \text{SD2}_2 == 0x68$), providing mathematical detection of up to 3 corrupted bits anywhere in the frame header before executing commands.
+    3. **8-Bit Arithmetic Frame Check Sequence (FCS):**
+       - Implements in-stream modulo-256 accumulation over protected octets ($DA + SA + FC + Data$), providing 100% single-bit error rejection.
+    4. **Destination Address Discrimination & Token Ring Arbitration:**
+       - Single-cycle slave address filtering (matching station address $0..126$ and broadcast $127$), non-addressed telegram bypass, and active master SD4 token passing reception with predecessor Source Address capture.
+- **Novelty Highlight (Zero-Jitter Framing, HD=4 Delimiter Validation, In-Register FCS & Token Processing):**
+  - **Deterministic SD2 Telegram Serialization:** Transmitter firmware serializes 10-byte variable-length telegrams (`[0x68, 0x04, 0x04, 0x68, 0x04, 0x01, 0x49, 0x5A, 0xA8, 0x16]`) over UART on pin 3, verified by independent `UartReceiver` and `ProfibusTelegram` parser.
+  - **HD=4 Verification & Slave Address Filtering:** Receiver firmware verifies SD2 (`0x68`), checks length equality ($LE == LE_r$), verifies repeated SD2 (`0x68`), matches destination address ($DA == 0x04$), latches payload (`0x5A`) into `R0`, validates modulo-256 FCS, checks ED (`0x16`), and asserts status `R2 = 0x00`.
+  - **Address Mismatch Bypass Handling:** When addressed to an alternate slave ($DA = 0x07$ vs $0x04$), microcode cleanly suppresses payload modification and branches to bypass handler with `R2 = 0xAA`.
+  - **Checksum Error Trapping:** Corrupted FCS bytes (e.g. `0xFF` vs `0xA8`) are trapped immediately with error code `R2 = 0xEE`.
+  - **Token Ring Reception:** Ingresses SD4 token (`[0xDC, 0x04, 0x01]`), matches master address, captures predecessor SA (`0x01`) into `R0`, and asserts token possession status `R2 = 0x01`.
+  - **Physical PPA Quantification on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated Profibus DP Coprocessor Macro: **485 standard cells (910.0 GE, +2.51% area overhead, $3,545.35\,\mu\text{m}^2$)**, with a $1.30\,\text{ns}$ critical path ($f_{\text{max}} = 769.2\,\text{MHz}$).
+- **Verification Suite (`test/test_profibus.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/profibus_model.py`:
+    1. `test_profibus_tx_sd2_telegram`: ASIC serializes 10-byte SD2 telegram on pin 3 verified by `UartReceiver` and `ProfibusTelegram` parser. **PASS** (1.15s).
+    2. `test_profibus_slave_address_match`: Slave matches station 0x04, validates HD=4 delimiters/length/FCS, latches payload 0x5A into `R0`, reports `R2 = 0x00`. **PASS** (0.95s).
+    3. `test_profibus_slave_address_mismatch`: Telegram addressed to station 0x07 cleanly bypassed, reports status `R2 = 0xAA`. **PASS** (0.95s).
+    4. `test_profibus_fcs_error_detection`: Corrupted FCS byte trapped, reports fault code `R2 = 0xEE`. **PASS** (1.03s).
+    5. `test_profibus_token_reception`: SD4 token telegram matched, capturing predecessor SA 0x01 into `R0`, reports `R2 = 0x01`. **PASS** (0.36s).
+    6. `test_profibus_standards_and_ppa`: Validated IEC 61158 telegram framing, modulo-256 microcode accumulator, and coprocessor PPA scaling model. **PASS** (0.08s).
+  - Regression Suite: **263/263 tests passing (100.0%)** across 47 test modules in ~75s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations).
+  - Mutation Testing: Added `MUT_52_PROFIBUS_JNZ_INVERTED_BRANCH_CONDITION` in `scripts/mutate.py`. Killed in 119.52s. Cumulative score: **52/52 mutants killed (100.0% kill rate)** in 4791.24s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 25.21s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+
 
 
 

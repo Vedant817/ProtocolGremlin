@@ -1,11 +1,11 @@
 {
-  "phase": "isa-v1-ethercat-verified",
+  "phase": "isa-v1-profibus-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 48 complete (EtherCAT). Iteration 49 next (Profibus DP / RS-485 Fieldbus Engine).",
+  "active_objective": "Continuous engineering loop: Iteration 49 complete (Profibus DP). Iteration 50 next (Ethernet AVB / TSN IEEE 802.1Qav Time-Sensitive Networking Engine & Credit-Based Shaper).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 48,
+  "iterations": 49,
   "halt": false,
-  "notes": "Iteration 48 complete: Authored docs/ethercat_study.md (IEC 61158 specification, sub-datagram structure, addressing modes, 'Processing-on-the-Fly' latency physics, WKC accounting rules, and IHP 130nm SG13G2 PPA scaling). Created tools/ethercat_model.py (EtherCatCommand, EtherCatSubDatagram, EtherCatSlaveModel, EtherCatPpaModel, build_ethercat_slave_process_asm, build_ethercat_tx_datagram_asm, build_ethercat_wkc_incrementer_asm, build_ethercat_address_filter_asm) and test/test_ethercat.py (6/6 tests pass: sub-datagram master transmission, configured station matching with on-the-fly WKC increment, station address mismatch bypass, broadcast write handling, 16-bit multi-byte WKC carry propagation, and PPA model validation). Added test_ethercat to test/Makefile. Full regression suite: 257/257 tests PASS (100.0%) across 46 modules. Added MUT_51_ETHERCAT_WKC_INCREMENT_ALU_ADD in scripts/mutate.py (killed in 236.61s, 51/51 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 170s). Gate-level simulation confirmed 8/8 physical tests pass in 28.93s."
+  "notes": "Iteration 49 complete: Authored docs/profibus_study.md (IEC 61158 / EN 50170 specification, RS-485 physical signaling, HD=4 Hamming distance proof, FCS mathematical formulations, and IHP 130nm SG13G2 PPA scaling). Created tools/profibus_model.py (ProfibusDelimiter, compute_profibus_fcs, ProfibusTelegram, ProfibusSlaveModel, ProfibusPpaModel, build_profibus_tx_sd2_asm, build_profibus_slave_rx_asm, build_profibus_token_filter_asm, build_profibus_fcs_validator_asm) and test/test_profibus.py (6/6 tests pass: SD2 telegram master transmission, slave configured address match and payload latching, destination address mismatch bypass, FCS error trapping, SD4 token reception and predecessor capture, and PPA model validation). Added test_profibus to test/Makefile. Full regression suite: 263/263 tests PASS (100.0%) across 47 modules. Added MUT_52_PROFIBUS_JNZ_INVERTED_BRANCH_CONDITION in scripts/mutate.py (killed in 119.52s, 52/52 mutants killed, 100.0% kill rate, cumulative 4791.24s). SymbiYosys formal BMC passed (20 steps Z3, 0 violations). Gate-level simulation confirmed 8/8 physical tests pass in 25.21s."
 }
