@@ -1792,6 +1792,48 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 26.00s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-17 - Iteration 51: Modbus RTU / ASCII (IEC 61158 / Modbus-IDA) Protocol Engine & Serial Controller
+
+- **Motivation & Domain Architecture:**
+  - Modbus (IEC 61158 / Modbus-IDA Application Protocol Specification v1.1b3) is the foundational industrial serial fieldbus standard for SCADA, PLCs, RTUs, sensors, and actuators worldwide.
+  - The architecture encompasses two distinct operational profiles over RS-485 / RS-232 physical signaling:
+    1. **Modbus RTU Profile:**
+       - Compact binary representation, 8 data bits, no start/end delimiters.
+       - Inter-frame silence $t_{3.5} \ge 3.5$ characters (38.5 bit times) demarcating frame boundaries.
+       - Inter-character silence $t_{1.5} \le 1.5$ characters (16.5 bit times) bounding intra-frame jitter.
+       - 16-bit CRC-16/MODBUS with reversed Galois polynomial `0xA001`, initial `0xFFFF`, low byte transmitted first.
+    2. **Modbus ASCII Profile:**
+       - Human-readable 7-bit ASCII representation, start colon (`:`, `0x3A`), end delimiters (`\r\n`, `0x0D 0x0A`).
+       - Two hexadecimal ASCII characters per binary octet.
+       - 8-bit Longitudinal Redundancy Check (LRC) computed as two's complement of modulo-256 sum.
+    3. **Function Codes & Exception Responses:**
+       - Execution of Read Holding Registers (`0x03`) and Write Single Register (`0x06`).
+       - Deterministic exception responses: slave sets MSB of function code (`FC | 0x80`) and returns exception codes (`0x01` Illegal Function, `0x02` Illegal Data Address, `0x03` Illegal Data Value).
+- **Novelty Highlight (Zero-Jitter RTU/ASCII Serialization, Slave Address Match/Bypass, In-Register LRC & Exception Handling):**
+  - **Deterministic RTU Master Serialization:** Transmitter firmware serializes 5-byte RTU frames (`[0x05, 0x03, 0x01, 0xA0, 0xF1]`) over UART on pin 3, verified by independent `UartReceiver` and `ModbusRtuFrame` parser.
+  - **Slave Address Match & Latching:** Ingress firmware captures Slave Address into `R3`, verifies match against station `0x05`, captures Function Code into `R0` (`0x03`) and Data into `R1` (`0x01`), reporting status `R2 = 0x00`.
+  - **Address Mismatch Bypass:** Telegram addressed to station `0x09` is immediately trapped on byte 0 and cleanly bypassed with status `R2 = 0xAA`.
+  - **Deterministic ASCII Master Serialization:** Firmware serializes 9-byte ASCII frame (`:0503F8\r\n`) within the 256-word program store limit, decoded by independent `UartReceiver` and `ModbusAsciiFrame` parser.
+  - **In-Register LRC Accumulation:** Microcode accumulates test octets and computes two's complement LRC (`0xF7`) via register subtraction, asserting `R2 = 0x00`.
+  - **Exception Generation Microcode:** In-register exception constructor sets `R0 = 0x83`, `R1 = 0x02`, and `R2 = 0x83`.
+  - **Physical PPA Quantification on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated Modbus Coprocessor Macro: **488 standard cells (918.0 GE, +2.53% area overhead, $3,568.20\,\mu\text{m}^2$)**, with a $1.31\,\text{ns}$ critical path ($f_{\text{max}} = 763.4\,\text{MHz}$).
+- **Verification Suite (`test/test_modbus.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/modbus_model.py`:
+    1. `test_modbus_rtu_tx_frame`: ASIC serializes 5-byte RTU frame on pin 3 verified by `UartReceiver` and `ModbusRtuFrame` parser. **PASS** (0.66s).
+    2. `test_modbus_rtu_slave_address_match`: Slave matches station 0x05, latches FC 0x03 into `R0` and Data 0x01 into `R1`, reports `R2 = 0x00`. **PASS** (0.47s).
+    3. `test_modbus_rtu_slave_address_mismatch`: Telegram addressed to station 0x09 cleanly bypassed, reports status `R2 = 0xAA`. **PASS** (0.55s).
+    4. `test_modbus_ascii_tx_frame`: ASIC serializes 9-byte ASCII frame `:0503F8\r\n` verified by `UartReceiver` and `ModbusAsciiFrame`. **PASS** (1.25s).
+    5. `test_modbus_lrc_accumulation_and_exception`: In-register two's complement LRC calculation and exception response generation verified. **PASS** (0.09s).
+    6. `test_modbus_standards_and_ppa`: Validated Modbus-IDA behavioral model, CRC-16 vs LRC invariants, and coprocessor PPA scaling model. **PASS**.
+  - Regression Suite: **275/275 tests passing (100.0%)** across 49 test modules in ~75s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 71s).
+  - Mutation Testing: Added `MUT_54_MODBUS_SUBI_ALU_SUB_DECODE` in `scripts/mutate.py`. Killed in 106.78s. Cumulative score: **54/54 mutants killed (100.0% kill rate)** in 5000.42s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 26.69s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
 
 
 
