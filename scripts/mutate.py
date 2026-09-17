@@ -497,6 +497,14 @@ MUTANTS = [
         "replacement": "  wire edge_matched = (edge_mode == 2'b00) ? edge_rise :  // Mutated: falling-edge mode detects rising edges instead",
         "description": "USB 2.0 Full-Speed SOP edge detection bug: OP_WAITEDGE falling-edge mode (edge_mode 2'b00) detects rising edges instead of falling edges, causing Start-of-Packet J-to-K transition detection on D+ to stall indefinitely",
     },
+    {
+        "id": "MUT_60_100BASE_TX_WAITEDGE_RISE_INVERT",
+        "category": "Fast Ethernet 100BASE-TX / SSD Rising Edge Detection",
+        "file": "src/core.v",
+        "target": "                      (edge_mode == 2'b01) ? edge_rise :",
+        "replacement": "                      (edge_mode == 2'b01) ? edge_fall :  // Mutated: rising-edge mode detects falling edges instead",
+        "description": "Fast Ethernet 100BASE-TX Start-of-Stream Delimiter detection bug: OP_WAITEDGE rising-edge mode (edge_mode 2'b01) detects falling edges instead of rising edges, causing /J/ /K/ SSD delimiter transition detection on TXP to stall indefinitely",
+    },
 ]
 
 

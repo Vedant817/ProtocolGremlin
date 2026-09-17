@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-09-17T05:33:28Z",
-  "total_mutants": 59,
-  "killed": 59,
+  "timestamp": "2026-09-17T21:45:13Z",
+  "total_mutants": 60,
+  "killed": 60,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 5556.1,
+  "campaign_time_sec": 5666.6,
   "latest_mutant": {
-    "id": "MUT_59_USB_FS_FALLING_EDGE_SOP_INVERT",
-    "category": "USB 2.0 Full-Speed / SOP Edge Detection",
+    "id": "MUT_60_100BASE_TX_WAITEDGE_RISE_INVERT",
+    "category": "Fast Ethernet 100BASE-TX / SSD Rising Edge Detection",
     "file": "src/core.v",
-    "description": "USB 2.0 Full-Speed SOP edge detection bug: OP_WAITEDGE falling-edge mode (edge_mode 2'b00) detects rising edges instead of falling edges, causing Start-of-Packet J-to-K transition detection on D+ to stall indefinitely",
+    "description": "Fast Ethernet 100BASE-TX Start-of-Stream Delimiter detection bug: OP_WAITEDGE rising-edge mode (edge_mode 2'b01) detects falling edges instead of rising edges, causing /J/ /K/ SSD delimiter transition detection on TXP to stall indefinitely",
     "status": "KILLED",
-    "elapsed_sec": 108.77
+    "elapsed_sec": 110.47
   }
 }
