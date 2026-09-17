@@ -441,6 +441,14 @@ MUTANTS = [
         "replacement": "              OP_JNZ: if (z) pc <= operand[ADDR_WIDTH-1:0];",
         "description": "Profibus DP & industrial fieldbus control flow bug: OP_JNZ branches when z is asserted (if (z)) instead of when z is deasserted (if (!z)), causing valid SD1/SD2/SD3/SD4 telegram delimiters and FCS checksums to trigger spurious fault traps",
     },
+    {
+        "id": "MUT_53_TSN_ANDI_LOGIC_MASK_CORRUPTION",
+        "category": "Time-Sensitive Networking / ALU Logic",
+        "file": "src/core.v",
+        "target": "      OP_ANDI: alu_op = ALU_AND;",
+        "replacement": "      OP_ANDI: alu_op = ALU_OR;  // Mutated: OP_ANDI selects ALU_OR instead of ALU_AND",
+        "description": "IEEE 802.1Qav/Qbv TSN Priority Classifier & Credit-Based Shaper bug: OP_ANDI executes bitwise OR instead of bitwise AND in ALU operation multiplexer, corrupting 802.1Q PCP priority code point masking (ANDI R3, 0xE0) and CBS negative credit sign evaluation (ANDI R3, 0x80), resulting in incorrect traffic class steering and queue gate misconfiguration",
+    },
 ]
 
 

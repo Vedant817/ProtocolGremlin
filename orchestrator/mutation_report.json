@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-09-17T03:38:56Z",
-  "total_mutants": 52,
-  "killed": 52,
+  "timestamp": "2026-09-17T03:49:30Z",
+  "total_mutants": 53,
+  "killed": 53,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 4791.24,
+  "campaign_time_sec": 4893.64,
   "latest_mutant": {
-    "id": "MUT_52_PROFIBUS_JNZ_INVERTED_BRANCH_CONDITION",
-    "category": "Fieldbus / Control Flow",
+    "id": "MUT_53_TSN_ANDI_LOGIC_MASK_CORRUPTION",
+    "category": "Time-Sensitive Networking / ALU Logic",
     "file": "src/core.v",
-    "description": "Profibus DP & industrial fieldbus control flow bug: OP_JNZ branches when z is asserted (if (z)) instead of when z is deasserted (if (!z)), causing valid SD1/SD2/SD3/SD4 telegram delimiters and FCS checksums to trigger spurious fault traps",
+    "description": "IEEE 802.1Qav/Qbv TSN Priority Classifier & Credit-Based Shaper bug: OP_ANDI executes bitwise OR instead of bitwise AND in ALU operation multiplexer, corrupting 802.1Q PCP priority code point masking (ANDI R3, 0xE0) and CBS negative credit sign evaluation (ANDI R3, 0x80), resulting in incorrect traffic class steering and queue gate misconfiguration",
     "status": "KILLED",
-    "elapsed_sec": 119.52
+    "elapsed_sec": 102.40
   }
 }
