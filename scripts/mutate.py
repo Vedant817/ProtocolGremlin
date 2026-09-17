@@ -513,6 +513,14 @@ MUTANTS = [
         "replacement": "              OP_MOV: begin\n                write_rd(rd_idx, ~rs_val);  // Mutated: MOV inverts source register value",
         "description": "Gigabit Ethernet 1000BASE-T quad preservation bug: OP_MOV inverts the transferred source register value (~rs_val instead of rs_val), corrupting the preserved 4-pair quad in R1 during slave ingress (MOV R1, R0) and causing packet verification to fail",
     },
+    {
+        "id": "MUT_62_USB_SS_GWRI_DATA_INVERT",
+        "category": "USB 3.0 SuperSpeed / GPIO Drive Subsystem",
+        "file": "src/core.v",
+        "target": "              OP_GWRI:  gpio_out <= operand;",
+        "replacement": "              OP_GWRI:  gpio_out <= ~operand;  // Mutated: GWRI inverts output bits",
+        "description": "USB 3.0 SuperSpeed transmit & LFPS burst bug: OP_GWRI inverts the driven GPIO bus operand (~operand instead of operand), corrupting differential SSTX+/SSTX- levels, destroying 8b/10b symbol transmissions, and breaking LFPS square-wave signaling",
+    },
 ]
 
 

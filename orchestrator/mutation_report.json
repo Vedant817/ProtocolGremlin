@@ -1,16 +1,18 @@
 {
-  "timestamp": "2026-09-17T21:57:05Z",
-  "total_mutants": 61,
-  "killed": 61,
+  "timestamp": "2026-09-17T22:12:59Z",
+  "total_mutants": 1,
+  "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 5768.4,
-  "latest_mutant": {
-    "id": "MUT_61_1000BASE_T_MOV_INVERT",
-    "category": "Gigabit Ethernet 1000BASE-T / Register Data Move",
-    "file": "src/core.v",
-    "description": "Gigabit Ethernet 1000BASE-T quad preservation bug: OP_MOV inverts the transferred source register value (~rs_val instead of rs_val), corrupting the preserved 4-pair quad in R1 during slave ingress (MOV R1, R0) and causing packet verification to fail",
-    "status": "KILLED",
-    "elapsed_sec": 101.76
-  }
+  "campaign_time_sec": 91.85,
+  "mutants": [
+    {
+      "id": "MUT_62_USB_SS_GWRI_DATA_INVERT",
+      "category": "USB 3.0 SuperSpeed / GPIO Drive Subsystem",
+      "file": "src/core.v",
+      "description": "USB 3.0 SuperSpeed transmit & LFPS burst bug: OP_GWRI inverts the driven GPIO bus operand (~operand instead of operand), corrupting differential SSTX+/SSTX- levels, destroying 8b/10b symbol transmissions, and breaking LFPS square-wave signaling",
+      "status": "KILLED",
+      "elapsed_sec": 91.81
+    }
+  ]
 }
