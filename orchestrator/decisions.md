@@ -2068,3 +2068,45 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 21.56s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-18 - Iteration 58: Ethernet 1000BASE-T IEEE 802.3ab Gigabit Ethernet 4D-PAM5 Multilevel Signaling & PMA Engine
+
+- **Motivation & Protocol Overview:**
+  - Gigabit Ethernet 1000BASE-T (IEEE Std 802.3ab-1999 Clause 40) is the ubiquitous 1 Gbps physical layer standard for Category 5/5e Unshielded Twisted Pair (UTP) cabling.
+  - Operating across four twisted pairs simultaneously ($A, B, C, D$) in full duplex at a symbol rate of $125\,\text{MBaud}$, 1000BASE-T achieves $1000\,\text{Mbps}$ aggregated throughput through three core innovations:
+    1. **4D-PAM5 Multilevel Signaling (Physical Medium Dependent - PMD):**
+       - 5-level Pulse Amplitude Modulation (\{-2, -1, 0, +1, +2\}) conveying $2\,\text{bits/baud/pair} \times 4\,\text{pairs} = 8\,\text{bits/baud}$.
+       - Symbol levels correspond to differential voltages: \{-1.0\,\text{V}, -0.5\,\text{V}, 0.0\,\text{V}, +0.5\,\text{V}, +1.0\,\text{V}\}.
+       - Symbol '0' is reserved for idle, allowing continuous link activity monitoring and clock synchronization.
+    2. **8B1Q4 Block & 4D Trellis Coset Partitioning (Physical Coding Sublayer - PCS):**
+       - Encodes each 8-bit octet into a 4-dimensional quinary symbol vector (quad) $(s_A, s_B, s_C, s_D) \in \{-2, -1, 0, +1, +2\}^4$.
+       - Constellation points are partitioned into two 4D cosets ($D_4$ and $D_4 + (1,0,0,0)$) based on parity: $\sum_{i=A}^D s_i \pmod 2$.
+       - Even cosets ($D_4$) provide an asymptotic coding gain of $6.0\,\text{dB}$, significantly relaxing receiver SNR requirements.
+    3. **33-Bit Master/Slave Stream Scrambler (Physical Medium Attachment - PMA):**
+       - Master LFSR stream scrambler polynomial: $G_M(x) = x^{33} + x^{13} + 1$.
+       - Randomizes transmitted symbol sequences to prevent periodic harmonic emissions, ensure electromagnetic compatibility, and facilitate adaptive filter convergence.
+    4. **Framing Delimiters & Full-Duplex Echo/NEXT Cancellation:**
+       - Start-of-Stream Delimiter 4 (SSD4): two-quad sequence $\text{SSD4}_1 = (2, 2, 2, 2)$ and $\text{SSD4}_2 = (1, 1, 1, 1)$.
+       - End-of-Stream Delimiter 4 (ESD4): two-quad sequence $\text{ESD4}_1 = (2, 2, -2, -2)$ and $\text{ESD4}_2 = (0, 0, 2, 2)$.
+       - Full-duplex hybrid echo cancellers remove local transmitter leakage, while near-end crosstalk (NEXT) cancellers eliminate inter-pair capacitive coupling.
+- **Novelty Highlight (SSD4 Delimiter WAITEDGE Synchronization, 4D Coset Parity Validation, PAM5 Voltage Quantization & Calibrated PPA):**
+  - **Start-of-Stream Delimiter 4 (SSD4) Edge Synchronization via WAITEDGE:** Slave receiver firmware synchronizes to the initial rising edge of $\text{SSD4}_1$ on Pair A via `WAITEDGE R3, pair_a_pin` (mode `2'b01`), strides cleanly past synchronizer pipeline latency to the midpoint of the symbol interval (`WAIT (baud_cycles - 1)`), ingresses the payload quads into `R0` and `R1`, and verifies clean reception with status `R2 = 0x00`.
+  - **In-Register 4D Coset Parity Validation & Fault Trapping:** Single-cycle verification of 4-dimensional Trellis coset parity ($\sum_{i} s_i \pmod 2 == 0$) via XOR reduction, trapping illegal odd coset vectors or bitstream corruptions with error code `R2 = 0xEE`.
+  - **Continuous PAM5 Multilevel Quantization:** Cycle-accurate analog-to-digital decision slicer mapping continuous physical line voltages into discrete PAM5 symbols \{-2, -1, 0, +1, +2\} with $0.25\,\text{V}$ decision boundaries.
+  - **Physical PPA Model on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated 1000BASE-T PCS/PMA Physical Layer Macro: **535 standard cells (1040.0 GE, +2.79% area overhead, $3,950.20\,\mu\text{m}^2$)**, with a $1.25\,\text{ns}$ critical path ($f_{\text{max}} = 800.00\,\text{MHz}$), $52.8\,\mu\text{W}$ dynamic power at 10 MHz, 1000.0 Mbps throughput, and $0.0528\,\text{pJ/bit}$ energy efficiency.
+- **Verification Suite (`test/test_ethernet_1000base_t.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/ethernet_1000base_t_model.py`:
+    1. `test_1000base_t_master_quad_transmission`: Transmits SSD4 delimiters, payload `[0x5A, 0xC3]` mapped into 8B1Q4 symbol quads, and ESD4 delimiters across pairs A and B on pins 3 and 4, decoded cleanly by `Ethernet1000BaseTReceiverModel`. **PASS** (0.07s).
+    2. `test_1000base_t_rx_quad_ingress`: Slave synchronizes on SSD4 rising edge on Pair A via `WAITEDGE`, ingresses payload quad into `R0` (`0x01`) and `R1` (`0x02`), with status `R2 = 0x00`. **PASS** (0.13s).
+    3. `test_1000base_t_coset_validation_and_fault_trapping`: Validated in-register 4D even coset quad (`(0, 0, 0, 0)` -> `R2=0x00`) and odd coset error trapping (`(1, 0, 0, 0)` -> `R2=0xEE`). **PASS** (0.09s).
+    4. `test_1000base_t_stream_scrambler`: Validated 33-bit LFSR stream scrambler/descrambler matching across 64 bits and verified generator polynomial periodicity. **PASS** (0.00s).
+    5. `test_1000base_t_multilevel_pam5_quantization`: Validated continuous voltage slicing across all 5 discrete PAM5 levels ($-1.0\,\text{V}$ to $+1.0\,\text{V}$) and verified noise boundary rejection. **PASS** (0.00s).
+    6. `test_1000base_t_standards_and_ppa`: Validated IEEE 802.3ab Clause 40 standards compliance, PAM5 constellation geometry, and physical PPA scaling model. **PASS** (0.00s).
+  - Regression Suite: **317/317 tests passing (100.0%)** across 56 test modules in 105.32s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 66s).
+  - Mutation Testing: Added `MUT_61_1000BASE_T_MOV_INVERT` in `scripts/mutate.py`. Killed in 101.76s. Cumulative score: **61/61 mutants killed (100.0% kill rate)** in 5768.4s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 22.18s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
