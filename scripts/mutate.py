@@ -713,6 +713,14 @@ MUTANTS = [
         "replacement": "      OP_ADD:  result = a - b;  // Mutated: OP_ADD executes SUB instead of ADD",
         "description": "GDDR6/GDDR6X memory transaction credit return and burst address increment bug: ALU OP_ADD executes subtraction instead of addition (result = a - b), corrupting credit pool increments upon completion/precharge and forward address offsets",
     },
+    {
+        "id": "MUT_87_LPDDR4_ALU_OR_INVERT",
+        "category": "LPDDR4 / LPDDR4X Memory Controller / ALU OR Invert",
+        "file": "src/alu.v",
+        "target": "      OP_OR:   result = a | b;",
+        "replacement": "      OP_OR:   result = a & b;  // Mutated: OP_OR executes AND instead of OR",
+        "description": "LPDDR4/LPDDR4X channel and bank address field composition bug: ALU OP_OR executes bitwise-AND instead of bitwise-OR (result = a & b), corrupting in-register composite channel/bank address assembly and bitmask compositions",
+    },
 ]
 
 
