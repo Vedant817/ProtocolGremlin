@@ -609,6 +609,14 @@ MUTANTS = [
         "replacement": "      OP_XORI: alu_op = ALU_OR;  // Mutated: XORI executes OR instead of XOR",
         "description": "CXL / OpenCAPI FLIT CRC-16 computation and header parity verification bug: OP_XORI decodes to ALU_OR instead of ALU_XOR, corrupting Galois-field polynomial reduction, LFSR bit mixing, and parity validation",
     },
+    {
+        "id": "MUT_74_HT_JNZ_INVERTED_BRANCH_CONDITION",
+        "category": "HyperTransport 3.1 / JNZ Inverted Branch Condition",
+        "file": "src/core.v",
+        "target": "              OP_JNZ: if (!z) pc <= operand[ADDR_WIDTH-1:0];",
+        "replacement": "              OP_JNZ: if (z) pc <= operand[ADDR_WIDTH-1:0];  // Mutated: JNZ branches on z=1 instead of z=0",
+        "description": "HyperTransport 3.1 flow control credit polling and command dispatching bug: OP_JNZ inverts branch condition by checking z instead of !z, causing loops and mismatch traps to branch on zero instead of non-zero",
+    },
 ]
 
 

@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T11:27:34Z",
+  "timestamp": "2026-09-18T11:48:19Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 136.02,
+  "campaign_time_sec": 162.73,
   "mutants": [
     {
-      "id": "MUT_73_CXL_ALU_XORI_DECODE",
-      "category": "Coherent Accelerator (CXL / OpenCAPI) / ALU XORI Decode",
+      "id": "MUT_74_HT_JNZ_INVERTED_BRANCH_CONDITION",
+      "category": "HyperTransport 3.1 / JNZ Inverted Branch Condition",
       "file": "src/core.v",
-      "description": "CXL / OpenCAPI FLIT CRC-16 computation and header parity verification bug: OP_XORI decodes to ALU_OR instead of ALU_XOR, corrupting Galois-field polynomial reduction, LFSR bit mixing, and parity validation",
+      "description": "HyperTransport 3.1 flow control credit polling and command dispatching bug: OP_JNZ inverts branch condition by checking z instead of !z, causing loops and mismatch traps to branch on zero instead of non-zero",
       "status": "KILLED",
-      "elapsed_sec": 135.95
+      "elapsed_sec": 162.67
     }
   ]
 }
