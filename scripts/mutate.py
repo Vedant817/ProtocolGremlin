@@ -705,6 +705,14 @@ MUTANTS = [
         "replacement": "      OP_XOR:  result = a & b;  // Mutated: OP_XOR executes AND instead of XOR",
         "description": "DDR5/LPDDR5 memory command validation and bank address parity bug: ALU OP_XOR executes bitwise-AND instead of bitwise-XOR (result = a & b), corrupting in-register command filtering equality checks and bank address parity verification",
     },
+    {
+        "id": "MUT_86_GDDR6_ALU_ADD_INVERT",
+        "category": "GDDR6 / GDDR6X Memory Controller / ALU ADD Invert",
+        "file": "src/alu.v",
+        "target": "      OP_ADD:  result = a + b;",
+        "replacement": "      OP_ADD:  result = a - b;  // Mutated: OP_ADD executes SUB instead of ADD",
+        "description": "GDDR6/GDDR6X memory transaction credit return and burst address increment bug: ALU OP_ADD executes subtraction instead of addition (result = a - b), corrupting credit pool increments upon completion/precharge and forward address offsets",
+    },
 ]
 
 

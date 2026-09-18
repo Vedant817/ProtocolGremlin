@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T21:00:55Z",
+  "timestamp": "2026-09-18T21:19:19Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 168.62,
+  "campaign_time_sec": 203.98,
   "mutants": [
     {
-      "id": "MUT_85_DDR5_ALU_XOR_INVERT",
-      "category": "DDR5 / LPDDR5 Memory Controller / ALU XOR Invert",
+      "id": "MUT_86_GDDR6_ALU_ADD_INVERT",
+      "category": "GDDR6 / GDDR6X Memory Controller / ALU ADD Invert",
       "file": "src/alu.v",
-      "description": "DDR5/LPDDR5 memory command validation and bank address parity bug: ALU OP_XOR executes bitwise-AND instead of bitwise-XOR (result = a & b), corrupting in-register command filtering equality checks and bank address parity verification",
+      "description": "GDDR6/GDDR6X memory transaction credit return and burst address increment bug: ALU OP_ADD executes subtraction instead of addition (result = a - b), corrupting credit pool increments upon completion/precharge and forward address offsets",
       "status": "KILLED",
-      "elapsed_sec": 168.55
+      "elapsed_sec": 203.87
     }
   ]
 }
