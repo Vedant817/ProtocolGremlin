@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T14:43:09Z",
+  "timestamp": "2026-09-18T15:02:21Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 111.29,
+  "campaign_time_sec": 117.13,
   "mutants": [
     {
-      "id": "MUT_75_UEC_SHIFTIN_LSB_BIT_INVERT",
-      "category": "Ultra Ethernet (UEC) & InfiniBand XDR / SHIFTIN LSB Bit Inversion",
+      "id": "MUT_76_UCIE_SHIFTOUT_LSB_BIT_INVERT",
+      "category": "Universal Chiplet Interconnect (UCIe) / SHIFTOUT LSB Bit Inversion",
       "file": "src/core.v",
-      "description": "Ultra Ethernet Consortium (UEC) & InfiniBand XDR/GDR packet ingress bug: OP_SHIFTIN inverts incoming LSB-first bitstream bit (!gpio_in[pin_idx]), corrupting sampled packet headers, opcodes, and sequence numbers",
+      "description": "UCIe Die-to-Die sideband packet serialization bug: OP_SHIFTOUT inverts serialized LSB-first bit (!rd_val[0]), corrupting sideband packets, training messages, and configuration register writes",
       "status": "KILLED",
-      "elapsed_sec": 111.22
+      "elapsed_sec": 117.08
     }
   ]
 }

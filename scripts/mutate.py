@@ -625,6 +625,14 @@ MUTANTS = [
         "replacement": "                  write_rd(rd_idx, {!gpio_in[pin_idx], rd_val[7:1]});  // Mutated: SHIFTIN LSB inverts sampled pin bit",
         "description": "Ultra Ethernet Consortium (UEC) & InfiniBand XDR/GDR packet ingress bug: OP_SHIFTIN inverts incoming LSB-first bitstream bit (!gpio_in[pin_idx]), corrupting sampled packet headers, opcodes, and sequence numbers",
     },
+    {
+        "id": "MUT_76_UCIE_SHIFTOUT_LSB_BIT_INVERT",
+        "category": "Universal Chiplet Interconnect (UCIe) / SHIFTOUT LSB Bit Inversion",
+        "file": "src/core.v",
+        "target": "                end else begin\n                  gpio_out[pin_idx] <= rd_val[0];",
+        "replacement": "                end else begin\n                  gpio_out[pin_idx] <= !rd_val[0];  // Mutated: SHIFTOUT LSB inverts driven bit",
+        "description": "UCIe Die-to-Die sideband packet serialization bug: OP_SHIFTOUT inverts serialized LSB-first bit (!rd_val[0]), corrupting sideband packets, training messages, and configuration register writes",
+    },
 ]
 
 
