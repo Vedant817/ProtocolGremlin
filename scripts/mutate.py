@@ -545,6 +545,14 @@ MUTANTS = [
         "replacement": "      OP_SUB:  result = a + b;  // Mutated: ALU subtract performs addition",
         "description": "SATA Revision 3.0 OOB quiet duration timing discrimination bug: ALU OP_SUB computes addition (a + b instead of a - b), causing in-register quiet threshold subtraction (SUBI R3, threshold) to produce positive sums for both short and long intervals, corrupting COMWAKE vs COMRESET classification",
     },
+    {
+        "id": "MUT_66_DPHY_WAITEDGE_RISE_INV",
+        "category": "MIPI D-PHY v2.5 / WAITEDGE Rising Edge Synchronization",
+        "file": "src/core.v",
+        "target": "                      (edge_mode == 2'b01) ? edge_rise :",
+        "replacement": "                      (edge_mode == 2'b01) ? edge_fall :  // Mutated: rising edge mode evaluates edge_fall",
+        "description": "MIPI D-PHY v2.5 SoT sync edge synchronization bug: WAITEDGE rising-edge mode (2'b01) evaluates falling edge condition (edge_fall instead of edge_rise), causing slave receiver SoT sync detection on Dp to hang or trigger on illegal polarity",
+    },
 ]
 
 

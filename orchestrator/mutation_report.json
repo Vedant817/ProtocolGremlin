@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T04:27:33Z",
+  "timestamp": "2026-09-18T08:47:13Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 107.71,
+  "campaign_time_sec": 127.45,
   "mutants": [
     {
-      "id": "MUT_65_SATA_ALU_SUB_INVERT",
-      "category": "Serial ATA Gen 3 / ALU Subtraction & OOB Discrimination",
-      "file": "src/alu.v",
-      "description": "SATA Revision 3.0 OOB quiet duration timing discrimination bug: ALU OP_SUB computes addition (a + b instead of a - b), causing in-register quiet threshold subtraction (SUBI R3, threshold) to produce positive sums for both short and long intervals, corrupting COMWAKE vs COMRESET classification",
+      "id": "MUT_66_DPHY_WAITEDGE_RISE_INV",
+      "category": "MIPI D-PHY v2.5 / WAITEDGE Rising Edge Synchronization",
+      "file": "src/core.v",
+      "description": "MIPI D-PHY v2.5 SoT sync edge synchronization bug: WAITEDGE rising-edge mode (2'b01) evaluates falling edge condition (edge_fall instead of edge_rise), causing slave receiver SoT sync detection on Dp to hang or trigger on illegal polarity",
       "status": "KILLED",
-      "elapsed_sec": 107.65
+      "elapsed_sec": 127.39
     }
   ]
 }
