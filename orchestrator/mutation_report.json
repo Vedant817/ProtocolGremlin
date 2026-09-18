@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T15:02:21Z",
+  "timestamp": "2026-09-18T15:21:16Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 117.13,
+  "campaign_time_sec": 122.15,
   "mutants": [
     {
-      "id": "MUT_76_UCIE_SHIFTOUT_LSB_BIT_INVERT",
-      "category": "Universal Chiplet Interconnect (UCIe) / SHIFTOUT LSB Bit Inversion",
+      "id": "MUT_77_BOW_SHIFTOUT_MSB_BIT_INVERT",
+      "category": "Bunch of Wires (BoW / OpenHBI) / SHIFTOUT MSB Bit Inversion",
       "file": "src/core.v",
-      "description": "UCIe Die-to-Die sideband packet serialization bug: OP_SHIFTOUT inverts serialized LSB-first bit (!rd_val[0]), corrupting sideband packets, training messages, and configuration register writes",
+      "description": "BoW / OpenHBI Die-to-Die packet serialization bug: OP_SHIFTOUT inverts serialized MSB-first bit (!rd_val[7]), corrupting training patterns, calibration requests, and slice configuration data",
       "status": "KILLED",
-      "elapsed_sec": 117.08
+      "elapsed_sec": 122.1
     }
   ]
 }

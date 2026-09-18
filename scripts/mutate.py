@@ -633,6 +633,14 @@ MUTANTS = [
         "replacement": "                end else begin\n                  gpio_out[pin_idx] <= !rd_val[0];  // Mutated: SHIFTOUT LSB inverts driven bit",
         "description": "UCIe Die-to-Die sideband packet serialization bug: OP_SHIFTOUT inverts serialized LSB-first bit (!rd_val[0]), corrupting sideband packets, training messages, and configuration register writes",
     },
+    {
+        "id": "MUT_77_BOW_SHIFTOUT_MSB_BIT_INVERT",
+        "category": "Bunch of Wires (BoW / OpenHBI) / SHIFTOUT MSB Bit Inversion",
+        "file": "src/core.v",
+        "target": "                if (operand[3]) begin\n                  gpio_out[pin_idx] <= rd_val[7];",
+        "replacement": "                if (operand[3]) begin\n                  gpio_out[pin_idx] <= !rd_val[7];  // Mutated: SHIFTOUT MSB inverts driven bit",
+        "description": "BoW / OpenHBI Die-to-Die packet serialization bug: OP_SHIFTOUT inverts serialized MSB-first bit (!rd_val[7]), corrupting training patterns, calibration requests, and slice configuration data",
+    },
 ]
 
 
