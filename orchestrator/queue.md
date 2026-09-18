@@ -189,12 +189,15 @@ bounded problem").
   done: `docs/bow_study.md` (OCP ODSA BoW specification, BoW-Base vs BoW-Fast, OpenHBI bus interface, slice sparing and lane repair, 16-bit CRC-16, and IHP 130nm SG13G2 PPA scaling), `tools/bow_model.py` (`BowOpCode`, `compute_bow_crc16`, `encode_bow_packet`, `decode_bow_packet`, `BowReceiverModel`, `BowPpaModel`, and firmware generators) + `test/test_bow.py` (6/6 cocotb tests pass: master packet header transmission via SHIFTOUT MSB-first on pin 3; slave sync ingress via WAITEDGE into R0/R1; in-register opcode filtering and fault trapping; in-register slice spare wire allocation tracking and underflow trapping; packet framing & link lock acquisition; and BoW standards compliance & PPA scaling validation), `MUT_77` killed.
 - ~~NVLink (NVIDIA High-Speed GPU Interconnect) Physical & Data Link Layer Engine~~ -
   done: `docs/nvlink_study.md` (NVLink 1.0 to 5.0 specifications, sub-link architecture, remote memory transactions, buffer credit flow control, 16-bit CCITT CRC, and IHP 130nm SG13G2 PPA scaling), `tools/nvlink_model.py` (`NvLinkOpCode`, `compute_nvlink_crc16`, `encode_nvlink_packet`, `decode_nvlink_packet`, `NvLinkReceiverModel`, `NvLinkPpaModel`, and firmware generators) + `test/test_nvlink.py` (6/6 cocotb tests pass: master packet header transmission via SHIFTOUT MSB-first on pin 3; slave sync ingress via WAITEDGE into R0/R1; in-register opcode filtering and fault trapping; in-register credit tracking and underflow trapping; packet framing & link lock acquisition; and NVLink standards compliance & PPA scaling validation), `MUT_78` killed.
-- AXI4-Stream & TileLink On-Chip Streaming Fabric & Interconnect Engine
+- ~~AXI4-Stream & TileLink On-Chip Streaming Fabric & Interconnect Engine~~ -
+  done: `docs/axi_stream_study.md` (ARM AMBA 4 AXI4-Stream & SiFive TileLink v1.8.1 specifications, TVALID/TREADY handshakes, Channel A-E architecture, credit flow control, 16-bit CCITT CRC, and IHP 130nm SG13G2 PPA scaling), `tools/axi_stream_model.py` (`TileLinkOpCode`, `compute_axi_stream_crc16`, `encode_axi_stream_packet`, `decode_axi_stream_packet`, `AxiStreamReceiverModel`, `AxiStreamPpaModel`, and firmware generators) + `test/test_axi_stream.py` (6/6 cocotb tests pass: master packet header transmission via SHIFTOUT MSB-first on pin 3; slave sync ingress via WAITEDGE into R0/R1; in-register opcode filtering and fault trapping; in-register credit tracking and underflow trapping; packet framing & link lock acquisition; and AXI4-Stream standards compliance & PPA scaling validation), `MUT_79` killed.
+- AXI4/AXI5 Memory-Mapped (AXI4-MM) On-Chip Interconnect & Burst Controller Engine
 
 ---
 
-### Task Queue Status: Continuous Engineering Loop Active (Iteration 75 Complete, Iteration 76 Queued)
+### Task Queue Status: Continuous Engineering Loop Active (Iteration 76 Complete, Iteration 77 Queued)
 *Per `AGENTS.md`: Continuous engineering project. When the explicit task queue becomes empty, enter **RESEARCH_AND_PROOF** mode: find verification gaps, attempt to falsify assumptions, improve formal proofs, improve PPA, test alternative architectures and investigate novel protocol capabilities.*
+
 
 
 
