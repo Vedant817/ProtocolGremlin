@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T22:20:12Z",
+  "timestamp": "2026-09-18T22:34:37Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 148.09,
+  "campaign_time_sec": 143.63,
   "mutants": [
     {
-      "id": "MUT_90_UFS_ALU_SUB_INVERT",
-      "category": "UFS 3.1 / 4.0 Storage Controller / ALU SUB Invert",
+      "id": "MUT_91_HMC_ALU_XOR_INVERT",
+      "category": "HMC 2.1 3D-Stacked DRAM Controller / ALU XOR Invert",
       "file": "src/alu.v",
-      "description": "UFS/UniPro memory buffer credit depletion bug: ALU OP_SUB executes arithmetic ADD instead of SUB (result = a + b), corrupting in-register transaction credit accounting and underflow bounds checking",
+      "description": "HMC packet routing and command opcode validation bug: ALU OP_XOR executes bitwise-OR instead of bitwise-XOR (result = a | b), corrupting in-register command matching and vault routing status evaluation",
       "status": "KILLED",
-      "elapsed_sec": 148.04
+      "elapsed_sec": 143.57
     }
   ]
 }

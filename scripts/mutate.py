@@ -745,6 +745,14 @@ MUTANTS = [
         "replacement": "      OP_SUB:  result = a + b;  // Mutated: OP_SUB executes ADD instead of SUB",
         "description": "UFS/UniPro memory buffer credit depletion bug: ALU OP_SUB executes arithmetic ADD instead of SUB (result = a + b), corrupting in-register transaction credit accounting and underflow bounds checking",
     },
+    {
+        "id": "MUT_91_HMC_ALU_XOR_INVERT",
+        "category": "HMC 2.1 3D-Stacked DRAM Controller / ALU XOR Invert",
+        "file": "src/alu.v",
+        "target": "      OP_XOR:  result = a ^ b;",
+        "replacement": "      OP_XOR:  result = a | b;  // Mutated: OP_XOR executes OR instead of XOR",
+        "description": "HMC packet routing and command opcode validation bug: ALU OP_XOR executes bitwise-OR instead of bitwise-XOR (result = a | b), corrupting in-register command matching and vault routing status evaluation",
+    },
 ]
 
 
