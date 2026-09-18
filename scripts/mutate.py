@@ -593,6 +593,14 @@ MUTANTS = [
         "replacement": "      OP_SUBI: alu_op = ALU_ADD;  // Mutated: SUBI executes ADD instead of SUB",
         "description": "InfiniBand HDR/NDR packet length validation and link credit accounting bug: OP_SUBI decodes to ALU_ADD instead of ALU_SUB, causing payload length checking and credit decrementing to add instead of subtract",
     },
+    {
+        "id": "MUT_72_FC_DECJNZ_DECREMENT_VALUE",
+        "category": "Fibre Channel 32G/64G / DECJNZ Decrement Value",
+        "file": "src/core.v",
+        "target": "    if (opcode == OP_DECJNZ) alu_b = 8'hFF;  // -1 mod 256",
+        "replacement": "    if (opcode == OP_DECJNZ) alu_b = 8'hFE;  // Mutated: DECJNZ decrements by 2 (-2 mod 256)",
+        "description": "Fibre Channel BB_Credit loop and timeout accounting bug: DECJNZ decrements counter by 2 (alu_b = 8'hFE instead of 8'hFF), corrupting loop iterations, premature timeout exits, and buffer credit accounting",
+    },
 ]
 
 

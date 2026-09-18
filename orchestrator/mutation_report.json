@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T10:55:05Z",
+  "timestamp": "2026-09-18T11:09:21Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 109.72,
+  "campaign_time_sec": 126.41,
   "mutants": [
     {
-      "id": "MUT_71_INFINIBAND_ALU_SUBI_DECODE",
-      "category": "InfiniBand HDR/NDR / ALU SUBI Decode",
+      "id": "MUT_72_FC_DECJNZ_DECREMENT_VALUE",
+      "category": "Fibre Channel 32G/64G / DECJNZ Decrement Value",
       "file": "src/core.v",
-      "description": "InfiniBand HDR/NDR packet length validation and link credit accounting bug: OP_SUBI decodes to ALU_ADD instead of ALU_SUB, causing payload length checking and credit decrementing to add instead of subtract",
+      "description": "Fibre Channel BB_Credit loop and timeout accounting bug: DECJNZ decrements counter by 2 (alu_b = 8'hFE instead of 8'hFF), corrupting loop iterations, premature timeout exits, and buffer credit accounting",
       "status": "KILLED",
-      "elapsed_sec": 109.68
+      "elapsed_sec": 126.35
     }
   ]
 }
