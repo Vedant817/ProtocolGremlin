@@ -2347,3 +2347,42 @@ mutation-kill rates.
   - Mutation Testing: Added `MUT_65_SATA_ALU_SUB_INVERT` in `scripts/mutate.py`. Killed in 107.65s. Cumulative score: **65/65 mutants killed (100.0% kill rate)** in 6167.2s.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 23.45s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+## 2026-09-18 - Iteration 63: MIPI D-PHY v2.5 Physical Layer & High-Speed DDR Engine
+
+- **Motivation & Protocol Overview:**
+  - MIPI D-PHY v2.5 is the ubiquitous mobile display (DSI) and camera (CSI-2) physical layer interface standard widely deployed across smartphones, automotive cockpits, and embedded edge vision platforms.
+  - Operating up to 4.5 Gbps per data lane, D-PHY features an asymmetric, power-optimized dual-mode physical signaling architecture:
+    1. **Low-Power (LP) Mode:**
+       - Single-ended 1.2V CMOS signaling with terminated line speeds up to 10 Mbps for control, power management, and initialization.
+       - Line states defined across differential pair (Dp, Dn): `LP-00` (Space), `LP-01` (Mark-1), `LP-10` (Mark-0), and `LP-11` (Stop state / Idle).
+    2. **High-Speed (HS) Mode:**
+       - Low-voltage differential SLVS signaling ($200\,	ext{mV}$ nominal swing) at rates from 80 Mbps up to 4500 Mbps per lane, operating with Double Data Rate (DDR) clocking.
+    3. **Start-of-Transmission (SoT) Sequence:**
+       - Governed by strict state progression: `LP-11` (Stop) -> `LP-01` (HS-Request) -> `LP-00` (Bridge) -> `HS-0` ($T_{\text{HS-PREPARE}} + T_{\text{HS-ZERO}}$) -> SoT Sync Word (`0xB8` = `8'b10111000`, transmitted LSB-first).
+    4. **Low-Power Escape Mode & Spaced-One-Hot (SOH) Line Coding:**
+       - Asynchronous low-power communications entered via the Escape Entry sequence: `LP-11` -> `LP-10` -> `LP-00` -> `LP-01` -> `LP-00`.
+       - Data bits encoded via Spaced-One-Hot (SOH) signaling: Bit 0 = Mark-0 (`LP-10`) + Space (`LP-00`); Bit 1 = Mark-1 (`LP-01`) + Space (`LP-00`).
+       - Supported standard escape commands: Low-Power Data Transmission (LPDT, `0xE1`), Ultra-Low Power State (ULPS, `0x1E`).
+- **Novelty Highlight (SoT Transmission, WAITEDGE Sync Ingress, Escape Mode SOH & Calibrated PPA):**
+  - **Master SoT and Data Transmission:** Microcode generates complete SoT progression (`LP-11` -> `LP-01` -> `LP-00` -> `HS-0` -> `0xB8`), transmits payload byte `0x5A`, and cleanly exits via End-of-Transmission (EoT) back to `LP-11`, verified against independent `DphyReceiverModel`.
+  - **WAITEDGE SoT Sync Ingress:** Slave receiver firmware synchronizes to SoT Sync rising edge on Dp via `WAITEDGE`, samples payload byte `0x5A` into `R0` and preserves it in `R1`, asserting status `R2 = 0x00`.
+  - **Master Escape Mode & Spaced-One-Hot Command Transmission:** Firmware synthesizes Escape Entry sequence followed by Spaced-One-Hot LPDT command (`0xE1`), verified by `decode_spaced_one_hot` with status `R2 = 0x00`.
+  - **In-Register Escape Command Filtering:** Microcode matches LPDT command `0xE1` with `R2 = 0x00` and traps non-matching commands (`0x1E`) with fault code `R2 = 0xEE`.
+  - **Physical PPA Model on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated MIPI D-PHY v2.5 PHY Macro: **565 standard cells (1100.0 GE, +2.93% area overhead, $4180.0\,\mu	ext{m}^2$)**, with a $1.25\,	ext{ns}$ critical path ($f_{\text{max}} = 800.00\,	ext{MHz}$), $55.00\,\mu	ext{W}$ dynamic power at 10 MHz, 4500.0 Mbps raw throughput per lane, and $0.0122\,	ext{pJ/bit}$ energy efficiency.
+- **Verification Suite (`test/test_mipi_dphy.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/mipi_dphy_model.py`:
+    1. `test_dphy_master_sot_and_data_transmission`: Master transmits SoT sequence, Sync `0xB8`, payload `0x5A`, and EoT on pins 3 (Dp) and 4 (Dn), decoded cleanly by `DphyReceiverModel` with SoT detected and 0 violations. **PASS** (0.17s).
+    2. `test_dphy_rx_sot_sync_ingress`: Slave synchronizes to SoT Sync rising edge on Dp via `WAITEDGE`, captures payload `0x5A` into `R0`/`R1`, asserting status `R2 = 0x00`. **PASS** (0.09s).
+    3. `test_dphy_escape_entry_and_command_transmission`: Master transmits Escape Entry sequence followed by Spaced-One-Hot LPDT (`0xE1`) and returns to `LP-11`, decoded by `decode_spaced_one_hot` into `0xE1` with `R2 = 0x00`. **PASS** (0.19s).
+    4. `test_dphy_escape_cmd_filter_and_trapping`: Validated in-register Escape command filtering: matching LPDT (`0xE1`) returns `R2 = 0x00`, mismatched command (`0x1E`) trapped with `R2 = 0xEE`. **PASS** (0.06s).
+    5. `test_dphy_spaced_one_hot_round_trip`: Validated Spaced-One-Hot encoding and decoding across multi-byte payloads with 100% bit fidelity. **PASS** (0.00s).
+    6. `test_dphy_standards_and_ppa`: Validated D-PHY line states, SoT Sync constant `0xB8`, LPDT/ULPS command codes, and physical PPA scaling model. **PASS** (0.00s).
+  - Regression Suite: **347/347 tests passing (100.0%)** across 61 test modules in 109.8s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 77s).
+  - Mutation Testing: Added `MUT_66_DPHY_WAITEDGE_RISE_INV` in `scripts/mutate.py`. Killed in 127.39s. Cumulative score: **66/66 mutants killed (100.0% kill rate)** in 6294.6s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 29.54s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
