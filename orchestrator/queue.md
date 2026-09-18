@@ -185,11 +185,13 @@ bounded problem").
   done: `docs/uec_transport_study.md` (UEC 1.0 specification, InfiniBand XDR 800G / GDR 1.6T physical signaling, packet multipath spraying, selective packet retransmission, congestion control, 32-bit CRC, and IHP 130nm SG13G2 PPA scaling), `tools/uec_transport_model.py` (`UecOpCode`, `compute_uec_crc32`, `encode_uec_packet`, `decode_uec_packet`, `UecReceiverModel`, `UecPpaModel`, and firmware generators) + `test/test_uec_transport.py` (6/6 cocotb tests pass: master packet header transmission on pin 3; slave sync ingress via WAITEDGE into R0/R1; in-register opcode filtering and fault trapping; in-register CWND credit accounting and underflow trapping; packet framing & link lock acquisition; and UEC standards compliance & PPA scaling validation), `MUT_75` killed.
 - ~~Universal Chiplet Interconnect Express (UCIe 1.0/2.0) Die-to-Die Physical & Sideband Engine~~ -
   done: `docs/ucie_study.md` (UCIe 1.0/2.0 specification, standard and advanced packaging, sideband link training, lane repair sparing, 16-bit CRC, and IHP 130nm SG13G2 PPA scaling), `tools/ucie_model.py` (`UcieSidebandOpCode`, `compute_ucie_crc16`, `encode_ucie_sideband_packet`, `decode_ucie_sideband_packet`, `UcieReceiverModel`, `UciePpaModel`, and firmware generators) + `test/test_ucie.py` (6/6 cocotb tests pass: master sideband packet header transmission via SHIFTOUT on pin 3; slave sync ingress via WAITEDGE into R0/R1; in-register opcode filtering and fault trapping; in-register spare lane allocation tracking and underflow trapping; packet framing & link lock acquisition; and UCIe standards compliance & PPA scaling validation), `MUT_76` killed.
-- Bunch of Wires (BoW - OCP ODSA) & OpenHBI Die-to-Die Physical Layer Engine
+- ~~Bunch of Wires (BoW - OCP ODSA) & OpenHBI Die-to-Die Physical Layer Engine~~ -
+  done: `docs/bow_study.md` (OCP ODSA BoW specification, BoW-Base vs BoW-Fast, OpenHBI bus interface, slice sparing and lane repair, 16-bit CRC-16, and IHP 130nm SG13G2 PPA scaling), `tools/bow_model.py` (`BowOpCode`, `compute_bow_crc16`, `encode_bow_packet`, `decode_bow_packet`, `BowReceiverModel`, `BowPpaModel`, and firmware generators) + `test/test_bow.py` (6/6 cocotb tests pass: master packet header transmission via SHIFTOUT MSB-first on pin 3; slave sync ingress via WAITEDGE into R0/R1; in-register opcode filtering and fault trapping; in-register slice spare wire allocation tracking and underflow trapping; packet framing & link lock acquisition; and BoW standards compliance & PPA scaling validation), `MUT_77` killed.
+- NVLink (NVIDIA High-Speed GPU Interconnect) Physical & Data Link Layer Engine
 
 ---
 
-### Task Queue Status: Continuous Engineering Loop Active (Iteration 73 Complete, Iteration 74 Queued)
+### Task Queue Status: Continuous Engineering Loop Active (Iteration 74 Complete, Iteration 75 Queued)
 *Per `AGENTS.md`: Continuous engineering project. When the explicit task queue becomes empty, enter **RESEARCH_AND_PROOF** mode: find verification gaps, attempt to falsify assumptions, improve formal proofs, improve PPA, test alternative architectures and investigate novel protocol capabilities.*
 
 

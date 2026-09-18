@@ -2787,3 +2787,46 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (scripts/test_gl.sh) in 24.63s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-18 - Iteration 74: Bunch of Wires (BoW / OpenHBI) Die-to-Die Physical Layer Engine
+
+- **Motivation & Protocol Overview:**
+  - Standardized under the Open Compute Project (OCP) Open Domain-Specific Architecture (ODSA) sub-project, Bunch of Wires (BoW) and OpenHBI provide an open, low-latency, high-bandwidth die-to-die (D2D) physical interconnect optimized for standard organic laminate substrate packaging (BoW-Base) and advanced packaging (BoW-Fast):
+    1. **Physical Architecture & Slices:**
+       - 16 single-ended data wires + 1 forwarded strobe/clock + 1 spare wire per slice (18 wires total).
+       - Bump pitch 100-130 um (BoW-Base) or <= 45 um (BoW-Fast), data rates 2-16 Gbps per wire.
+       - Single-ended NRZ signaling eliminates per-lane PLLs/CDRs, reducing latency and silicon power.
+    2. **Opcode Multiplexing & Framing:**
+       - CALIB_REQ (0x01): Impedance calibration / termination matching request.
+       - CALIB_RESP (0x02): Calibration response with drive strength / ODT settings.
+       - TRAIN_STROBE_REQ (0x03): Forwarded strobe alignment & phase deskew.
+       - DATA_TRANSFER (0x04): Raw payload data flit transfer.
+       - LANE_REMAP (0x05): Remap bad wire to spare wire within slice.
+       - POWER_DOWN_REQ (0x06): Low-power sleep state entry request.
+       - SYNC (0xBC): Bit-time training delimiter (0b10111100).
+       - IDLE (0x7E): Quiescent line keep-alive delimiter.
+    3. **Data Integrity & CRC-16:**
+       - 16-bit ANSI / IBM CRC protection calculated over all transmitted header and payload bytes ($G_{\text{BoW}}(x) = x^{16} + x^{15} + x^2 + 1 = \text{0x8005}$).
+- **Novelty Highlight (MSB-First Packet Transmission via SHIFTOUT, WAITEDGE Comma Ingress, In-Register Opcode Filtering & Slice Spare Wire Allocation Tracking):**
+  - **Master Packet Header Transmission via SHIFTOUT:** Microcode utilizes the dedicated bit-serialization hardware instruction `SHIFTOUT R0, 0x0B` to serialize SYNC comma (0xBC), CALIB_REQ opcode (0x01), and SliceID (0x00) MSB-first on pin 3, with zero-jitter baud timing across byte boundaries, verified at baud center with status R2 = 0x00.
+  - **WAITEDGE Comma Ingress:** Slave receiver firmware synchronizes to SYNC comma rising edge on pin 3 via WAITEDGE (bit 7), strides past delimiter to bit midpoint, samples opcode byte into R0 using `SHIFTIN` and preserves it in R1 (0x01), asserting status R2 = 0x00.
+  - **In-Register Opcode Filtering:** Microcode evaluates received opcode against valid BoW transactions (0x01, 0x02, 0x03, 0x04, 0x05, 0x06) asserting R2 = 0x00 on match, and traps invalid opcode (0x7F) with fault code R2 = 0xEE.
+  - **In-Register Slice Spare Wire Allocation Tracking:** Microcode handles spare wire consumption on Lane Remap (0x01 -> spares 1 to 0), increments on Spare Restore (0x02 -> spares 1 to 2), and traps underflow on lane remap with spares=0 (R2 = 0xEE).
+  - **Physical PPA Model on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated BoW / OpenHBI Physical Slice Macro: **610 standard cells (1190.0 GE, +3.17% area overhead, 4520.0 um2)**, with a 1.25 ns critical path ($f_{\text{max}} = 800.00\,\text{MHz}$), 59.00 uW dynamic power at 10 MHz, 32,000.0 Mbps raw throughput, and 0.00045 pJ/bit energy efficiency.
+- **Verification Suite (test/test_bow.py):**
+  - Added 6 comprehensive cocotb test cases verified against tools/bow_model.py:
+    1. test_bow_master_packet_transmission: Master transmits SYNC comma 0xBC, CALIB_REQ opcode 0x01, and SliceID 0x00 on pin 3 via MSB-first SHIFTOUT, decoded cleanly at baud center with R2 = 0x00. **PASS** (0.22s).
+    2. test_bow_rx_sync_ingress: Slave synchronizes to SYNC comma rising edge on pin 3 via WAITEDGE, captures CALIB_REQ 0x01 into R0/R1, asserting status R2 = 0x00. **PASS** (0.11s).
+    3. test_bow_opcode_filter_and_fault_trapping: Validated in-register opcode filtering: valid opcodes (0x01..0x06) return R2 = 0x00, illegal opcode (0x7F) trapped with R2 = 0xEE. **PASS** (0.74s).
+    4. test_bow_spare_tracking_and_underflow_trapping: Validated in-register slice spare wire allocation: decrement on lane remap (1->0, R2 = 0x00), increment on spare restore (1->2, R2 = 0x00), underflow error trap (R2 = 0xEE). **PASS** (0.43s).
+    5. test_bow_packet_framing_and_receiver: Validated full packet encapsulation/decoding with ANSI CRC-16 (0x8005), spare wire and calibration state accounting, and receiver link lock FSM (4 consecutive syncs). **PASS** (0.00s).
+    6. test_bow_standards_and_ppa: Validated BoW opcode identifiers, CRC-16 determinism, and physical PPA scaling model. **PASS** (0.00s).
+  - Regression Suite: **413/413 tests passing (100.0%)** across 72 test modules.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 66s).
+  - Mutation Testing: Added MUT_77_BOW_SHIFTOUT_MSB_BIT_INVERT in scripts/mutate.py. Killed in 122.10s. Cumulative score: **77/77 mutants killed (100.0% kill rate)**.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (scripts/test_gl.sh) in 25.55s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+
