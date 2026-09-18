@@ -737,6 +737,14 @@ MUTANTS = [
         "replacement": "      OP_XOR:  result = a & b;  // Mutated: OP_XOR executes AND instead of XOR",
         "description": "eMMC/SD memory command opcode discrimination and CRC calculation bug: ALU OP_XOR executes bitwise-AND instead of bitwise-XOR (result = a & b), corrupting in-register command matching, status comparison, and parity evaluation",
     },
+    {
+        "id": "MUT_90_UFS_ALU_SUB_INVERT",
+        "category": "UFS 3.1 / 4.0 Storage Controller / ALU SUB Invert",
+        "file": "src/alu.v",
+        "target": "      OP_SUB:  result = a - b;",
+        "replacement": "      OP_SUB:  result = a + b;  // Mutated: OP_SUB executes ADD instead of SUB",
+        "description": "UFS/UniPro memory buffer credit depletion bug: ALU OP_SUB executes arithmetic ADD instead of SUB (result = a + b), corrupting in-register transaction credit accounting and underflow bounds checking",
+    },
 ]
 
 
