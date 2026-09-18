@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T11:09:21Z",
+  "timestamp": "2026-09-18T11:27:34Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 126.41,
+  "campaign_time_sec": 136.02,
   "mutants": [
     {
-      "id": "MUT_72_FC_DECJNZ_DECREMENT_VALUE",
-      "category": "Fibre Channel 32G/64G / DECJNZ Decrement Value",
+      "id": "MUT_73_CXL_ALU_XORI_DECODE",
+      "category": "Coherent Accelerator (CXL / OpenCAPI) / ALU XORI Decode",
       "file": "src/core.v",
-      "description": "Fibre Channel BB_Credit loop and timeout accounting bug: DECJNZ decrements counter by 2 (alu_b = 8'hFE instead of 8'hFF), corrupting loop iterations, premature timeout exits, and buffer credit accounting",
+      "description": "CXL / OpenCAPI FLIT CRC-16 computation and header parity verification bug: OP_XORI decodes to ALU_OR instead of ALU_XOR, corrupting Galois-field polynomial reduction, LFSR bit mixing, and parity validation",
       "status": "KILLED",
-      "elapsed_sec": 126.35
+      "elapsed_sec": 135.95
     }
   ]
 }

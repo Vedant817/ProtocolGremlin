@@ -601,6 +601,14 @@ MUTANTS = [
         "replacement": "    if (opcode == OP_DECJNZ) alu_b = 8'hFE;  // Mutated: DECJNZ decrements by 2 (-2 mod 256)",
         "description": "Fibre Channel BB_Credit loop and timeout accounting bug: DECJNZ decrements counter by 2 (alu_b = 8'hFE instead of 8'hFF), corrupting loop iterations, premature timeout exits, and buffer credit accounting",
     },
+    {
+        "id": "MUT_73_CXL_ALU_XORI_DECODE",
+        "category": "Coherent Accelerator (CXL / OpenCAPI) / ALU XORI Decode",
+        "file": "src/core.v",
+        "target": "      OP_XORI: alu_op = ALU_XOR;",
+        "replacement": "      OP_XORI: alu_op = ALU_OR;  // Mutated: XORI executes OR instead of XOR",
+        "description": "CXL / OpenCAPI FLIT CRC-16 computation and header parity verification bug: OP_XORI decodes to ALU_OR instead of ALU_XOR, corrupting Galois-field polynomial reduction, LFSR bit mixing, and parity validation",
+    },
 ]
 
 
