@@ -721,6 +721,14 @@ MUTANTS = [
         "replacement": "      OP_OR:   result = a & b;  // Mutated: OP_OR executes AND instead of OR",
         "description": "LPDDR4/LPDDR4X channel and bank address field composition bug: ALU OP_OR executes bitwise-AND instead of bitwise-OR (result = a & b), corrupting in-register composite channel/bank address assembly and bitmask compositions",
     },
+    {
+        "id": "MUT_88_DDR4_ALU_AND_INVERT",
+        "category": "DDR4 / DDR3 Memory Controller / ALU AND Invert",
+        "file": "src/alu.v",
+        "target": "      OP_AND:  result = a & b;",
+        "replacement": "      OP_AND:  result = a | b;  // Mutated: OP_AND executes OR instead of AND",
+        "description": "DDR4/DDR3 memory command mask and bank group address extraction bug: ALU OP_AND executes bitwise-OR instead of bitwise-AND (result = a | b), corrupting in-register bank group masking and address alignment checks",
+    },
 ]
 
 

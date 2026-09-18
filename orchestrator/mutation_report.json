@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T21:37:04Z",
+  "timestamp": "2026-09-18T21:51:30Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 185.57,
+  "campaign_time_sec": 137.77,
   "mutants": [
     {
-      "id": "MUT_87_LPDDR4_ALU_OR_INVERT",
-      "category": "LPDDR4 / LPDDR4X Memory Controller / ALU OR Invert",
+      "id": "MUT_88_DDR4_ALU_AND_INVERT",
+      "category": "DDR4 / DDR3 Memory Controller / ALU AND Invert",
       "file": "src/alu.v",
-      "description": "LPDDR4/LPDDR4X channel and bank address field composition bug: ALU OP_OR executes bitwise-AND instead of bitwise-OR (result = a & b), corrupting in-register composite channel/bank address assembly and bitmask compositions",
+      "description": "DDR4/DDR3 memory command mask and bank group address extraction bug: ALU OP_AND executes bitwise-OR instead of bitwise-AND (result = a | b), corrupting in-register bank group masking and address alignment checks",
       "status": "KILLED",
-      "elapsed_sec": 185.5
+      "elapsed_sec": 137.72
     }
   ]
 }
