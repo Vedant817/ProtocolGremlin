@@ -521,6 +521,14 @@ MUTANTS = [
         "replacement": "              OP_GWRI:  gpio_out <= ~operand;  // Mutated: GWRI inverts output bits",
         "description": "USB 3.0 SuperSpeed transmit & LFPS burst bug: OP_GWRI inverts the driven GPIO bus operand (~operand instead of operand), corrupting differential SSTX+/SSTX- levels, destroying 8b/10b symbol transmissions, and breaking LFPS square-wave signaling",
     },
+    {
+        "id": "MUT_63_PCIE_ALU_XOR_INVERT",
+        "category": "PCIe Base Gen 1 / ALU XOR Stream Descrambler",
+        "file": "src/alu.v",
+        "target": "      OP_XOR:  result = a ^ b;",
+        "replacement": "      OP_XOR:  result = ~(a ^ b);  // Mutated: ALU XOR produces XNOR inversion",
+        "description": "PCIe Gen 1 LFSR descrambler & FTS validator bug: ALU OP_XOR computes bitwise XNOR (~(a ^ b) instead of a ^ b), corrupting LFSR stream descrambling and causing FTS ordered set symbol validation to fail",
+    },
 ]
 
 

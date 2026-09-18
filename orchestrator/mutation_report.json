@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-17T22:12:59Z",
+  "timestamp": "2026-09-18T03:52:27Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 91.85,
+  "campaign_time_sec": 101.24,
   "mutants": [
     {
-      "id": "MUT_62_USB_SS_GWRI_DATA_INVERT",
-      "category": "USB 3.0 SuperSpeed / GPIO Drive Subsystem",
-      "file": "src/core.v",
-      "description": "USB 3.0 SuperSpeed transmit & LFPS burst bug: OP_GWRI inverts the driven GPIO bus operand (~operand instead of operand), corrupting differential SSTX+/SSTX- levels, destroying 8b/10b symbol transmissions, and breaking LFPS square-wave signaling",
+      "id": "MUT_63_PCIE_ALU_XOR_INVERT",
+      "category": "PCIe Base Gen 1 / ALU XOR Stream Descrambler",
+      "file": "src/alu.v",
+      "description": "PCIe Gen 1 LFSR descrambler & FTS validator bug: ALU OP_XOR computes bitwise XNOR (~(a ^ b) instead of a ^ b), corrupting LFSR stream descrambling and causing FTS ordered set symbol validation to fail",
       "status": "KILLED",
-      "elapsed_sec": 91.81
+      "elapsed_sec": 101.18
     }
   ]
 }
