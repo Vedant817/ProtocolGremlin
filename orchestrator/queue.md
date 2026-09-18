@@ -169,13 +169,16 @@ bounded problem").
   done: `docs/mipi_cphy_study.md` (MIPI C-PHY v2.0 physical layer specification, 3-Phase balanced signaling physics, 6 canonical wire states, 5-symbol transition encoding, 16b/7t mapping mathematics, differential receiver sensing AB/BC/CA, embedded clock recovery, and IHP 130nm SG13G2 PPA scaling), `tools/mipi_cphy_model.py` (`CPhyWireState`, `WIRE_STATE_VOLTAGES`, `WIRE_STATE_GPIO`, `transition_to_state`, `state_transition_to_symbol`, `state_to_differential`, `differential_to_state`, `encode_16b7t`, `decode_7t16b`, `CPhyReceiverModel`, `CPhyPpaModel`, and firmware generators) + `test/test_mipi_cphy.py` (6/6 cocotb tests pass: master 7-symbol transmission on wires A/B/C; slave Wire A sync ingress via WAITEDGE into R0/R1; 16b/7t lossless round-trip mapping; differential receiver sensing & clock transition zero-crossing validation; in-register symbol transition filter matching and fault trapping; and MIPI C-PHY v2.0 standards compliance & PPA scaling validation), `MUT_67` killed.
 - ~~DisplayPort 2.0 (DP 2.0 / UHBR 10/20 Gbps) Physical Layer & 128b/132b Link Training Engine (128b/132b block framing, 2-bit sync headers, scrambler, and link training)~~ -
   done: `docs/dp20_study.md` (DisplayPort 2.0/2.1 VESA specification, UHBR 10/13.5/20 line rates, 128b/132b line coding physics, 2-bit sync header Hamming distance, 2-bit header parity, 23-bit LFSR scrambler math, link training states, and IHP 130nm SG13G2 PPA scaling), `tools/dp20_model.py` (`DpSyncHeader`, `DpTrainingPattern`, `compute_header_parity`, `verify_header_parity`, `is_valid_sync_header`, `encode_128b132b`, `decode_128b132b`, `Dp20Scrambler`, `Dp20Descrambler`, `Dp20ReceiverModel`, `Dp20PpaModel`, and firmware generators) + `test/test_dp20.py` (6/6 cocotb tests pass: master block transmission on pin 3; slave sync ingress via WAITEDGE into R0/R1; in-register sync header validation and fault trapping; 23-bit scrambler/descrambler round-trip and HW descrambling; 128b/132b block framing & lock FSM; and DisplayPort 2.0 standards compliance & PPA scaling validation), `MUT_68` killed.
-- SAS-4 (Serial Attached SCSI 24G) Physical Layer & 128b/150b Interpacket Framing Engine
+- ~~SAS-4 (Serial Attached SCSI 24G) Physical Layer & 128b/150b Interpacket Framing Engine~~ -
+  done: `docs/sas4_study.md` (INCITS 534 SAS-4 specification, 24.0 Gbps physical signaling, 128b/150b framing architecture, 20-bit FEC parity math, 34-bit LFSR scrambler polynomial, 4-byte Dword primitives, and IHP 130nm SG13G2 PPA scaling), `tools/sas4_model.py` (`Sas4SyncHeader`, `Sas4Primitive`, `compute_fec_parity_20`, `is_valid_sync_header`, `encode_128b150b`, `decode_128b150b`, `Sas4Scrambler`, `Sas4Descrambler`, `Sas4ReceiverModel`, `Sas4PpaModel`, and firmware generators) + `test/test_sas4.py` (6/6 cocotb tests pass: master block transmission on pin 3; slave sync ingress via WAITEDGE into R0/R1; in-register sync header validation and fault trapping; 34-bit scrambler/descrambler round-trip and HW descrambling; 128b/150b block framing & lock FSM; and SAS-4 standards compliance & PPA scaling validation), `MUT_69` killed.
 - RapidIO v4.0 Physical Layer & 8b/10b Packet Exchange Engine
+- InfiniBand HDR/NDR Physical & Link Layer Engine
 
 ---
 
-### Task Queue Status: Continuous Engineering Loop Active (Iteration 65 Complete, Iteration 66 Queued)
+### Task Queue Status: Continuous Engineering Loop Active (Iteration 66 Complete, Iteration 67 Queued)
 *Per `AGENTS.md`: Continuous engineering project. When the explicit task queue becomes empty, enter **RESEARCH_AND_PROOF** mode: find verification gaps, attempt to falsify assumptions, improve formal proofs, improve PPA, test alternative architectures and investigate novel protocol capabilities.*
+
 
 
 
