@@ -569,6 +569,14 @@ MUTANTS = [
         "replacement": "      OP_XORI: alu_op = ALU_OR;  // Mutated: XORI executes OR instead of XOR",
         "description": "DisplayPort 2.0 sync header and LFSR descrambler bug: OP_XORI decodes to ALU_OR instead of ALU_XOR, corrupting in-register header matching and stream descrambling",
     },
+    {
+        "id": "MUT_69_SAS4_ALU_ANDI_DECODE",
+        "category": "SAS-4 24G / ALU ANDI Decode",
+        "file": "src/core.v",
+        "target": "      OP_ANDI: alu_op = ALU_AND;",
+        "replacement": "      OP_ANDI: alu_op = ALU_OR;  // Mutated: ANDI executes OR instead of AND",
+        "description": "SAS-4 24G sync header masking and primitive filtering bug: OP_ANDI decodes to ALU_OR instead of ALU_AND, corrupting bitwise masking of sync headers and primitive fields",
+    },
 ]
 
 

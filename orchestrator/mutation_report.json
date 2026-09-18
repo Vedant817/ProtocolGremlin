@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T09:59:09Z",
+  "timestamp": "2026-09-18T10:19:19Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 107.06,
+  "campaign_time_sec": 139.31,
   "mutants": [
     {
-      "id": "MUT_68_DP20_ALU_XORI_DECODE",
-      "category": "DisplayPort 2.0 / ALU XORI Decode",
+      "id": "MUT_69_SAS4_ALU_ANDI_DECODE",
+      "category": "SAS-4 24G / ALU ANDI Decode",
       "file": "src/core.v",
-      "description": "DisplayPort 2.0 sync header and LFSR descrambler bug: OP_XORI decodes to ALU_OR instead of ALU_XOR, corrupting in-register header matching and stream descrambling",
+      "description": "SAS-4 24G sync header masking and primitive filtering bug: OP_ANDI decodes to ALU_OR instead of ALU_AND, corrupting bitwise masking of sync headers and primitive fields",
       "status": "KILLED",
-      "elapsed_sec": 107.02
+      "elapsed_sec": 139.26
     }
   ]
 }
