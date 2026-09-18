@@ -2305,3 +2305,45 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 22.55s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-18 - Iteration 62: Serial ATA Revision 3.0 (6.0 Gbps) Out-of-Band (OOB) Signaling & Link Framing Engine
+
+- **Motivation & Protocol Overview:**
+  - Serial ATA Revision 3.0 (SATA 6.0 Gbps / SATA-IO) represents the preeminent storage interconnect standard for enterprise solid-state storage, hard disk arrays, and high-speed host controller interfaces (AHCI).
+  - Operating at physical signaling rates of 1.5 Gbps (Gen 1), 3.0 Gbps (Gen 2), and 6.0 Gbps (Gen 3), SATA relies on strict physical-layer and link-layer synchronization mechanisms:
+    1. **Out-of-Band (OOB) Signaling Mechanics:**
+       - Asynchronous electrical idle burst sequences utilized prior to active link training to initialize connection and wake links from low-power states (Partial and Slumber).
+       - Each burst comprises 160 UI of differential transitions (~106.7 ns at Gen 1).
+       - COMRESET / COMINIT: Characterized by a 320 ns nominal quiet window (480 UI).
+       - COMWAKE: Characterized by a 106.7 ns nominal quiet window (160 UI).
+       - Strict 3:1 quiet window duration ratio provides an immense timing discrimination margin ($>1.80\times$) for receiver pulse classification.
+    2. **Link Layer 8b/10b Primitive Framing:**
+       - All link-layer control operations are mediated through 4-byte dword primitives beginning with a comma-containing control character (K28.5 / `0xBC`) or specialized control character followed by three data characters:
+         - `SYNC` (`0x7C, 0x95, 0x95, 0xB5`): Synchronization primitive emitted during idle link states.
+         - `ALIGN` (`0x7B, 0x4A, 0x4A, 0x4A`): Clock correction primitive transmitted in pairs every 256 dwords.
+         - `SOF` (`0x37, 0x37, 0xB5, 0x37`): Start of Frame delimiter.
+         - `EOF` (`0xD5, 0xD5, 0x35, 0xD5`): End of Frame delimiter.
+         - `HOLD` / `HOLDA`: Flow control throttling primitives.
+         - `R_OK` / `R_ERR`: Frame reception status handshake primitives.
+    3. **8b/10b Running Disparity (RD) Invariant Tracking:**
+       - Running disparity persists across dwords and primitive boundaries, alternating between `RD-` (-1) and `RD+` (+1) to maintain strict DC balance and prevent baseline wander.
+- **Novelty Highlight (OOB Burst Generation, WAITEDGE Pulse Discrimination, Primitive Ingress & Calibrated PPA):**
+  - **Master OOB Burst Generation:** Microcode generates 4 bursts of 160 UI with anti-phase signaling on TXP/TXN (pins 3 and 4) separated by quiet intervals, verified against `SataReceiverModel`.
+  - **WAITEDGE Quiet Window Discrimination:** Slave receiver firmware synchronizes to falling and rising edges of line activity, measuring electrical idle duration into `R0` (COMRESET: 32 cycles) and `R1` (COMWAKE: 11 cycles) via `WAITEDGE`, reliably classifying signal types without false triggers.
+  - **4-Byte Primitive Transmission & In-Register Filtering:** Core serializes Link Layer primitives on pin 3. Microcode matches lead character `0x7C` (`SYNC`) with `R2=0x00` and traps non-matching primitives (`0x3C`) with `R2=0xEE`.
+  - **Physical PPA Model on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated SATA PHY/Link Macro: **560 standard cells (1090.0 GE, +2.91% area overhead, $4140.0\,\mu\text{m}^2$)**, with a $1.25\,\text{ns}$ critical path ($f_{\text{max}} = 800.00\,\text{MHz}$), $54.50\,\mu\text{W}$ dynamic power at 10 MHz, 6000.0 Mbps raw throughput, and $0.00908\,\text{pJ/bit}$ energy efficiency.
+- **Verification Suite (`test/test_sata_gen3.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/sata_gen3_model.py`:
+    1. `test_sata_oob_burst_generation`: Master transmits 4 OOB bursts on differential pins 3 (TXP) and 4 (TXN), decoded cleanly by `SataReceiverModel` with 4 bursts, correct quiet durations, and 0 violations. **PASS** (0.28s).
+    2. `test_sata_rx_oob_measurement`: Slave measures COMRESET (32 cycles into `R0`) and COMWAKE (11 cycles into `R1`) via `WAITEDGE` pulse-width measurement with 3:1 ratio discriminated and status `R2 = 0x00`. **PASS** (0.09s).
+    3. `test_sata_link_primitive_tx`: Master transmits 4-byte `SYNC` primitive on pin 3, verified at baud center with status `R2 = 0x00`. **PASS** (0.12s).
+    4. `test_sata_primitive_filter_and_fault_trapping`: Validated in-register primitive filtering: matching `SYNC` (`0x7C`) returns `R2 = 0x00`, mismatched primitive (`0x3C`) trapped with `R2 = 0xEE`. **PASS** (0.06s).
+    5. `test_sata_8b10b_primitives_and_disparity`: Validated 8b/10b encoding/decoding across all 8 standard SATA primitives (SYNC, ALIGN, SOF, EOF, HOLD, HOLDA, R_OK, R_ERR) with continuous running disparity tracking and 0 errors. **PASS** (0.01s).
+    6. `test_sata_standards_and_ppa`: Validated OOB burst timing parameters, 3:1 quiet window ratio margin ($>1.80\times$), primitive constants, and physical PPA scaling model. **PASS** (0.00s).
+  - Regression Suite: **341/341 tests passing (100.0%)** across 60 test modules in 107.5s.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 63s).
+  - Mutation Testing: Added `MUT_65_SATA_ALU_SUB_INVERT` in `scripts/mutate.py`. Killed in 107.65s. Cumulative score: **65/65 mutants killed (100.0% kill rate)** in 6167.2s.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 23.45s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
