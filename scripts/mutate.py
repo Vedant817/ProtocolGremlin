@@ -617,6 +617,14 @@ MUTANTS = [
         "replacement": "              OP_JNZ: if (z) pc <= operand[ADDR_WIDTH-1:0];  // Mutated: JNZ branches on z=1 instead of z=0",
         "description": "HyperTransport 3.1 flow control credit polling and command dispatching bug: OP_JNZ inverts branch condition by checking z instead of !z, causing loops and mismatch traps to branch on zero instead of non-zero",
     },
+    {
+        "id": "MUT_75_UEC_SHIFTIN_LSB_BIT_INVERT",
+        "category": "Ultra Ethernet (UEC) & InfiniBand XDR / SHIFTIN LSB Bit Inversion",
+        "file": "src/core.v",
+        "target": "                  write_rd(rd_idx, {gpio_in[pin_idx], rd_val[7:1]});",
+        "replacement": "                  write_rd(rd_idx, {!gpio_in[pin_idx], rd_val[7:1]});  // Mutated: SHIFTIN LSB inverts sampled pin bit",
+        "description": "Ultra Ethernet Consortium (UEC) & InfiniBand XDR/GDR packet ingress bug: OP_SHIFTIN inverts incoming LSB-first bitstream bit (!gpio_in[pin_idx]), corrupting sampled packet headers, opcodes, and sequence numbers",
+    },
 ]
 
 

@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T11:48:19Z",
+  "timestamp": "2026-09-18T14:43:09Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 162.73,
+  "campaign_time_sec": 111.29,
   "mutants": [
     {
-      "id": "MUT_74_HT_JNZ_INVERTED_BRANCH_CONDITION",
-      "category": "HyperTransport 3.1 / JNZ Inverted Branch Condition",
+      "id": "MUT_75_UEC_SHIFTIN_LSB_BIT_INVERT",
+      "category": "Ultra Ethernet (UEC) & InfiniBand XDR / SHIFTIN LSB Bit Inversion",
       "file": "src/core.v",
-      "description": "HyperTransport 3.1 flow control credit polling and command dispatching bug: OP_JNZ inverts branch condition by checking z instead of !z, causing loops and mismatch traps to branch on zero instead of non-zero",
+      "description": "Ultra Ethernet Consortium (UEC) & InfiniBand XDR/GDR packet ingress bug: OP_SHIFTIN inverts incoming LSB-first bitstream bit (!gpio_in[pin_idx]), corrupting sampled packet headers, opcodes, and sequence numbers",
       "status": "KILLED",
-      "elapsed_sec": 162.67
+      "elapsed_sec": 111.22
     }
   ]
 }
