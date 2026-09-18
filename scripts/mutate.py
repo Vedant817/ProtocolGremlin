@@ -753,6 +753,14 @@ MUTANTS = [
         "replacement": "      OP_XOR:  result = a | b;  // Mutated: OP_XOR executes OR instead of XOR",
         "description": "HMC packet routing and command opcode validation bug: ALU OP_XOR executes bitwise-OR instead of bitwise-XOR (result = a | b), corrupting in-register command matching and vault routing status evaluation",
     },
+    {
+        "id": "MUT_92_QDR_ALU_ADD_INVERT",
+        "category": "QDR-IV / QDR-II+ SRAM Controller / ALU ADD Invert",
+        "file": "src/alu.v",
+        "target": "      OP_ADD:  result = a + b;",
+        "replacement": "      OP_ADD:  result = a - b;  // Mutated: OP_ADD executes SUB instead of ADD",
+        "description": "QDR-IV buffer credit increment and address burst calculation bug: ALU OP_ADD executes arithmetic SUB instead of ADD (result = a - b), corrupting in-register transaction credit restoration, burst address calculation, and checksum accumulation",
+    },
 ]
 
 

@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T22:34:37Z",
+  "timestamp": "2026-09-18T22:51:20Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 143.63,
+  "campaign_time_sec": 172.72,
   "mutants": [
     {
-      "id": "MUT_91_HMC_ALU_XOR_INVERT",
-      "category": "HMC 2.1 3D-Stacked DRAM Controller / ALU XOR Invert",
+      "id": "MUT_92_QDR_ALU_ADD_INVERT",
+      "category": "QDR-IV / QDR-II+ SRAM Controller / ALU ADD Invert",
       "file": "src/alu.v",
-      "description": "HMC packet routing and command opcode validation bug: ALU OP_XOR executes bitwise-OR instead of bitwise-XOR (result = a | b), corrupting in-register command matching and vault routing status evaluation",
+      "description": "QDR-IV buffer credit increment and address burst calculation bug: ALU OP_ADD executes arithmetic SUB instead of ADD (result = a - b), corrupting in-register transaction credit restoration, burst address calculation, and checksum accumulation",
       "status": "KILLED",
-      "elapsed_sec": 143.57
+      "elapsed_sec": 172.66
     }
   ]
 }
