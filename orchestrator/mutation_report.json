@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T16:45:58Z",
+  "timestamp": "2026-09-18T20:28:07Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 128.8,
+  "campaign_time_sec": 155.43,
   "mutants": [
     {
-      "id": "MUT_82_WB_AVALON_ALU_ANDI_DECODE",
-      "category": "Wishbone B4 & Avalon-MM Interconnect / ALU ANDI Decode",
+      "id": "MUT_83_AMBA_CHI_ALU_ADDI_DECODE",
+      "category": "ARM AMBA CHI & ACE / ALU ADDI Decode",
       "file": "src/core.v",
-      "description": "Wishbone B4 & Avalon-MM byte lane masking and address alignment decoding bug: OP_ANDI decodes to ALU_OR instead of ALU_AND, corrupting byte enable calculations and address alignment masks, causing byte masking operations to bitwise-OR instead of bitwise-AND",
+      "description": "AMBA CHI & ACE coherent transaction credit return and sequence increment bug: default ALU opcode decoding executes ALU_SUB instead of ALU_ADD, causing ADDI operations (such as credit token increments upon CompAck) to decrement instead of increment",
       "status": "KILLED",
-      "elapsed_sec": 128.74
+      "elapsed_sec": 155.37
     }
   ]
 }

@@ -681,6 +681,14 @@ MUTANTS = [
         "replacement": "      OP_ANDI: alu_op = ALU_OR;  // Mutated: ANDI executes OR instead of AND",
         "description": "Wishbone B4 & Avalon-MM byte lane masking and address alignment decoding bug: OP_ANDI decodes to ALU_OR instead of ALU_AND, corrupting byte enable calculations and address alignment masks, causing byte masking operations to bitwise-OR instead of bitwise-AND",
     },
+    {
+        "id": "MUT_83_AMBA_CHI_ALU_ADDI_DECODE",
+        "category": "ARM AMBA CHI & ACE / ALU ADDI Decode",
+        "file": "src/core.v",
+        "target": "      default: alu_op = ALU_ADD;  // ADDI and DECJNZ's implicit -1 both use ADD path via alu_b",
+        "replacement": "      default: alu_op = ALU_SUB;  // Mutated: default ADDI executes SUB instead of ADD",
+        "description": "AMBA CHI & ACE coherent transaction credit return and sequence increment bug: default ALU opcode decoding executes ALU_SUB instead of ALU_ADD, causing ADDI operations (such as credit token increments upon CompAck) to decrement instead of increment",
+    },
 ]
 
 
