@@ -537,6 +537,14 @@ MUTANTS = [
         "replacement": "                  write_rd(rd_idx, {~gpio_in[pin_idx], rd_val[7:1]});  // Mutated: SHIFTIN inverts sampled pin bit",
         "description": "Ethernet 10GBASE-R PCS sync ingress and data sampling bug: OP_SHIFTIN inverts sampled pin data (~gpio_in[pin_idx] instead of gpio_in[pin_idx]), corrupting sampled symbols in R0 during receiver ingress",
     },
+    {
+        "id": "MUT_65_SATA_ALU_SUB_INVERT",
+        "category": "Serial ATA Gen 3 / ALU Subtraction & OOB Discrimination",
+        "file": "src/alu.v",
+        "target": "      OP_SUB:  result = a - b;",
+        "replacement": "      OP_SUB:  result = a + b;  // Mutated: ALU subtract performs addition",
+        "description": "SATA Revision 3.0 OOB quiet duration timing discrimination bug: ALU OP_SUB computes addition (a + b instead of a - b), causing in-register quiet threshold subtraction (SUBI R3, threshold) to produce positive sums for both short and long intervals, corrupting COMWAKE vs COMRESET classification",
+    },
 ]
 
 

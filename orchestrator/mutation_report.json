@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T04:15:17Z",
+  "timestamp": "2026-09-18T04:27:33Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 98.19,
+  "campaign_time_sec": 107.71,
   "mutants": [
     {
-      "id": "MUT_64_10GBASE_R_SHIFTIN_INV",
-      "category": "Ethernet 10GBASE-R / PCS Ingress Data Sampling",
-      "file": "src/core.v",
-      "description": "Ethernet 10GBASE-R PCS sync ingress and data sampling bug: OP_SHIFTIN inverts sampled pin data (~gpio_in[pin_idx] instead of gpio_in[pin_idx]), corrupting sampled symbols in R0 during receiver ingress",
+      "id": "MUT_65_SATA_ALU_SUB_INVERT",
+      "category": "Serial ATA Gen 3 / ALU Subtraction & OOB Discrimination",
+      "file": "src/alu.v",
+      "description": "SATA Revision 3.0 OOB quiet duration timing discrimination bug: ALU OP_SUB computes addition (a + b instead of a - b), causing in-register quiet threshold subtraction (SUBI R3, threshold) to produce positive sums for both short and long intervals, corrupting COMWAKE vs COMRESET classification",
       "status": "KILLED",
-      "elapsed_sec": 98.13
+      "elapsed_sec": 107.65
     }
   ]
 }
