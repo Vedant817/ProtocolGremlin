@@ -697,6 +697,14 @@ MUTANTS = [
         "replacement": "      OP_SUB:  result = a + b;  // Mutated: OP_SUB executes ADD instead of SUB",
         "description": "HBM3/HBM3e memory buffer credit tracking and bank address decrement bug: ALU OP_SUB executes addition instead of subtraction (result = a + b), corrupting credit pool decrements upon command dispatch and memory row stride computations",
     },
+    {
+        "id": "MUT_85_DDR5_ALU_XOR_INVERT",
+        "category": "DDR5 / LPDDR5 Memory Controller / ALU XOR Invert",
+        "file": "src/alu.v",
+        "target": "      OP_XOR:  result = a ^ b;",
+        "replacement": "      OP_XOR:  result = a & b;  // Mutated: OP_XOR executes AND instead of XOR",
+        "description": "DDR5/LPDDR5 memory command validation and bank address parity bug: ALU OP_XOR executes bitwise-AND instead of bitwise-XOR (result = a & b), corrupting in-register command filtering equality checks and bank address parity verification",
+    },
 ]
 
 
