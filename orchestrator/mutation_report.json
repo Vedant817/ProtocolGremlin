@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T21:51:30Z",
+  "timestamp": "2026-09-18T22:05:38Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 137.77,
+  "campaign_time_sec": 139.45,
   "mutants": [
     {
-      "id": "MUT_88_DDR4_ALU_AND_INVERT",
-      "category": "DDR4 / DDR3 Memory Controller / ALU AND Invert",
+      "id": "MUT_89_EMMC_ALU_XOR_INVERT",
+      "category": "eMMC 5.1 / SD 6.0 Memory Card Controller / ALU XOR Invert",
       "file": "src/alu.v",
-      "description": "DDR4/DDR3 memory command mask and bank group address extraction bug: ALU OP_AND executes bitwise-OR instead of bitwise-AND (result = a | b), corrupting in-register bank group masking and address alignment checks",
+      "description": "eMMC/SD memory command opcode discrimination and CRC calculation bug: ALU OP_XOR executes bitwise-AND instead of bitwise-XOR (result = a & b), corrupting in-register command matching, status comparison, and parity evaluation",
       "status": "KILLED",
-      "elapsed_sec": 137.72
+      "elapsed_sec": 139.41
     }
   ]
 }

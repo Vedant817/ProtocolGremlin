@@ -729,6 +729,14 @@ MUTANTS = [
         "replacement": "      OP_AND:  result = a | b;  // Mutated: OP_AND executes OR instead of AND",
         "description": "DDR4/DDR3 memory command mask and bank group address extraction bug: ALU OP_AND executes bitwise-OR instead of bitwise-AND (result = a | b), corrupting in-register bank group masking and address alignment checks",
     },
+    {
+        "id": "MUT_89_EMMC_ALU_XOR_INVERT",
+        "category": "eMMC 5.1 / SD 6.0 Memory Card Controller / ALU XOR Invert",
+        "file": "src/alu.v",
+        "target": "      OP_XOR:  result = a ^ b;",
+        "replacement": "      OP_XOR:  result = a & b;  // Mutated: OP_XOR executes AND instead of XOR",
+        "description": "eMMC/SD memory command opcode discrimination and CRC calculation bug: ALU OP_XOR executes bitwise-AND instead of bitwise-XOR (result = a & b), corrupting in-register command matching, status comparison, and parity evaluation",
+    },
 ]
 
 
