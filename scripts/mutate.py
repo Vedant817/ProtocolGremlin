@@ -689,6 +689,14 @@ MUTANTS = [
         "replacement": "      default: alu_op = ALU_SUB;  // Mutated: default ADDI executes SUB instead of ADD",
         "description": "AMBA CHI & ACE coherent transaction credit return and sequence increment bug: default ALU opcode decoding executes ALU_SUB instead of ALU_ADD, causing ADDI operations (such as credit token increments upon CompAck) to decrement instead of increment",
     },
+    {
+        "id": "MUT_84_HBM3_ALU_SUB_INVERT",
+        "category": "HBM3 / HBM3e Memory Controller / ALU SUB Invert",
+        "file": "src/alu.v",
+        "target": "      OP_SUB:  result = a - b;",
+        "replacement": "      OP_SUB:  result = a + b;  // Mutated: OP_SUB executes ADD instead of SUB",
+        "description": "HBM3/HBM3e memory buffer credit tracking and bank address decrement bug: ALU OP_SUB executes addition instead of subtraction (result = a + b), corrupting credit pool decrements upon command dispatch and memory row stride computations",
+    },
 ]
 
 
