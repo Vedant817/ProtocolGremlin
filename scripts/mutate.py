@@ -529,6 +529,14 @@ MUTANTS = [
         "replacement": "      OP_XOR:  result = ~(a ^ b);  // Mutated: ALU XOR produces XNOR inversion",
         "description": "PCIe Gen 1 LFSR descrambler & FTS validator bug: ALU OP_XOR computes bitwise XNOR (~(a ^ b) instead of a ^ b), corrupting LFSR stream descrambling and causing FTS ordered set symbol validation to fail",
     },
+    {
+        "id": "MUT_64_10GBASE_R_SHIFTIN_INV",
+        "category": "Ethernet 10GBASE-R / PCS Ingress Data Sampling",
+        "file": "src/core.v",
+        "target": "                  write_rd(rd_idx, {gpio_in[pin_idx], rd_val[7:1]});",
+        "replacement": "                  write_rd(rd_idx, {~gpio_in[pin_idx], rd_val[7:1]});  // Mutated: SHIFTIN inverts sampled pin bit",
+        "description": "Ethernet 10GBASE-R PCS sync ingress and data sampling bug: OP_SHIFTIN inverts sampled pin data (~gpio_in[pin_idx] instead of gpio_in[pin_idx]), corrupting sampled symbols in R0 during receiver ingress",
+    },
 ]
 
 
