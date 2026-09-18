@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T16:30:44Z",
+  "timestamp": "2026-09-18T16:45:58Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 120.67,
+  "campaign_time_sec": 128.8,
   "mutants": [
     {
-      "id": "MUT_81_AHB_APB_ALU_XORI_DECODE",
-      "category": "AMBA AHB-Lite & APB4 Interconnect / ALU XORI Decode",
+      "id": "MUT_82_WB_AVALON_ALU_ANDI_DECODE",
+      "category": "Wishbone B4 & Avalon-MM Interconnect / ALU ANDI Decode",
       "file": "src/core.v",
-      "description": "AMBA AHB-Lite / APB4 interconnect command filtering and peripheral address decoding bug: OP_XORI decodes to ALU_OR instead of ALU_XOR, corrupting in-register opcode equality checks (R3 ^ cmd == 0), causing valid commands to fail branch conditions and trap spuriously",
+      "description": "Wishbone B4 & Avalon-MM byte lane masking and address alignment decoding bug: OP_ANDI decodes to ALU_OR instead of ALU_AND, corrupting byte enable calculations and address alignment masks, causing byte masking operations to bitwise-OR instead of bitwise-AND",
       "status": "KILLED",
-      "elapsed_sec": 120.62
+      "elapsed_sec": 128.74
     }
   ]
 }

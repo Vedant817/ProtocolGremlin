@@ -673,6 +673,14 @@ MUTANTS = [
         "replacement": "      OP_XORI: alu_op = ALU_OR;  // Mutated: XORI executes OR instead of XOR",
         "description": "AMBA AHB-Lite / APB4 interconnect command filtering and peripheral address decoding bug: OP_XORI decodes to ALU_OR instead of ALU_XOR, corrupting in-register opcode equality checks (R3 ^ cmd == 0), causing valid commands to fail branch conditions and trap spuriously",
     },
+    {
+        "id": "MUT_82_WB_AVALON_ALU_ANDI_DECODE",
+        "category": "Wishbone B4 & Avalon-MM Interconnect / ALU ANDI Decode",
+        "file": "src/core.v",
+        "target": "      OP_ANDI: alu_op = ALU_AND;",
+        "replacement": "      OP_ANDI: alu_op = ALU_OR;  // Mutated: ANDI executes OR instead of AND",
+        "description": "Wishbone B4 & Avalon-MM byte lane masking and address alignment decoding bug: OP_ANDI decodes to ALU_OR instead of ALU_AND, corrupting byte enable calculations and address alignment masks, causing byte masking operations to bitwise-OR instead of bitwise-AND",
+    },
 ]
 
 
