@@ -761,6 +761,14 @@ MUTANTS = [
         "replacement": "      OP_ADD:  result = a - b;  // Mutated: OP_ADD executes SUB instead of ADD",
         "description": "QDR-IV buffer credit increment and address burst calculation bug: ALU OP_ADD executes arithmetic SUB instead of ADD (result = a - b), corrupting in-register transaction credit restoration, burst address calculation, and checksum accumulation",
     },
+    {
+        "id": "MUT_93_RLDRAM_ALU_SUB_INVERT",
+        "category": "RLDRAM 3 Memory Controller / ALU SUB Invert",
+        "file": "src/alu.v",
+        "target": "      OP_SUB:  result = a - b;",
+        "replacement": "      OP_SUB:  result = a + b;  // Mutated: OP_SUB executes ADD instead of SUB",
+        "description": "RLDRAM 3 buffer credit decrement and random cycle timing calculation bug: ALU OP_SUB executes arithmetic ADD instead of SUB (result = a + b), corrupting in-register transaction credit depletion, tRC cycle accounting, and flow control underflow bounds checking",
+    },
 ]
 
 
