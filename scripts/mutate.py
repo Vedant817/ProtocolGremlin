@@ -657,6 +657,14 @@ MUTANTS = [
         "replacement": "              OP_JZ: if (!z) pc <= operand[ADDR_WIDTH-1:0];  // Mutated: JZ branches on !z instead of z",
         "description": "AXI4-Stream & TileLink interconnect opcode filtering and credit management bug: OP_JZ inverts branch condition by checking !z instead of z, causing valid opcode matches and credit events to fail to branch while invalid conditions branch spuriously",
     },
+    {
+        "id": "MUT_80_AXI_MM_ALU_SUBI_DECODE",
+        "category": "AXI4/AXI5 Memory-Mapped (AXI4-MM) / ALU SUBI Decode",
+        "file": "src/core.v",
+        "target": "      OP_SUBI: alu_op = ALU_SUB;",
+        "replacement": "      OP_SUBI: alu_op = ALU_ADD;  // Mutated: SUBI executes ADD instead of SUB",
+        "description": "AXI4/AXI5 Memory-Mapped burst credit tracking and wrap boundary address calculation bug: OP_SUBI decodes to ALU_ADD instead of ALU_SUB, causing outstanding transaction credit decrements and wrap address offsets to add instead of subtract",
+    },
 ]
 
 
