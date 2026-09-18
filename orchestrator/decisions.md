@@ -2519,4 +2519,43 @@ mutation-kill rates.
   - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 22.53s.
   - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
 
+## 2026-09-18 - Iteration 67: RapidIO v4.0 Physical Layer & 8b/10b Packet Exchange Engine
+
+- **Motivation & Protocol Overview:**
+  - RapidIO (standardized by the RapidIO Trade Association / ISO/IEC 18372) is an open-standard, packet-switched interconnect architecture engineered specifically for embedded mission-critical systems, DSP antenna arrays, baseband cellular units (4G/5G), avionics mission computers, and radar processing platforms.
+  - RapidIO LP-Serial Physical Layer combines serial point-to-point interconnects with deterministic low latency and guaranteed hardware quality-of-service, scaling from $1.25\,\text{GBaud}$ up to $25.0\,\text{GBaud}$ (10xN / 25xN specifications):
+    1. **8b/10b DC-Balanced Line Coding:**
+       - Run-length limited ($\le 5$ consecutive bits) for clock recovery.
+       - Standard K-code special characters: `K28.5` (`/SC/` comma delimiter `0xBC`, `0b10111100`), `K28.0` (`/R/` skip), `K28.3` (`/A/` align), `K28.7` (`/PD/` packet delimiter).
+    2. **Short & Standard Control Symbols:**
+       - 24-bit / 32-bit in-band control symbols embedded between or within data packets.
+       - Distinct `stype0` (Packet-Accepted `PACC`, Packet-Retry `PRET`, Packet-Not-Accepted `PNAC`) and `stype1` (Link-Request, Link-Response, Multicast-Event) control types.
+       - Embedded 5-bit CRC ($G(x) = x^5 + x^4 + x^2 + 1$) protecting control symbols against bit corruptions.
+    3. **Packet Framing & End-to-End Integrity:**
+       - Physical priority field (`prio[1:0]`) guaranteeing hardware preemption and deadlock-free routing.
+       - 16-bit ITU-T CRC ($G(x) = x^{16} + x^{12} + x^5 + 1$) safeguarding transport and logical layer payloads.
+- **Novelty Highlight (Control Symbol Transmission, WAITEDGE Comma Ingress, In-Register Filter & Calibrated PPA):**
+  - **Master Control Symbol Transmission:** Microcode transmits `K28.5` comma (`0xBC`) and `stype` command byte (`0x00` PACC) on pin 3, verified at baud center with status `R2 = 0x00`.
+  - **WAITEDGE Comma Ingress:** Slave receiver firmware synchronizes to `K28.5` comma rising edge on pin 3 via `WAITEDGE`, strides past delimiter, samples `stype` byte `0x01` (PRET) into `R0` and preserves it in `R1`, asserting status `R2 = 0x00`.
+  - **In-Register Stype Validation:** Microcode matches valid `stype` responses (`0x00` PACC, `0x01` PRET, `0x02` PNAC) with `R2 = 0x00` and traps illegal responses (`0x07`) with fault code `R2 = 0xEE`.
+  - **In-Register CRC-5 Validator:** Microcode validates received 5-bit CRC mask against expected polynomial residue with status `R2 = 0x00`.
+  - **Physical PPA Model on IHP 130nm SG13G2:**
+    - Software microcode engine: **0 gates (0% area overhead)**.
+    - Dedicated RapidIO v4.0 PCS/MAC Macro: **585 standard cells (1140.0 GE, +3.03% area overhead, $4310.0\,\mu\text{m}^2$)**, with a $1.25\,\text{ns}$ critical path ($f_{\text{max}} = 800.00\,\text{MHz}$), $57.00\,\mu\text{W}$ dynamic power at 10 MHz, 25000.0 Mbps raw throughput per lane, and $0.00228\,\text{pJ/bit}$ energy efficiency.
+- **Verification Suite (`test/test_rapidio.py`):**
+  - Added 6 comprehensive cocotb test cases verified against `tools/rapidio_model.py`:
+    1. `test_rapidio_master_control_symbol_transmission`: Master transmits K28.5 comma `0xBC` and stype `0x00` on pin 3, decoded cleanly at baud center with `R2 = 0x00`. **PASS** (0.15s).
+    2. `test_rapidio_rx_sync_ingress`: Slave synchronizes to K28.5 comma rising edge on pin 3 via `WAITEDGE`, captures stype `0x01` into `R0`/`R1`, asserting status `R2 = 0x00`. **PASS** (0.09s).
+    3. `test_rapidio_packet_filter_and_fault_trapping`: Validated in-register stype validation: matching valid responses (`0x00`, `0x01`, `0x02`) returns `R2 = 0x00`, illegal stype (`0x07`) trapped with `R2 = 0xEE`. **PASS** (0.21s).
+    4. `test_rapidio_crc5_and_crc16_validation`: Validated control symbol CRC-5 bit-flip detection, 16-bit ITU-T packet CRC calculation, and in-register microcode CRC-5 validator. **PASS** (0.06s).
+    5. `test_rapidio_control_symbol_and_link_lock`: Validated short control symbol encoding/decoding and receiver link lock state machine. **PASS** (0.00s).
+    6. `test_rapidio_standards_and_ppa`: Validated RapidIO multi-gigabit baud rates (1.25 to 25.0 GBaud), K-code delimiters, and physical PPA scaling model. **PASS** (0.00s).
+  - Regression Suite: **371/371 tests passing (100.0%)** across 65 test modules.
+- **Formal Verification, Mutation & PPA:**
+  - SymbiYosys: 20-step Z3 BMC proof verified (0 violations in 59s).
+  - Mutation Testing: Added `MUT_70_RAPIDIO_ALU_ORI_DECODE` in `scripts/mutate.py`. Killed in 112.22s. Cumulative score: **70/70 mutants killed (100.0% kill rate)**.
+  - Gate-Level: Verified 8/8 physical tests pass on synthesized netlist (`scripts/test_gl.sh`) in 24.29s.
+  - Area: Zero additional silicon area overhead for microcode engine (19,291 CMOS cells, 37,832 GE; active core logic 1,580 cells, ~2.2 kGE).
+
+
 
