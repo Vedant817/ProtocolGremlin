@@ -577,6 +577,14 @@ MUTANTS = [
         "replacement": "      OP_ANDI: alu_op = ALU_OR;  // Mutated: ANDI executes OR instead of AND",
         "description": "SAS-4 24G sync header masking and primitive filtering bug: OP_ANDI decodes to ALU_OR instead of ALU_AND, corrupting bitwise masking of sync headers and primitive fields",
     },
+    {
+        "id": "MUT_70_RAPIDIO_ALU_ORI_DECODE",
+        "category": "RapidIO v4.0 / ALU ORI Decode",
+        "file": "src/core.v",
+        "target": "      OP_ORI:  alu_op = ALU_OR;",
+        "replacement": "      OP_ORI:  alu_op = ALU_AND;  // Mutated: ORI executes AND instead of OR",
+        "description": "RapidIO v4.0 control symbol masking and field composition bug: OP_ORI decodes to ALU_AND instead of ALU_OR, corrupting in-register bitwise composition of control symbols and parameters",
+    },
 ]
 
 

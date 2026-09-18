@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T10:19:19Z",
+  "timestamp": "2026-09-18T10:37:07Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 139.31,
+  "campaign_time_sec": 112.28,
   "mutants": [
     {
-      "id": "MUT_69_SAS4_ALU_ANDI_DECODE",
-      "category": "SAS-4 24G / ALU ANDI Decode",
+      "id": "MUT_70_RAPIDIO_ALU_ORI_DECODE",
+      "category": "RapidIO v4.0 / ALU ORI Decode",
       "file": "src/core.v",
-      "description": "SAS-4 24G sync header masking and primitive filtering bug: OP_ANDI decodes to ALU_OR instead of ALU_AND, corrupting bitwise masking of sync headers and primitive fields",
+      "description": "RapidIO v4.0 control symbol masking and field composition bug: OP_ORI decodes to ALU_AND instead of ALU_OR, corrupting in-register bitwise composition of control symbols and parameters",
       "status": "KILLED",
-      "elapsed_sec": 139.26
+      "elapsed_sec": 112.22
     }
   ]
 }
