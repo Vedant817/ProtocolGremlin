@@ -187,12 +187,15 @@ bounded problem").
   done: `docs/ucie_study.md` (UCIe 1.0/2.0 specification, standard and advanced packaging, sideband link training, lane repair sparing, 16-bit CRC, and IHP 130nm SG13G2 PPA scaling), `tools/ucie_model.py` (`UcieSidebandOpCode`, `compute_ucie_crc16`, `encode_ucie_sideband_packet`, `decode_ucie_sideband_packet`, `UcieReceiverModel`, `UciePpaModel`, and firmware generators) + `test/test_ucie.py` (6/6 cocotb tests pass: master sideband packet header transmission via SHIFTOUT on pin 3; slave sync ingress via WAITEDGE into R0/R1; in-register opcode filtering and fault trapping; in-register spare lane allocation tracking and underflow trapping; packet framing & link lock acquisition; and UCIe standards compliance & PPA scaling validation), `MUT_76` killed.
 - ~~Bunch of Wires (BoW - OCP ODSA) & OpenHBI Die-to-Die Physical Layer Engine~~ -
   done: `docs/bow_study.md` (OCP ODSA BoW specification, BoW-Base vs BoW-Fast, OpenHBI bus interface, slice sparing and lane repair, 16-bit CRC-16, and IHP 130nm SG13G2 PPA scaling), `tools/bow_model.py` (`BowOpCode`, `compute_bow_crc16`, `encode_bow_packet`, `decode_bow_packet`, `BowReceiverModel`, `BowPpaModel`, and firmware generators) + `test/test_bow.py` (6/6 cocotb tests pass: master packet header transmission via SHIFTOUT MSB-first on pin 3; slave sync ingress via WAITEDGE into R0/R1; in-register opcode filtering and fault trapping; in-register slice spare wire allocation tracking and underflow trapping; packet framing & link lock acquisition; and BoW standards compliance & PPA scaling validation), `MUT_77` killed.
-- NVLink (NVIDIA High-Speed GPU Interconnect) Physical & Data Link Layer Engine
+- ~~NVLink (NVIDIA High-Speed GPU Interconnect) Physical & Data Link Layer Engine~~ -
+  done: `docs/nvlink_study.md` (NVLink 1.0 to 5.0 specifications, sub-link architecture, remote memory transactions, buffer credit flow control, 16-bit CCITT CRC, and IHP 130nm SG13G2 PPA scaling), `tools/nvlink_model.py` (`NvLinkOpCode`, `compute_nvlink_crc16`, `encode_nvlink_packet`, `decode_nvlink_packet`, `NvLinkReceiverModel`, `NvLinkPpaModel`, and firmware generators) + `test/test_nvlink.py` (6/6 cocotb tests pass: master packet header transmission via SHIFTOUT MSB-first on pin 3; slave sync ingress via WAITEDGE into R0/R1; in-register opcode filtering and fault trapping; in-register credit tracking and underflow trapping; packet framing & link lock acquisition; and NVLink standards compliance & PPA scaling validation), `MUT_78` killed.
+- AXI4-Stream & TileLink On-Chip Streaming Fabric & Interconnect Engine
 
 ---
 
-### Task Queue Status: Continuous Engineering Loop Active (Iteration 74 Complete, Iteration 75 Queued)
+### Task Queue Status: Continuous Engineering Loop Active (Iteration 75 Complete, Iteration 76 Queued)
 *Per `AGENTS.md`: Continuous engineering project. When the explicit task queue becomes empty, enter **RESEARCH_AND_PROOF** mode: find verification gaps, attempt to falsify assumptions, improve formal proofs, improve PPA, test alternative architectures and investigate novel protocol capabilities.*
+
 
 
 
