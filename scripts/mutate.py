@@ -585,6 +585,14 @@ MUTANTS = [
         "replacement": "      OP_ORI:  alu_op = ALU_AND;  // Mutated: ORI executes AND instead of OR",
         "description": "RapidIO v4.0 control symbol masking and field composition bug: OP_ORI decodes to ALU_AND instead of ALU_OR, corrupting in-register bitwise composition of control symbols and parameters",
     },
+    {
+        "id": "MUT_71_INFINIBAND_ALU_SUBI_DECODE",
+        "category": "InfiniBand HDR/NDR / ALU SUBI Decode",
+        "file": "src/core.v",
+        "target": "      OP_SUBI: alu_op = ALU_SUB;",
+        "replacement": "      OP_SUBI: alu_op = ALU_ADD;  // Mutated: SUBI executes ADD instead of SUB",
+        "description": "InfiniBand HDR/NDR packet length validation and link credit accounting bug: OP_SUBI decodes to ALU_ADD instead of ALU_SUB, causing payload length checking and credit decrementing to add instead of subtract",
+    },
 ]
 
 

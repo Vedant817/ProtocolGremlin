@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T10:37:07Z",
+  "timestamp": "2026-09-18T10:55:05Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 112.28,
+  "campaign_time_sec": 109.72,
   "mutants": [
     {
-      "id": "MUT_70_RAPIDIO_ALU_ORI_DECODE",
-      "category": "RapidIO v4.0 / ALU ORI Decode",
+      "id": "MUT_71_INFINIBAND_ALU_SUBI_DECODE",
+      "category": "InfiniBand HDR/NDR / ALU SUBI Decode",
       "file": "src/core.v",
-      "description": "RapidIO v4.0 control symbol masking and field composition bug: OP_ORI decodes to ALU_AND instead of ALU_OR, corrupting in-register bitwise composition of control symbols and parameters",
+      "description": "InfiniBand HDR/NDR packet length validation and link credit accounting bug: OP_SUBI decodes to ALU_ADD instead of ALU_SUB, causing payload length checking and credit decrementing to add instead of subtract",
       "status": "KILLED",
-      "elapsed_sec": 112.22
+      "elapsed_sec": 109.68
     }
   ]
 }
