@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T16:15:19Z",
+  "timestamp": "2026-09-18T16:30:44Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 125.87,
+  "campaign_time_sec": 120.67,
   "mutants": [
     {
-      "id": "MUT_80_AXI_MM_ALU_SUBI_DECODE",
-      "category": "AXI4/AXI5 Memory-Mapped (AXI4-MM) / ALU SUBI Decode",
+      "id": "MUT_81_AHB_APB_ALU_XORI_DECODE",
+      "category": "AMBA AHB-Lite & APB4 Interconnect / ALU XORI Decode",
       "file": "src/core.v",
-      "description": "AXI4/AXI5 Memory-Mapped burst credit tracking and wrap boundary address calculation bug: OP_SUBI decodes to ALU_ADD instead of ALU_SUB, causing outstanding transaction credit decrements and wrap address offsets to add instead of subtract",
+      "description": "AMBA AHB-Lite / APB4 interconnect command filtering and peripheral address decoding bug: OP_XORI decodes to ALU_OR instead of ALU_XOR, corrupting in-register opcode equality checks (R3 ^ cmd == 0), causing valid commands to fail branch conditions and trap spuriously",
       "status": "KILLED",
-      "elapsed_sec": 125.82
+      "elapsed_sec": 120.62
     }
   ]
 }

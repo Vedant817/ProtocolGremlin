@@ -665,6 +665,14 @@ MUTANTS = [
         "replacement": "      OP_SUBI: alu_op = ALU_ADD;  // Mutated: SUBI executes ADD instead of SUB",
         "description": "AXI4/AXI5 Memory-Mapped burst credit tracking and wrap boundary address calculation bug: OP_SUBI decodes to ALU_ADD instead of ALU_SUB, causing outstanding transaction credit decrements and wrap address offsets to add instead of subtract",
     },
+    {
+        "id": "MUT_81_AHB_APB_ALU_XORI_DECODE",
+        "category": "AMBA AHB-Lite & APB4 Interconnect / ALU XORI Decode",
+        "file": "src/core.v",
+        "target": "      OP_XORI: alu_op = ALU_XOR;",
+        "replacement": "      OP_XORI: alu_op = ALU_OR;  // Mutated: XORI executes OR instead of XOR",
+        "description": "AMBA AHB-Lite / APB4 interconnect command filtering and peripheral address decoding bug: OP_XORI decodes to ALU_OR instead of ALU_XOR, corrupting in-register opcode equality checks (R3 ^ cmd == 0), causing valid commands to fail branch conditions and trap spuriously",
+    },
 ]
 
 
