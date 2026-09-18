@@ -649,6 +649,14 @@ MUTANTS = [
         "replacement": "                  write_rd(rd_idx, {rd_val[6:0], !gpio_in[pin_idx]});  // Mutated: SHIFTIN MSB inverts sampled pin bit",
         "description": "NVLink High-Speed GPU Interconnect packet ingress bug: OP_SHIFTIN inverts sampled pin bit (!gpio_in[pin_idx]) during MSB-first deserialization, corrupting received read/write requests, responses, and flow control credits",
     },
+    {
+        "id": "MUT_79_AXI_STREAM_JZ_INVERTED_BRANCH_CONDITION",
+        "category": "AXI4-Stream & TileLink / JZ Inverted Branch Condition",
+        "file": "src/core.v",
+        "target": "              OP_JZ: if (z) pc <= operand[ADDR_WIDTH-1:0];",
+        "replacement": "              OP_JZ: if (!z) pc <= operand[ADDR_WIDTH-1:0];  // Mutated: JZ branches on !z instead of z",
+        "description": "AXI4-Stream & TileLink interconnect opcode filtering and credit management bug: OP_JZ inverts branch condition by checking !z instead of z, causing valid opcode matches and credit events to fail to branch while invalid conditions branch spuriously",
+    },
 ]
 
 

@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T15:38:59Z",
+  "timestamp": "2026-09-18T15:55:55Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 127.03,
+  "campaign_time_sec": 121.49,
   "mutants": [
     {
-      "id": "MUT_78_NVLINK_SHIFTIN_MSB_BIT_INVERT",
-      "category": "NVLink (NVIDIA High-Speed GPU Interconnect) / SHIFTIN MSB Bit Inversion",
+      "id": "MUT_79_AXI_STREAM_JZ_INVERTED_BRANCH_CONDITION",
+      "category": "AXI4-Stream & TileLink / JZ Inverted Branch Condition",
       "file": "src/core.v",
-      "description": "NVLink High-Speed GPU Interconnect packet ingress bug: OP_SHIFTIN inverts sampled pin bit (!gpio_in[pin_idx]) during MSB-first deserialization, corrupting received read/write requests, responses, and flow control credits",
+      "description": "AXI4-Stream & TileLink interconnect opcode filtering and credit management bug: OP_JZ inverts branch condition by checking !z instead of z, causing valid opcode matches and credit events to fail to branch while invalid conditions branch spuriously",
       "status": "KILLED",
-      "elapsed_sec": 126.97
+      "elapsed_sec": 121.44
     }
   ]
 }
