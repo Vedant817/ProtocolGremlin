@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T08:47:13Z",
+  "timestamp": "2026-09-18T09:33:08Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 127.45,
+  "campaign_time_sec": 91.66,
   "mutants": [
     {
-      "id": "MUT_66_DPHY_WAITEDGE_RISE_INV",
-      "category": "MIPI D-PHY v2.5 / WAITEDGE Rising Edge Synchronization",
+      "id": "MUT_67_CPHY_PIN_IDX_SLICE",
+      "category": "MIPI C-PHY v2.0 / Pin Index Decode",
       "file": "src/core.v",
-      "description": "MIPI D-PHY v2.5 SoT sync edge synchronization bug: WAITEDGE rising-edge mode (2'b01) evaluates falling edge condition (edge_fall instead of edge_rise), causing slave receiver SoT sync detection on Dp to hang or trigger on illegal polarity",
+      "description": "MIPI C-PHY trio pin decode bug: pin_idx sliced from operand[3:1] instead of operand[2:0], corrupting pin indexing across WAITEDGE and SHIFTIN operations",
       "status": "KILLED",
-      "elapsed_sec": 127.39
+      "elapsed_sec": 91.6
     }
   ]
 }

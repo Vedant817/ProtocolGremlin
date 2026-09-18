@@ -553,6 +553,14 @@ MUTANTS = [
         "replacement": "                      (edge_mode == 2'b01) ? edge_fall :  // Mutated: rising edge mode evaluates edge_fall",
         "description": "MIPI D-PHY v2.5 SoT sync edge synchronization bug: WAITEDGE rising-edge mode (2'b01) evaluates falling edge condition (edge_fall instead of edge_rise), causing slave receiver SoT sync detection on Dp to hang or trigger on illegal polarity",
     },
+    {
+        "id": "MUT_67_CPHY_PIN_IDX_SLICE",
+        "category": "MIPI C-PHY v2.0 / Pin Index Decode",
+        "file": "src/core.v",
+        "target": "  wire [2:0] pin_idx = operand[2:0];",
+        "replacement": "  wire [2:0] pin_idx = operand[3:1];  // Mutated: pin_idx sliced from operand[3:1]",
+        "description": "MIPI C-PHY trio pin decode bug: pin_idx sliced from operand[3:1] instead of operand[2:0], corrupting pin indexing across WAITEDGE and SHIFTIN operations",
+    },
 ]
 
 
