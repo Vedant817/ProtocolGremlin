@@ -641,6 +641,14 @@ MUTANTS = [
         "replacement": "                if (operand[3]) begin\n                  gpio_out[pin_idx] <= !rd_val[7];  // Mutated: SHIFTOUT MSB inverts driven bit",
         "description": "BoW / OpenHBI Die-to-Die packet serialization bug: OP_SHIFTOUT inverts serialized MSB-first bit (!rd_val[7]), corrupting training patterns, calibration requests, and slice configuration data",
     },
+    {
+        "id": "MUT_78_NVLINK_SHIFTIN_MSB_BIT_INVERT",
+        "category": "NVLink (NVIDIA High-Speed GPU Interconnect) / SHIFTIN MSB Bit Inversion",
+        "file": "src/core.v",
+        "target": "                  write_rd(rd_idx, {rd_val[6:0], gpio_in[pin_idx]});",
+        "replacement": "                  write_rd(rd_idx, {rd_val[6:0], !gpio_in[pin_idx]});  // Mutated: SHIFTIN MSB inverts sampled pin bit",
+        "description": "NVLink High-Speed GPU Interconnect packet ingress bug: OP_SHIFTIN inverts sampled pin bit (!gpio_in[pin_idx]) during MSB-first deserialization, corrupting received read/write requests, responses, and flow control credits",
+    },
 ]
 
 

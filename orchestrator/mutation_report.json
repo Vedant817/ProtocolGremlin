@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T15:21:16Z",
+  "timestamp": "2026-09-18T15:38:59Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 122.15,
+  "campaign_time_sec": 127.03,
   "mutants": [
     {
-      "id": "MUT_77_BOW_SHIFTOUT_MSB_BIT_INVERT",
-      "category": "Bunch of Wires (BoW / OpenHBI) / SHIFTOUT MSB Bit Inversion",
+      "id": "MUT_78_NVLINK_SHIFTIN_MSB_BIT_INVERT",
+      "category": "NVLink (NVIDIA High-Speed GPU Interconnect) / SHIFTIN MSB Bit Inversion",
       "file": "src/core.v",
-      "description": "BoW / OpenHBI Die-to-Die packet serialization bug: OP_SHIFTOUT inverts serialized MSB-first bit (!rd_val[7]), corrupting training patterns, calibration requests, and slice configuration data",
+      "description": "NVLink High-Speed GPU Interconnect packet ingress bug: OP_SHIFTIN inverts sampled pin bit (!gpio_in[pin_idx]) during MSB-first deserialization, corrupting received read/write requests, responses, and flow control credits",
       "status": "KILLED",
-      "elapsed_sec": 122.1
+      "elapsed_sec": 126.97
     }
   ]
 }
