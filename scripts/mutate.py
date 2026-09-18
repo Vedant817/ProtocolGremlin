@@ -561,7 +561,16 @@ MUTANTS = [
         "replacement": "  wire [2:0] pin_idx = operand[3:1];  // Mutated: pin_idx sliced from operand[3:1]",
         "description": "MIPI C-PHY trio pin decode bug: pin_idx sliced from operand[3:1] instead of operand[2:0], corrupting pin indexing across WAITEDGE and SHIFTIN operations",
     },
+    {
+        "id": "MUT_68_DP20_ALU_XORI_DECODE",
+        "category": "DisplayPort 2.0 / ALU XORI Decode",
+        "file": "src/core.v",
+        "target": "      OP_XORI: alu_op = ALU_XOR;",
+        "replacement": "      OP_XORI: alu_op = ALU_OR;  // Mutated: XORI executes OR instead of XOR",
+        "description": "DisplayPort 2.0 sync header and LFSR descrambler bug: OP_XORI decodes to ALU_OR instead of ALU_XOR, corrupting in-register header matching and stream descrambling",
+    },
 ]
+
 
 
 def run_tests(timeout_sec=240):

@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T09:33:08Z",
+  "timestamp": "2026-09-18T09:59:09Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 91.66,
+  "campaign_time_sec": 107.06,
   "mutants": [
     {
-      "id": "MUT_67_CPHY_PIN_IDX_SLICE",
-      "category": "MIPI C-PHY v2.0 / Pin Index Decode",
+      "id": "MUT_68_DP20_ALU_XORI_DECODE",
+      "category": "DisplayPort 2.0 / ALU XORI Decode",
       "file": "src/core.v",
-      "description": "MIPI C-PHY trio pin decode bug: pin_idx sliced from operand[3:1] instead of operand[2:0], corrupting pin indexing across WAITEDGE and SHIFTIN operations",
+      "description": "DisplayPort 2.0 sync header and LFSR descrambler bug: OP_XORI decodes to ALU_OR instead of ALU_XOR, corrupting in-register header matching and stream descrambling",
       "status": "KILLED",
-      "elapsed_sec": 91.6
+      "elapsed_sec": 107.02
     }
   ]
 }
