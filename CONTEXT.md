@@ -546,7 +546,7 @@ bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 ## What to work on next
 
 Full prioritized backlog: `orchestrator/queue.md`.
-**Milestone Reached: 90 Iterations Complete!** All 90 prioritized engineering iterations have been fully designed, implemented, formally proved, netlist verified, and regression tested.
+**Milestone Reached: 90 Iterations Complete + Submission Readiness!** All 90 prioritized engineering iterations have been fully designed, implemented, formally proved, netlist verified, and regression tested. Submission blockers resolved: top module renamed to `tt_um_Vedant817_protocol_emulator`, `info.yaml` completed (author, pin descriptions, top_module), `README.md` rewritten to reflect full 90-iteration status, `docs/info.md` filled with Tiny Tapeout datasheet content, and GitHub Actions CI workflows added (`.github/workflows/gds.yaml`, `test.yaml`, `docs.yaml`) for automated GDS build, precheck, gate-level test, and viewer deployment.
 
 Per `AGENTS.md`: Continuous engineering project. When the explicit task queue becomes empty, enter **RESEARCH_AND_PROOF** mode:
 find verification gaps, attempt to falsify assumptions, improve formal proofs, improve PPA, test alternative architectures and investigate novel protocol capabilities.

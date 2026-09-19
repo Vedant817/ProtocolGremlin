@@ -57860,7 +57860,7 @@ module gpio(clk, rst_n, dir, out_val, od_mode, pin_in, pin_out, pin_oe, in_sync)
   assign pin_out[7] = _071_;
 endmodule
 
-module tt_um_change_me_protocol_emulator(ui_in, uo_out, uio_in, uio_out, uio_oe, ena, clk, rst_n);
+module tt_um_Vedant817_protocol_emulator(ui_in, uo_out, uio_in, uio_out, uio_oe, ena, clk, rst_n);
   input [7:0] ui_in;
   wire [7:0] ui_in;
   output [7:0] uo_out;

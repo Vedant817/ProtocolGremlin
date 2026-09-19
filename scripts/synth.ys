@@ -9,7 +9,7 @@ read_verilog src/gpio.v
 read_verilog src/program_ram.v
 
 # Elaborate and synthesize top module
-synth -top tt_um_change_me_protocol_emulator
+synth -top tt_um_Vedant817_protocol_emulator
 
 # Design check (verify no inferred latches or combinatorial loops)
 check

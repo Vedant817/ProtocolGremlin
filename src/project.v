@@ -3,21 +3,22 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * project.v - Tiny Tapeout top-level wrapper for the programmable protocol
- * emulator (ISA v0 bootstrap). See docs/architecture.md and docs/isa.md.
+ * emulator. See docs/architecture.md and docs/isa.md.
  *
- * Pin mapping (v0):
+ * Pin mapping:
  *   uio[7:0] - the programmable protocol GPIO bus (GDIR, GWR, GRD instructions)
- *   uo_out   - reserved for future use (tied to 0 in v0, see docs/limitations.md)
- *   ui_in    - reserved for future use (unused in v0, see docs/limitations.md)
- *
- * TODO before Tiny Tapeout submission: rename this module (and the
- * top_module entry in info.yaml) to include the actual GitHub username,
- * per Tiny Tapeout's uniqueness requirement. Tracked in orchestrator/queue.md.
+ *   uo_out[0] - BOOT_DONE (bootloader complete status)
+ *   uo_out[1] - BOOT_ERR  (bootloader CRC error / halt lock)
+ *   uo_out[7:2] - reserved (tied to 0)
+ *   ui_in[0] - LOAD_REQ  (bootloader load request)
+ *   ui_in[1] - LOAD_DATA (bootloader serial data input)
+ *   ui_in[2] - LOAD_CLK  (bootloader serial clock input)
+ *   ui_in[7:3] - reserved (unused)
  */
 
 `default_nettype none
 
-module tt_um_change_me_protocol_emulator (
+module tt_um_Vedant817_protocol_emulator (
     input  wire [7:0] ui_in,    // Dedicated inputs (reserved, unused in v0)
     output wire [7:0] uo_out,   // Dedicated outputs (reserved, unused in v0)
     input  wire [7:0] uio_in,   // IOs: Input path
