@@ -149,7 +149,7 @@ orchestrator/   Durable project state for the continuous engineering loop
 | Core logic | ~1,580 cells (~2.2 kGE) |
 | Program RAM | 91.8% of area (synthesized flip-flop matrix) |
 | Target clock | 10 MHz |
-| Tile allocation | 8×4 (32 tiles, ~1 mm²) |
+| Tile allocation | 6×4 (24 tiles, ~0.7 mm²) |
 | Density | <65% |
 
 ## AI-Assisted Development

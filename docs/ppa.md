@@ -60,9 +60,9 @@ From post-mapping ABC statistics (`abc -g cmos2`):
   - Total Chip (including 4096-bit RAM): $37,542\,\text{GE} \times 16\,\mu\text{m}^2 \approx 600,000\,\mu\text{m}^2$ total cell area.
 
 - **Allocated Tile Footprint:**
-  The project is configured for **8x4 tiles (32 tiles)** in `info.yaml` (the maximum allocation for the Jane Street / Tiny Tapeout competition):
-  $$\text{Total Tile Area} = 32 \times (167\,\mu\text{m} \times 108\,\mu\text{m}) = 577,152\,\mu\text{m}^2 \approx 0.577\,\text{mm}^2$$
-  The design matches the competition 8x4 allocation boundary. If future iterations scale program RAM from 256 words down to 128 words, cell count drops by nearly half (~20 kGE), providing substantial placement and routing headroom.
+  The project is configured for **6x4 tiles (24 tiles)** in `info.yaml` (the largest available IHP CMOS5L tile configuration):
+  $$\text{Total Tile Area} = 24 \times (167\,\mu\text{m} \times 108\,\mu\text{m}) = 432,864\,\mu\text{m}^2 \approx 0.43\,\text{mm}^2$$
+  The design fits comfortably inside the 6x4 footprint at <65% placement density. If future iterations scale program RAM from 256 words down to 128 words, cell count drops by nearly half (~20 kGE), providing substantial placement and routing headroom.
 
 ---
 
