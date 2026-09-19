@@ -1,11 +1,11 @@
 {
   "phase": "isa-v1-rldram-verified",
   "best_commit": null,
-  "active_objective": "Tapeout CI: GDS harden succeeded on 6x4 tiles; fix gate-level PDK UDP compile (sg13cmos5l_udp.v) so gds.yaml gl_test/precheck/viewer are all green.",
+  "active_objective": "RESEARCH_AND_PROOF: Tiny Tapeout CI is fully green on 6x4 (docs, 509 RTL tests, GDS harden, precheck, 8/8 GL tests, viewer).",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
   "iterations": 90,
   "halt": false,
-  "notes": "CI: tiles 6x4 (8x4 invalid on CMOS5L). GitHub Pages=Actions. GDS harden+viewer green on 16797d7 (~1h52m). gl_test failed compiling PDK (ihp_mux2) until test/Makefile includes sg13cmos5l_udp.v. RTL CI 509/509. Iteration 90 complete (RLDRAM 3)."
+  "notes": "CI fully green on 1771322: docs, test 509/509, gds harden, precheck, gl_test 8/8, viewer. tiles=6x4. GitHub Pages=Actions. UDP primitives included for CMOS5L GL sim. Iteration 90 complete (RLDRAM 3)."
 }
