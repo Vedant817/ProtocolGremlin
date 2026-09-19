@@ -1,11 +1,11 @@
 {
   "phase": "isa-v1-rldram-verified",
   "best_commit": null,
-  "active_objective": "Continuous engineering loop: Iteration 90 complete (RLDRAM 3 / Reduced Latency DRAM 3 / Micron RLDRAM Ultra-Low Latency Synchronous DRAM Protocol Engine). Target milestone of 90 iterations reached. Entering RESEARCH_AND_PROOF mode per AGENTS.md: explore formal proof extensions, PPA optimizations, deep verification falsification, and novel protocol capabilities.",
+  "active_objective": "Tapeout CI: GDS harden succeeded on 6x4 tiles; fix gate-level PDK UDP compile (sg13cmos5l_udp.v) so gds.yaml gl_test/precheck/viewer are all green.",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
   "iterations": 90,
   "halt": false,
-  "notes": "Iteration 90 complete: Authored docs/rldram_study.md (Micron RLDRAM 3 specifications, 16 independent banks, tRC ~6.67-10 ns random cycle time, BL2/BL4/BL8 DDR bursts, credit flow control, 16-bit CCITT CRC, and IHP 130nm SG13G2 PPA scaling). Created tools/rldram_model.py (RldramBankState, RldramBankId, RldramOpCode, compute_rldram_crc16, encode_rldram_packet, decode_rldram_packet, RldramReceiverModel, RldramPpaModel, build_rldram_tx_beat_asm, build_rldram_rx_beat_asm, build_rldram_command_filter_asm, build_rldram_credit_tracker_asm) and test/test_rldram.py (6/6 tests pass: master packet header transmission via SHIFTOUT MSB-first on pin 3; slave sync ingress via WAITEDGE into R0/R1; in-register command filtering and fault trapping; in-register credit tracking and underflow trapping; packet framing, banks & receiver model validation; and RLDRAM standards compliance & PPA scaling validation). Added test_rldram to test/Makefile. Full regression suite: 509/509 tests PASS (100.0%) across 88 modules. Added MUT_93_RLDRAM_ALU_SUB_INVERT in scripts/mutate.py (killed in 172.04s, 93/93 mutants killed, 100.0% kill rate). SymbiYosys formal BMC passed (20 steps Z3, 0 violations in 76s). Gate-level simulation confirmed 8/8 physical tests pass in 28.18s."
+  "notes": "CI: tiles 6x4 (8x4 invalid on CMOS5L). GitHub Pages=Actions. GDS harden+viewer green on 16797d7 (~1h52m). gl_test failed compiling PDK (ihp_mux2) until test/Makefile includes sg13cmos5l_udp.v. RTL CI 509/509. Iteration 90 complete (RLDRAM 3)."
 }

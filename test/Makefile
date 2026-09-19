@@ -25,6 +25,9 @@ COMPILE_ARGS    += -DSIM
 ifeq ($(PDK_ROOT),)
 VERILOG_SOURCES += $(PWD)/simcells_timing.v
 else
+# CMOS5L stdcell models instantiate IHP UDP primitives (ihp_mux2, ihp_dff_r, ...).
+# Those live in sg13cmos5l_udp.v and must be compiled first.
+VERILOG_SOURCES += $(PDK_ROOT)/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/verilog/sg13cmos5l_udp.v
 VERILOG_SOURCES += $(PDK_ROOT)/ihp-sg13cmos5l/libs.ref/sg13cmos5l_io/verilog/sg13cmos5l_io.v
 VERILOG_SOURCES += $(PDK_ROOT)/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/verilog/sg13cmos5l_stdcell.v
 endif

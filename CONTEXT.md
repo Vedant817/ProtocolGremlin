@@ -546,6 +546,8 @@ bash scripts/synth.sh       # runs Yosys synthesis and outputs cell/area metrics
 ## What to work on next
 
 Full prioritized backlog: `orchestrator/queue.md`.
+**CI / tapeout status (2026-09-19):** `info.yaml` tiles corrected to **6x4** (Jane Street / IHP CMOS5L maximum; 8x4 is not a valid DEF). GitHub Pages source set to **GitHub Actions**. On commit `16797d7`: docs ✅, RTL test 509/509 ✅, GDS harden ✅ (~1h52m), viewer ✅. Gate-level CI failed compiling PDK cells (`Unknown module type: ihp_mux2`) because `test/Makefile` omitted `sg13cmos5l_udp.v`; that include is now added. Next: confirm the gds workflow (precheck + gl_test + viewer) is fully green after this Makefile fix.
+
 **Milestone Reached: 90 Iterations Complete + Submission Readiness!** All 90 prioritized engineering iterations have been fully designed, implemented, formally proved, netlist verified, and regression tested. Submission blockers resolved: top module renamed to `tt_um_Vedant817_protocol_emulator`, `info.yaml` completed (author, pin descriptions, top_module), `README.md` rewritten to reflect full 90-iteration status, `docs/info.md` filled with Tiny Tapeout datasheet content, and GitHub Actions CI workflows added (`.github/workflows/gds.yaml`, `test.yaml`, `docs.yaml`) for automated GDS build, precheck, gate-level test, and viewer deployment.
 
 Per `AGENTS.md`: Continuous engineering project. When the explicit task queue becomes empty, enter **RESEARCH_AND_PROOF** mode:
