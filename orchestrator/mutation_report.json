@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-23T20:21:41Z",
+  "timestamp": "2026-09-23T20:27:51Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 9.38,
+  "campaign_time_sec": 17.11,
   "mutants": [
     {
-      "id": "MUT_96_PROFILER_WAIT_DECREMENT_CORRUPT",
-      "category": "Timing / Wait Counter Step Rate",
-      "file": "src/core.v",
-      "description": "Hardware timing instruction execution bug: OP_WAIT duration counter decrements by 2 per clock cycle instead of 1, halving all programmed protocol wait states and distorting serial baud bit durations",
+      "id": "MUT_97_PROGRAM_RAM_WADDR_SLICE_CORRUPT",
+      "category": "Memory / Program RAM Write Addressing",
+      "file": "src/program_ram.v",
+      "description": "Program RAM write addressing bug: waddr bit 0 inverted during serial bootloading writes (mem[waddr ^ 8'h01] <= wdata), misplacing even and odd instruction words in memory and crashing firmware execution",
       "status": "KILLED",
-      "elapsed_sec": 9.32
+      "elapsed_sec": 17.05
     }
   ]
 }

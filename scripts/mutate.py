@@ -793,6 +793,14 @@ MUTANTS = [
         "replacement": "            wait_remaining <= wait_remaining - 8'h02;  // Mutated: wait decrements by 2 instead of 1",
         "description": "Hardware timing instruction execution bug: OP_WAIT duration counter decrements by 2 per clock cycle instead of 1, halving all programmed protocol wait states and distorting serial baud bit durations",
     },
+    {
+        "id": "MUT_97_PROGRAM_RAM_WADDR_SLICE_CORRUPT",
+        "category": "Memory / Program RAM Write Addressing",
+        "file": "src/program_ram.v",
+        "target": "      mem[waddr] <= wdata;",
+        "replacement": "      mem[waddr ^ 8'h01] <= wdata;  // Mutated: waddr bit 0 inverted during writes",
+        "description": "Program RAM write addressing bug: waddr bit 0 inverted during serial bootloading writes (mem[waddr ^ 8'h01] <= wdata), misplacing even and odd instruction words in memory and crashing firmware execution",
+    },
 ]
 
 
