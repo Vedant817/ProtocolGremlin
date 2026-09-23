@@ -825,6 +825,14 @@ MUTANTS = [
         "replacement": "  assign data = mem[addr] ^ 16'h0002;  // Mutated: Program RAM read data bit 1 corrupted (SEU soft error)",
         "description": "Program RAM instruction read data single-event upset (SEU) fault: bit 1 of fetched instructions (operand LSB) is corrupted (mem[addr] ^ 16'h0002), simulating radiation/alpha-particle soft bit-flip in SRAM bitcell or read buffer, corrupting opcodes/immediates and crashing firmware",
     },
+    {
+        "id": "MUT_101_DMA_GPIO_READ_INVERT",
+        "category": "DMA / Peripheral Read Datapath",
+        "file": "src/core.v",
+        "target": "              OP_GRD: begin\n                write_rd(rd_idx, gpio_in);",
+        "replacement": "              OP_GRD: begin\n                write_rd(rd_idx, ~gpio_in);  // Mutated: OP_GRD inverts read GPIO bus data",
+        "description": "Direct memory access and peripheral GPIO read datapath corruption: OP_GRD inverts read GPIO bus data (~gpio_in instead of gpio_in), corrupting peripheral streaming ingress, DMA FIFO buffers, and protocol frame reception across all serial buses",
+    },
 ]
 
 
