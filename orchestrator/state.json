@@ -1,11 +1,11 @@
 {
-  "phase": "bus-arbiter-verified",
+  "phase": "deep-sleep-verified",
   "best_commit": null,
-  "active_objective": "RESEARCH_AND_PROOF: Iteration 95 complete (Autonomous Multi-Master Bus Contention & Collision Arbiter Engine, 527 tests, MUT_98 killed). Advancing to Iteration 96: Low-Power Autonomous Deep-Sleep Controller & Event-Driven Wakeup Subsystem.",
+  "active_objective": "RESEARCH_AND_PROOF: Iteration 96 complete (Low-Power Autonomous Deep-Sleep Controller & Event-Driven Wakeup Subsystem, 533 tests, MUT_99 killed). Advancing to Iteration 97: Hardware-Assisted Single Error Correction Double Error Detection (SECDED Hamming Code) Program Memory Protection Engine.",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 95,
+  "iterations": 96,
   "halt": false,
-  "notes": "CI fully green on GitHub Actions (gds, precheck, gl_test, docs, test). Iteration 95 complete: Bus contention and collision arbiter study (docs/bus_arbiter_study.md), 4-policy simulation model (tools/arbiter_model.py), cocotb suite (test/test_arbiter.py, 6/6 tests), 527 total tests across 91 modules, MUT_98 open-drain polarity mutant killed (98/98, 100% kill rate), 8/8 gate-level tests passed, 7 formal invariants proven in 101s, 19,346 CMOS cells."
+  "notes": "CI fully green on GitHub Actions. Iteration 96 complete: Low-Power Deep-Sleep Controller study (docs/deep_sleep_study.md), 4-tier power model (tools/sleep_controller_model.py, 48 nW deep sleep), cocotb suite (test/test_sleep_controller.py, 6/6 tests), 533 total tests across 92 modules, MUT_99 WAITEDGE polarity mutant killed (99/99, 100% kill rate), 8/8 gate-level tests passed, 7 formal invariants proven, 19,346 CMOS cells."
 }

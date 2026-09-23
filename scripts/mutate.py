@@ -809,7 +809,16 @@ MUTANTS = [
         "replacement": "  assign pin_oe  = (dir & ~od_mode) | (dir & od_mode & out_val);  // Mutated: open-drain pin_oe polarity inverted",
         "description": "Multi-master bus arbitration open-drain polarity corruption: pin_oe asserts when out_val is 1 instead of 0 in open-drain mode, inverting recessive/dominant bus drive and causing electrical contention and arbitration failure",
     },
+    {
+        "id": "MUT_99_WAITEDGE_RISING_EDGE_POLARITY_CORRUPT",
+        "category": "Low-Power Wakeup / Edge Polarity",
+        "file": "src/core.v",
+        "target": "  wire edge_rise = pin_now && !pin_prev;",
+        "replacement": "  wire edge_rise = !pin_now && pin_prev;  // Mutated: rising edge inverted to falling edge",
+        "description": "Low-power event-driven wakeup edge polarity corruption: edge_rise inverts rising edge condition to falling edge (!pin_now && pin_prev), breaking hardware event wakeup, CAN/LIN SOF sync, and WAITEDGE timing discovery",
+    },
 ]
+
 
 
 

@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-23T20:33:18Z",
+  "timestamp": "2026-09-23T20:39:21Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 20.31,
+  "campaign_time_sec": 20.54,
   "mutants": [
     {
-      "id": "MUT_98_ARBITER_GPIO_OPEN_DRAIN_POLARITY_CORRUPT",
-      "category": "Bus Arbitration / Open-Drain Polarity",
-      "file": "src/gpio.v",
-      "description": "Multi-master bus arbitration open-drain polarity corruption: pin_oe asserts when out_val is 1 instead of 0 in open-drain mode, inverting recessive/dominant bus drive and causing electrical contention and arbitration failure",
+      "id": "MUT_99_WAITEDGE_RISING_EDGE_POLARITY_CORRUPT",
+      "category": "Low-Power Wakeup / Edge Polarity",
+      "file": "src/core.v",
+      "description": "Low-power event-driven wakeup edge polarity corruption: edge_rise inverts rising edge condition to falling edge (!pin_now && pin_prev), breaking hardware event wakeup, CAN/LIN SOF sync, and WAITEDGE timing discovery",
       "status": "KILLED",
-      "elapsed_sec": 20.26
+      "elapsed_sec": 20.5
     }
   ]
 }
