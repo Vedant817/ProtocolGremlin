@@ -55,6 +55,7 @@ async def test_isa_v1_differential(dut):
     dut.uio_in.value = 0
     dut.rst_n.value = 0
     await FallingEdge(dut.clk)
+    assert int(dut.uio_oe.value) == 0, f"GPIO must be high-Z during reset, got {dut.uio_oe.value}"
     dut.rst_n.value = 1
 
     # Reprogram the chip over its own GPIO bus - no $readmemh involved (see

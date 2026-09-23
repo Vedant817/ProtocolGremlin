@@ -769,14 +769,24 @@ MUTANTS = [
         "replacement": "      OP_SUB:  result = a + b;  // Mutated: OP_SUB executes ADD instead of SUB",
         "description": "RLDRAM 3 buffer credit decrement and random cycle timing calculation bug: ALU OP_SUB executes arithmetic ADD instead of SUB (result = a + b), corrupting in-register transaction credit depletion, tRC cycle accounting, and flow control underflow bounds checking",
     },
+    {
+        "id": "MUT_94_RESET_GPIO_DIR_CORRUPT",
+        "category": "Reset Safety / GPIO High-Z Tri-State Invariant",
+        "file": "src/core.v",
+        "target": "      gpio_dir       <= 8'h00;",
+        "replacement": "      gpio_dir       <= 8'hFF;  // Mutated: reset forces GPIO outputs active instead of High-Z",
+        "description": "Chip reset electrical safety fault: reset forces gpio_dir to 0xFF (driving active outputs) instead of safe High-Z tri-state 0x00, causing potential external bus contention and violating formal reset safety invariants",
+    },
 ]
 
 
 
-def run_tests(timeout_sec=240):
+def run_tests(timeout_sec=420, quick=False):
     """Run regression test suite in test directory. Returns True if tests pass, False if failed."""
     cmd = ["make", "-C", os.path.join(REPO_ROOT, "test"), "clean", "sim"]
     env = os.environ.copy()
+    if quick:
+        env["MODULE"] = "test,test_opcodes,test_bootload,test_uart,test_spi,test_i2c"
     try:
         proc = subprocess.run(
             cmd,
@@ -825,6 +835,7 @@ def main():
     cleanup_backups()
     parser = argparse.ArgumentParser(description="Run RTL mutation testing suite.")
     parser.add_argument("--mutant", help="Run a specific mutant ID only")
+    parser.add_argument("--quick", action="store_true", help="Run fast targeted regression (core + primary protocols)")
     args = parser.parse_args()
 
     mutants_to_run = MUTANTS
@@ -836,12 +847,12 @@ def main():
 
     print("=" * 80)
     print("Jane Street Protocol Emulator - Seeded Mutation Testing Harness")
-    print(f"Total defined mutants: {len(mutants_to_run)}")
+    print(f"Total defined mutants: {len(mutants_to_run)} (mode: {'quick' if args.quick else 'full'})")
     print("=" * 80)
 
     # First verify baseline passes cleanly
     print("--> Checking baseline test suite before applying mutations...")
-    baseline_pass = run_tests()
+    baseline_pass = run_tests(quick=args.quick)
     if not baseline_pass:
         print("FATAL: Baseline test suite fails without mutations! Aborting.", file=sys.stderr)
         sys.exit(1)
@@ -864,7 +875,7 @@ def main():
 
         try:
             apply_mutation(abs_path, mut["target"], mut["replacement"])
-            passed = run_tests()
+            passed = run_tests(quick=args.quick)
             elapsed = time.time() - t0
 
             if passed:

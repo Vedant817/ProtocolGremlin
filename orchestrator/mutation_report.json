@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-18T23:09:01Z",
+  "timestamp": "2026-09-23T19:55:21Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 172.1,
+  "campaign_time_sec": 23.42,
   "mutants": [
     {
-      "id": "MUT_93_RLDRAM_ALU_SUB_INVERT",
-      "category": "RLDRAM 3 Memory Controller / ALU SUB Invert",
-      "file": "src/alu.v",
-      "description": "RLDRAM 3 buffer credit decrement and random cycle timing calculation bug: ALU OP_SUB executes arithmetic ADD instead of SUB (result = a + b), corrupting in-register transaction credit depletion, tRC cycle accounting, and flow control underflow bounds checking",
+      "id": "MUT_94_RESET_GPIO_DIR_CORRUPT",
+      "category": "Reset Safety / GPIO High-Z Tri-State Invariant",
+      "file": "src/core.v",
+      "description": "Chip reset electrical safety fault: reset forces gpio_dir to 0xFF (driving active outputs) instead of safe High-Z tri-state 0x00, causing potential external bus contention and violating formal reset safety invariants",
       "status": "KILLED",
-      "elapsed_sec": 172.04
+      "elapsed_sec": 23.36
     }
   ]
 }

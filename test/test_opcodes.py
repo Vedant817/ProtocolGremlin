@@ -25,6 +25,7 @@ async def _setup_and_load(dut, asm_source: str, external_uio_in: int = 0):
     dut.uio_in.value = 0
     dut.rst_n.value = 0
     await FallingEdge(dut.clk)
+    assert int(dut.uio_oe.value) == 0, f"GPIO must be high-Z on reset, got {dut.uio_oe.value}"
     dut.rst_n.value = 1
 
     await bootload(dut, words)

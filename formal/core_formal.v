@@ -98,6 +98,21 @@ module core_formal (
         assert(pvfi_halted);
         assert(!pvfi_valid);
       end
+
+      // Invariant 5: Reset state determinism & GPIO safe tri-state
+      if (!rst_n) begin
+        assert(uio_oe == 8'h00);
+        assert(!pvfi_valid);
+        assert(!boot_done);
+        assert(!boot_err);
+        assert(!pvfi_halted);
+      end
+
+      // Invariant 6: Output pin safety: uio_oe matches pvfi_gpio_oe
+      assert(uio_oe == pvfi_gpio_oe);
+
+      // Invariant 7: Register addressing bounds
+      assert(pvfi_rd_addr <= 2'b11);
     end
   end
 
