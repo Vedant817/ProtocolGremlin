@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-23T21:15:49Z",
+  "timestamp": "2026-09-23T21:28:44Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 10.02,
+  "campaign_time_sec": 29.74,
   "mutants": [
     {
-      "id": "MUT_103_BRIDGE_FABRIC_DIRECTION_CORRUPT",
-      "category": "Universal Bridge / Serial Shiftout Datapath",
+      "id": "MUT_104_BIST_BOOT_ERR_FALSE_ASSERTION",
+      "category": "BIST / Hardware Health Status Indication",
       "file": "src/core.v",
-      "description": "Universal protocol bridge and serial shiftout datapath corruption: OP_SHIFTOUT in LSB mode inverts output bit (~rd_val[0] instead of rd_val[0]), corrupting universal multi-protocol translation and egress streaming across UART, LIN, MIDI, and serial bridges",
+      "description": "Hardware Built-In Self-Test (BIST) and boot health indication fault: on successful bitstream CRC verification, boot_err is falsely asserted (boot_err <= 1'b1 instead of 1'b0), reporting hardware self-test failure on valid code and corrupting production go/no-go screening",
       "status": "KILLED",
-      "elapsed_sec": 9.97
+      "elapsed_sec": 29.69
     }
   ]
 }

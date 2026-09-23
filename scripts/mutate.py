@@ -849,6 +849,14 @@ MUTANTS = [
         "replacement": "                  gpio_out[pin_idx] <= ~rd_val[0];  // Mutated: SHIFTOUT LSB mode inverts output bit",
         "description": "Universal protocol bridge and serial shiftout datapath corruption: OP_SHIFTOUT in LSB mode inverts output bit (~rd_val[0] instead of rd_val[0]), corrupting universal multi-protocol translation and egress streaming across UART, LIN, MIDI, and serial bridges",
     },
+    {
+        "id": "MUT_104_BIST_BOOT_ERR_FALSE_ASSERTION",
+        "category": "BIST / Hardware Health Status Indication",
+        "file": "src/core.v",
+        "target": "              if ({ld_sreg[6:0], gpio_in[LOAD_DATA_BIT]} == ld_crc) begin\n                boot_err  <= 1'b0;",
+        "replacement": "              if ({ld_sreg[6:0], gpio_in[LOAD_DATA_BIT]} == ld_crc) begin\n                boot_err  <= 1'b1;  // Mutated: Successful bootload asserts boot_err",
+        "description": "Hardware Built-In Self-Test (BIST) and boot health indication fault: on successful bitstream CRC verification, boot_err is falsely asserted (boot_err <= 1'b1 instead of 1'b0), reporting hardware self-test failure on valid code and corrupting production go/no-go screening",
+    },
 ]
 
 
