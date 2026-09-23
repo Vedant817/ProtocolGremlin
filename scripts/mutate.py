@@ -833,6 +833,14 @@ MUTANTS = [
         "replacement": "              OP_GRD: begin\n                write_rd(rd_idx, ~gpio_in);  // Mutated: OP_GRD inverts read GPIO bus data",
         "description": "Direct memory access and peripheral GPIO read datapath corruption: OP_GRD inverts read GPIO bus data (~gpio_in instead of gpio_in), corrupting peripheral streaming ingress, DMA FIFO buffers, and protocol frame reception across all serial buses",
     },
+    {
+        "id": "MUT_102_EQUALIZER_WAITEDGE_INCREMENT_STEP_CORRUPT",
+        "category": "Equalization / Baud Phase Tracking Accumulator",
+        "file": "src/core.v",
+        "target": "                  edge_wait_cnt <= (edge_wait_cnt == 8'hFF) ? 8'hFF : (edge_wait_cnt + 8'h01);",
+        "replacement": "                  edge_wait_cnt <= (edge_wait_cnt == 8'hFF) ? 8'hFF : (edge_wait_cnt + 8'h02);  // Mutated: WAITEDGE wait counter increments by 2",
+        "description": "Baud phase tracking and edge interval accumulator corruption: edge_wait_cnt increments by 2 per stall cycle instead of 1, distorting measured bit durations, pulse widths, and jitter margins by 2x and breaking baud synchronization across high-speed protocol links",
+    },
 ]
 
 
