@@ -785,6 +785,14 @@ MUTANTS = [
         "replacement": "  wire [15:0] ram_wdata = {ld_sreg[13:0], 1'b0, gpio_in[LOAD_DATA_BIT]};  // Mutated: ld_sreg shifted bit alignment corrupted",
         "description": "Bootloader RAM write-data alignment fault: ram_wdata concatenates misaligned 14-bit slice ld_sreg[13:0] with inserted 0 instead of exact 15-bit ld_sreg, corrupting instruction opcode/operand words during serial bootload",
     },
+    {
+        "id": "MUT_96_PROFILER_WAIT_DECREMENT_CORRUPT",
+        "category": "Timing / Wait Counter Step Rate",
+        "file": "src/core.v",
+        "target": "            wait_remaining <= wait_remaining - 8'h01;",
+        "replacement": "            wait_remaining <= wait_remaining - 8'h02;  // Mutated: wait decrements by 2 instead of 1",
+        "description": "Hardware timing instruction execution bug: OP_WAIT duration counter decrements by 2 per clock cycle instead of 1, halving all programmed protocol wait states and distorting serial baud bit durations",
+    },
 ]
 
 

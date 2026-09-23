@@ -1,11 +1,11 @@
 {
-  "phase": "rtl-lint-clean-signoff",
+  "phase": "profiler-tooling-verified",
   "best_commit": null,
-  "active_objective": "RESEARCH_AND_PROOF: Iteration 92 complete (RTL Lint Cleanliness 0W/0E, MUT_95 killed). Advancing to Iteration 93: Protocol microcode profiler and cycle budget analysis tooling.",
+  "active_objective": "RESEARCH_AND_PROOF: Iteration 93 complete (Microcode cycle/throughput profiler, 515 tests, MUT_96 killed). Advancing to Iteration 94: Program RAM Micro-Architecture & High-Density Memory Packaging Co-Design.",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 92,
+  "iterations": 93,
   "halt": false,
-  "notes": "CI fully green on GitHub Actions (gds, precheck, gl_test, docs, test). Iteration 92 complete: Verilator 5.052 0 warnings under -Wall, Yosys check -assert 0 problems, formal 7 invariants proven, MUT_95 killed (95/95, 100% kill rate), 509/509 regression pass, 8/8 gate-level pass, 19,346 CMOS cells."
+  "notes": "CI fully green on GitHub Actions (gds, precheck, gl_test, docs, test). Iteration 93 complete: Automated microcode profiler (tools/profiler.py) and test suite (test/test_profiler.py, 6/6 tests), 515 total tests across 89 modules, MUT_96 wait step mutant killed (96/96, 100% kill rate), 8/8 gate-level tests passed, 7 formal invariants proven in 115s, 19,346 CMOS cells."
 }
