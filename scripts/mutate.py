@@ -817,6 +817,14 @@ MUTANTS = [
         "replacement": "  wire edge_rise = !pin_now && pin_prev;  // Mutated: rising edge inverted to falling edge",
         "description": "Low-power event-driven wakeup edge polarity corruption: edge_rise inverts rising edge condition to falling edge (!pin_now && pin_prev), breaking hardware event wakeup, CAN/LIN SOF sync, and WAITEDGE timing discovery",
     },
+    {
+        "id": "MUT_100_PROGRAM_RAM_RDATA_SEU_CORRUPT",
+        "category": "Program Memory / ECC SEU Fault",
+        "file": "src/program_ram.v",
+        "target": "  assign data = mem[addr];",
+        "replacement": "  assign data = mem[addr] ^ 16'h0002;  // Mutated: Program RAM read data bit 1 corrupted (SEU soft error)",
+        "description": "Program RAM instruction read data single-event upset (SEU) fault: bit 1 of fetched instructions (operand LSB) is corrupted (mem[addr] ^ 16'h0002), simulating radiation/alpha-particle soft bit-flip in SRAM bitcell or read buffer, corrupting opcodes/immediates and crashing firmware",
+    },
 ]
 
 
