@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-23T21:09:26Z",
+  "timestamp": "2026-09-23T21:15:49Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 255.85,
+  "campaign_time_sec": 10.02,
   "mutants": [
     {
-      "id": "MUT_102_EQUALIZER_WAITEDGE_INCREMENT_STEP_CORRUPT",
-      "category": "Equalization / Baud Phase Tracking Accumulator",
+      "id": "MUT_103_BRIDGE_FABRIC_DIRECTION_CORRUPT",
+      "category": "Universal Bridge / Serial Shiftout Datapath",
       "file": "src/core.v",
-      "description": "Baud phase tracking and edge interval accumulator corruption: edge_wait_cnt increments by 2 per stall cycle instead of 1, distorting measured bit durations, pulse widths, and jitter margins by 2x and breaking baud synchronization across high-speed protocol links",
+      "description": "Universal protocol bridge and serial shiftout datapath corruption: OP_SHIFTOUT in LSB mode inverts output bit (~rd_val[0] instead of rd_val[0]), corrupting universal multi-protocol translation and egress streaming across UART, LIN, MIDI, and serial bridges",
       "status": "KILLED",
-      "elapsed_sec": 255.74
+      "elapsed_sec": 9.97
     }
   ]
 }

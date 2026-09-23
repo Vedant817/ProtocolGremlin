@@ -841,6 +841,14 @@ MUTANTS = [
         "replacement": "                  edge_wait_cnt <= (edge_wait_cnt == 8'hFF) ? 8'hFF : (edge_wait_cnt + 8'h02);  // Mutated: WAITEDGE wait counter increments by 2",
         "description": "Baud phase tracking and edge interval accumulator corruption: edge_wait_cnt increments by 2 per stall cycle instead of 1, distorting measured bit durations, pulse widths, and jitter margins by 2x and breaking baud synchronization across high-speed protocol links",
     },
+    {
+        "id": "MUT_103_BRIDGE_FABRIC_DIRECTION_CORRUPT",
+        "category": "Universal Bridge / Serial Shiftout Datapath",
+        "file": "src/core.v",
+        "target": "                  gpio_out[pin_idx] <= rd_val[0];",
+        "replacement": "                  gpio_out[pin_idx] <= ~rd_val[0];  // Mutated: SHIFTOUT LSB mode inverts output bit",
+        "description": "Universal protocol bridge and serial shiftout datapath corruption: OP_SHIFTOUT in LSB mode inverts output bit (~rd_val[0] instead of rd_val[0]), corrupting universal multi-protocol translation and egress streaming across UART, LIN, MIDI, and serial bridges",
+    },
 ]
 
 
