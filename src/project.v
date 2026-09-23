@@ -18,6 +18,7 @@
 
 `default_nettype none
 
+/* verilator lint_off DECLFILENAME */
 module tt_um_Vedant817_protocol_emulator (
     input  wire [7:0] ui_in,    // Dedicated inputs (reserved, unused in v0)
     output wire [7:0] uo_out,   // Dedicated outputs (reserved, unused in v0)

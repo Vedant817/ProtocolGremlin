@@ -777,6 +777,14 @@ MUTANTS = [
         "replacement": "      gpio_dir       <= 8'hFF;  // Mutated: reset forces GPIO outputs active instead of High-Z",
         "description": "Chip reset electrical safety fault: reset forces gpio_dir to 0xFF (driving active outputs) instead of safe High-Z tri-state 0x00, causing potential external bus contention and violating formal reset safety invariants",
     },
+    {
+        "id": "MUT_95_BOOTLOAD_WDATA_ALIGN_CORRUPT",
+        "category": "Bootloader / Shift Register Word Alignment",
+        "file": "src/core.v",
+        "target": "  wire [15:0] ram_wdata = {ld_sreg, gpio_in[LOAD_DATA_BIT]};",
+        "replacement": "  wire [15:0] ram_wdata = {ld_sreg[13:0], 1'b0, gpio_in[LOAD_DATA_BIT]};  // Mutated: ld_sreg shifted bit alignment corrupted",
+        "description": "Bootloader RAM write-data alignment fault: ram_wdata concatenates misaligned 14-bit slice ld_sreg[13:0] with inserted 0 instead of exact 15-bit ld_sreg, corrupting instruction opcode/operand words during serial bootload",
+    },
 ]
 
 

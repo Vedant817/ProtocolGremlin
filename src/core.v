@@ -124,7 +124,7 @@ module core #(
   // Bootloader state
   reg [2:0] ld_state;
   reg [1:0] ld_settle_cnt;
-  reg [15:0] ld_sreg;
+  reg [14:0] ld_sreg;
   reg [4:0] ld_bitcnt;
   reg [7:0] ld_word_count;
   reg [7:0] ld_word_idx;
@@ -148,7 +148,7 @@ module core #(
   // same conditions the sequential bootloader FSM below uses to advance.
   wire ram_we = (ld_state == LD_WORD) && gpio_in[LOAD_REQ_BIT] && ld_clk_rise && (ld_bitcnt == 5'd15);
   wire [ADDR_WIDTH-1:0] ram_waddr = ld_word_idx[ADDR_WIDTH-1:0];
-  wire [15:0] ram_wdata = {ld_sreg[14:0], gpio_in[LOAD_DATA_BIT]};
+  wire [15:0] ram_wdata = {ld_sreg, gpio_in[LOAD_DATA_BIT]};
 
   // ---------------------------------------------------------------------
   // Submodules
@@ -182,6 +182,7 @@ module core #(
   wire [4:0] opcode  = instr[15:11];
   wire [1:0] rd_idx  = instr[10:9];
   wire [7:0] operand = instr[8:1];
+  wire _unused_bits  = &{instr[0], 1'b0};
   wire [1:0] rs_idx  = operand[1:0];
   wire [2:0] pin_idx = operand[2:0];
   wire [1:0] edge_mode = operand[4:3];
@@ -259,7 +260,7 @@ module core #(
 
       ld_state       <= LD_WAIT;
       ld_settle_cnt  <= 2'd0;
-      ld_sreg        <= 16'h0000;
+      ld_sreg        <= 15'd0;
       ld_bitcnt      <= 5'd0;
       ld_word_count  <= 8'h00;
       ld_word_idx    <= 8'h00;
@@ -283,7 +284,7 @@ module core #(
             ld_settle_cnt <= ld_settle_cnt + 2'd1;
           end else if (gpio_in[LOAD_REQ_BIT]) begin
             ld_state  <= LD_COUNT;
-            ld_sreg   <= 16'h0000;
+            ld_sreg   <= 15'd0;
             ld_bitcnt <= 5'd0;
             ld_crc    <= 8'h00;
             boot_done <= 1'b0;
@@ -317,7 +318,7 @@ module core #(
                 ld_state <= LD_WORD;
               end
             end else begin
-              ld_sreg   <= {ld_sreg[14:0], gpio_in[LOAD_DATA_BIT]};
+              ld_sreg   <= {ld_sreg[13:0], gpio_in[LOAD_DATA_BIT]};
               ld_bitcnt <= ld_bitcnt + 5'd1;
             end
           end
@@ -344,7 +345,7 @@ module core #(
                 ld_state <= LD_CRC;
               end
             end else begin
-              ld_sreg   <= {ld_sreg[14:0], gpio_in[LOAD_DATA_BIT]};
+              ld_sreg   <= {ld_sreg[13:0], gpio_in[LOAD_DATA_BIT]};
               ld_bitcnt <= ld_bitcnt + 5'd1;
             end
           end
@@ -374,7 +375,7 @@ module core #(
                 ld_state  <= LD_DONE;
               end
             end else begin
-              ld_sreg   <= {ld_sreg[14:0], gpio_in[LOAD_DATA_BIT]};
+              ld_sreg   <= {ld_sreg[13:0], gpio_in[LOAD_DATA_BIT]};
               ld_bitcnt <= ld_bitcnt + 5'd1;
             end
           end
@@ -490,6 +491,7 @@ module core #(
   // Exposes per-cycle instruction retirement and architectural state
   // for formal verification and hardware observability (RVFI pattern).
   // ---------------------------------------------------------------------
+`ifdef PVFI
   reg [31:0] pvfi_order_cnt;
   wire pvfi_executing = (ld_state == LD_DONE) && !halted && (wait_remaining == 8'h00);
   wire pvfi_stalled_edge = (opcode == OP_WAITEDGE) && (edge_mode != 2'b11) && !edge_matched;
@@ -502,22 +504,6 @@ module core #(
       pvfi_order_cnt <= pvfi_order_cnt + 32'd1;
     end
   end
-
-`ifndef PVFI
-  wire        pvfi_valid;
-  wire [31:0] pvfi_order;
-  wire [15:0] pvfi_insn;
-  wire [7:0]  pvfi_pc_rdata;
-  wire [7:0]  pvfi_pc_wdata;
-  wire [1:0]  pvfi_rd_addr;
-  wire        pvfi_rd_we;
-  wire [7:0]  pvfi_rd_wdata;
-  wire [7:0]  pvfi_gpio_oe;
-  wire [7:0]  pvfi_gpio_wdata;
-  wire [7:0]  pvfi_gpio_rdata;
-  wire        pvfi_halted;
-  wire [31:0] pvfi_cycle;
-`endif
 
   assign pvfi_valid      = pvfi_retiring;
   assign pvfi_order      = pvfi_order_cnt;
@@ -552,6 +538,7 @@ module core #(
   assign pvfi_gpio_rdata = gpio_in;
   assign pvfi_halted     = halted;
   assign pvfi_cycle      = cycle_cnt;
+`endif
 
 `ifdef FORMAL
   reg f_past_valid = 1'b0;
