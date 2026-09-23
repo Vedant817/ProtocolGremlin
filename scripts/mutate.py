@@ -801,7 +801,16 @@ MUTANTS = [
         "replacement": "      mem[waddr ^ 8'h01] <= wdata;  // Mutated: waddr bit 0 inverted during writes",
         "description": "Program RAM write addressing bug: waddr bit 0 inverted during serial bootloading writes (mem[waddr ^ 8'h01] <= wdata), misplacing even and odd instruction words in memory and crashing firmware execution",
     },
+    {
+        "id": "MUT_98_ARBITER_GPIO_OPEN_DRAIN_POLARITY_CORRUPT",
+        "category": "Bus Arbitration / Open-Drain Polarity",
+        "file": "src/gpio.v",
+        "target": "  assign pin_oe  = (dir & ~od_mode) | (dir & od_mode & ~out_val);",
+        "replacement": "  assign pin_oe  = (dir & ~od_mode) | (dir & od_mode & out_val);  // Mutated: open-drain pin_oe polarity inverted",
+        "description": "Multi-master bus arbitration open-drain polarity corruption: pin_oe asserts when out_val is 1 instead of 0 in open-drain mode, inverting recessive/dominant bus drive and causing electrical contention and arbitration failure",
+    },
 ]
+
 
 
 
