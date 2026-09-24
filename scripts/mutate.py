@@ -937,6 +937,14 @@ MUTANTS = [
         "replacement": "              OP_GDIR:  gpio_dir <= rd_val ^ 8'h01;  // Mutated: OP_GDIR bit 0 direction inverted",
         "description": "Multi-Phase DLL and clock phase deskew GPIO direction datapath corruption: OP_GDIR inverts bit 0 of driven gpio_dir register, causing pin direction mismatch, bus contention or High-Z float during high-speed clock phase alignment and status strobe",
     },
+    {
+        "id": "MUT_115_FEC_GWR_DATA_BIT2_CORRUPT",
+        "category": "Forward Error Correction & GPIO Output Datapath",
+        "file": "src/core.v",
+        "target": "              OP_GWR:   gpio_out <= rd_val;",
+        "replacement": "              OP_GWR:   gpio_out <= rd_val ^ 8'h04;  // Mutated: OP_GWR bit 2 corrupted",
+        "description": "Reed-Solomon FEC and GPIO output status drive corruption: OP_GWR corrupts bit 2 of driven gpio_out register (^ 8'h04), breaking FEC threshold status reporting, uncorrectable error alarms, and physical diagnostic pin signatures",
+    },
 ]
 
 
