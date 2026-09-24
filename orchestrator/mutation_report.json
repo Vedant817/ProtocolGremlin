@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-23T21:28:44Z",
+  "timestamp": "2026-09-23T21:41:04Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 29.74,
+  "campaign_time_sec": 20.35,
   "mutants": [
     {
-      "id": "MUT_104_BIST_BOOT_ERR_FALSE_ASSERTION",
-      "category": "BIST / Hardware Health Status Indication",
+      "id": "MUT_105_AMS_SHIFTIN_MSB_ZERO_FLAG_POLARITY",
+      "category": "AMS Telemetry / Ingress Shift Zero Detection",
       "file": "src/core.v",
-      "description": "Hardware Built-In Self-Test (BIST) and boot health indication fault: on successful bitstream CRC verification, boot_err is falsely asserted (boot_err <= 1'b1 instead of 1'b0), reporting hardware self-test failure on valid code and corrupting production go/no-go screening",
+      "description": "Analog-mixed signal telemetry and serial ingress shift zero detection corruption: OP_SHIFTIN in MSB mode checks gpio_in[pin_idx] instead of !gpio_in[pin_idx] for zero flag assertion, causing null samples (all zeros) to deassert z and non-zero samples with MSBs=0 to falsely assert z, corrupting delta-sigma bitstream null-detection and packet delimiting",
       "status": "KILLED",
-      "elapsed_sec": 29.69
+      "elapsed_sec": 20.29
     }
   ]
 }

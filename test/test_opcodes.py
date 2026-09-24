@@ -134,6 +134,10 @@ async def test_opcode_gpio_and_shifts(dut):
         ; Test SHIFTIN pin 7: shift in bit 7 of external input (which is 1)
         SHIFTIN R3, 7   ; R3 becomes (1 << 7) | (0x2A >> 1) = 0x80 | 0x15 = 0x95
         
+        ; Test SHIFTIN MSB pin 0: shift in bit 0 of external input (which is 0 from 0x84)
+        LDI R0, 0x00
+        SHIFTIN R0, 8   ; MSB mode (bit 3=1, pin 0): R0 becomes 0x00, Z flag asserted
+        
         WAIT 3
         HALT
     """
@@ -143,3 +147,5 @@ async def test_opcode_gpio_and_shifts(dut):
     assert int(dut.uio_oe.value) == 0x33, f"uio_oe: {int(dut.uio_oe.value)}"
     assert int(core.r2.value) == 0x84, f"R2 (GRD): {hex(int(core.r2.value))}"
     assert int(core.r3.value) == 0x95, f"R3 (SHIFTIN): {hex(int(core.r3.value))}"
+    assert int(core.r0.value) == 0x00, f"R0 (SHIFTIN MSB): {hex(int(core.r0.value))}"
+    assert bool(core.z.value) is True, "Z flag should be asserted for SHIFTIN MSB resulting in 0x00"

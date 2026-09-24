@@ -857,6 +857,14 @@ MUTANTS = [
         "replacement": "              if ({ld_sreg[6:0], gpio_in[LOAD_DATA_BIT]} == ld_crc) begin\n                boot_err  <= 1'b1;  // Mutated: Successful bootload asserts boot_err",
         "description": "Hardware Built-In Self-Test (BIST) and boot health indication fault: on successful bitstream CRC verification, boot_err is falsely asserted (boot_err <= 1'b1 instead of 1'b0), reporting hardware self-test failure on valid code and corrupting production go/no-go screening",
     },
+    {
+        "id": "MUT_105_AMS_SHIFTIN_MSB_ZERO_FLAG_POLARITY",
+        "category": "AMS Telemetry / Ingress Shift Zero Detection",
+        "file": "src/core.v",
+        "target": "                  z <= (rd_val[6:0] == 7'h00) && !gpio_in[pin_idx];",
+        "replacement": "                  z <= (rd_val[6:0] == 7'h00) && gpio_in[pin_idx];  // Mutated: SHIFTIN MSB zero flag checks gpio_in instead of !gpio_in",
+        "description": "Analog-mixed signal telemetry and serial ingress shift zero detection corruption: OP_SHIFTIN in MSB mode checks gpio_in[pin_idx] instead of !gpio_in[pin_idx] for zero flag assertion, causing null samples (all zeros) to deassert z and non-zero samples with MSBs=0 to falsely assert z, corrupting delta-sigma bitstream null-detection and packet delimiting",
+    },
 ]
 
 
