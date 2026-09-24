@@ -961,6 +961,14 @@ MUTANTS = [
         "replacement": "              OP_LDI: begin\n                write_rd(rd_idx, operand ^ 8'h40);  // Mutated: OP_LDI operand bit 6 corrupted",
         "description": "Elastic Buffer rate matching and immediate load datapath corruption: OP_LDI corrupts bit 6 of immediate value written to rd (^ 8'h40), breaking buffer watermark configuration, slip/insert threshold setup, and rate-matching status signatures",
     },
+    {
+        "id": "MUT_118_DESKEW_ALU_RESULT_BIT1_CORRUPT",
+        "category": "Multi-Lane Deskew & ALU Arithmetic Result Datapath",
+        "file": "src/core.v",
+        "target": "              OP_ADDI, OP_SUBI, OP_ANDI, OP_ORI, OP_XORI: begin\n                write_rd(rd_idx, alu_result);\n                z <= (alu_result == 8'h00);",
+        "replacement": "              OP_ADDI, OP_SUBI, OP_ANDI, OP_ORI, OP_XORI: begin\n                write_rd(rd_idx, alu_result ^ 8'h02);  // Mutated: immediate ALU result bit 1 corrupted\n                z <= (alu_result == 8'h00);",
+        "description": "Multi-lane deskew engine and immediate arithmetic datapath corruption: OP_ADDI corrupts bit 1 of alu_result written to rd (^ 8'h02), breaking alignment marker offset calculation, lane remapping crossbar arithmetic, and verification signatures",
+    },
 ]
 
 

@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-24T13:34:08Z",
-  "total_mutants": 1,
-  "killed": 1,
+  "timestamp": "2026-09-24T14:01:46Z",
+  "total_mutants": 118,
+  "killed": 118,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 145.79,
+  "campaign_time_sec": 194.87,
   "mutants": [
     {
-      "id": "MUT_117_ELASTIC_BUFFER_LDI_OPERAND_BIT6_CORRUPT",
-      "category": "Elastic Buffer & Immediate Load Datapath",
+      "id": "MUT_118_DESKEW_ALU_RESULT_BIT1_CORRUPT",
+      "category": "Multi-Lane Deskew & ALU Arithmetic Result Datapath",
       "file": "src/core.v",
-      "description": "Elastic Buffer rate matching and immediate load datapath corruption: OP_LDI corrupts bit 6 of immediate value written to rd (^ 8'h40), breaking buffer watermark configuration, slip/insert threshold setup, and rate-matching status signatures",
+      "description": "Multi-lane deskew engine and immediate arithmetic datapath corruption: OP_ADDI corrupts bit 1 of alu_result written to rd (^ 8'h02), breaking alignment marker offset calculation, lane remapping crossbar arithmetic, and verification signatures",
       "status": "KILLED",
-      "elapsed_sec": 145.71
+      "elapsed_sec": 194.79
     }
   ]
 }

@@ -223,9 +223,13 @@ bounded problem").
 - ~~Hardware Elastic Buffer & Clock Domain Asynchronous Rate Matcher (Slip/Insert FIFO) Subsystem~~ -
   done: `docs/elastic_buffer_study.md` (PPM clock drift physics, dual-clock Gray code pointer CDC, dual hysteresis watermarks, IPG slip/insert rate matching on Idle/Skip symbols, in-packet immutability invariant, and IHP 130nm SG13G2 PPA scaling), `tools/elastic_buffer_model.py` (`RateMatchAction`, `SymbolType`, `Symbol`, `ElasticBufferConfig`, `ElasticBuffer`, `build_test_packet`, `build_ipg`, `simulate_rate_matching`, `get_incore_elastic_buffer_microcode`, `get_elastic_buffer_ppa_metrics`) + `test/test_elastic_buffer.py` (7/7 cocotb tests pass: nominal dual-clock transfer, fast write clock slip, slow write clock insert, in-packet immutability protection, overrun/underrun fault trapping, synthesizable in-core microcode execution driving uio_out=0x75, and silicon PPA validation), `MUT_117` killed.
 
+- ~~Hardware Multi-Lane Flit/Byte Striping, Lane Skew Compensation & Dynamic Alignment Marker Deskew Engine Subsystem~~ -
+  done: `docs/lane_deskew_study.md` (multi-lane striping physics, inter-lane skew delays, IEEE 802.3ba / PCIe Alignment Markers, 4-lane circular deskew FIFOs, 4x4 non-blocking lane permutation crossbar, lookahead marker buffering, and IHP 130nm SG13G2 PPA scaling), `tools/lane_deskew_model.py` (`DeskewState`, `DeskewErrorCode`, `AlignmentMarker`, `MultiLaneTransmitter`, `LaneDeskewReceiver`, `simulate_multi_lane_deskew`, `get_incore_deskew_microcode`, `get_lane_deskew_ppa_metrics`) + `test/test_lane_deskew.py` (7/7 cocotb tests pass: nominal 4-lane zero skew transfer, asymmetrical inter-lane skew compensation [0, 5, 2, 8] cycles, dynamic lane transposition [3, 2, 1, 0] un-shuffling, multi-lane scalability across 2/4/8 lanes, pathological skew timeout fault trapping, synthesizable in-core microcode execution driving uio_out=0x75, and silicon PPA validation), `MUT_118` killed.
+
 ---
 
-### Task Queue Status: 114 Iterations Complete -> Entering RESEARCH_AND_PROOF Mode
+### Task Queue Status: 115 Iterations Complete -> Entering RESEARCH_AND_PROOF Mode
 *Per `AGENTS.md`: Continuous engineering project. When the explicit task queue becomes empty, enter **RESEARCH_AND_PROOF** mode: find verification gaps, attempt to falsify assumptions, improve formal proofs, improve PPA, test alternative architectures and investigate novel protocol capabilities.*
+
 
 
