@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-24T08:02:30Z",
+  "timestamp": "2026-09-24T08:27:20Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 150.2,
+  "campaign_time_sec": 191.45,
   "mutants": [
     {
-      "id": "MUT_108_CRYPTO_ALU_XOR_MASK_CORRUPT",
-      "category": "Cryptographic Engine / Galois XOR ALU Decode",
+      "id": "MUT_109_CDC_FIFO_GWRI_DATA_CORRUPT",
+      "category": "CDC FIFO & GPIO Subsystem / Immediate Write Data Path",
       "file": "src/core.v",
-      "description": "Cryptographic engine and Galois field arithmetic corruption: OP_XORI instruction decode selects bitwise ALU_OR instead of ALU_XOR, corrupting Galois key whitening, AES AddRoundKey state mixing, and universal hash authentication",
+      "description": "Asynchronous CDC FIFO and GPIO control corruption: OP_GWRI bitwise inverts the immediate output operand, corrupting CDC write/read request strobes, full/empty flag coordination, and multi-domain handshaking",
       "status": "KILLED",
-      "elapsed_sec": 150.16
+      "elapsed_sec": 191.36
     }
   ]
 }

@@ -889,6 +889,14 @@ MUTANTS = [
         "replacement": "      OP_XORI: alu_op = ALU_OR;  // Mutated: OP_XORI selects ALU_OR instead of ALU_XOR",
         "description": "Cryptographic engine and Galois field arithmetic corruption: OP_XORI instruction decode selects bitwise ALU_OR instead of ALU_XOR, corrupting Galois key whitening, AES AddRoundKey state mixing, and universal hash authentication",
     },
+    {
+        "id": "MUT_109_CDC_FIFO_GWRI_DATA_CORRUPT",
+        "category": "CDC FIFO & GPIO Subsystem / Immediate Write Data Path",
+        "file": "src/core.v",
+        "target": "              OP_GWRI:  gpio_out <= operand;",
+        "replacement": "              OP_GWRI:  gpio_out <= ~operand;  // Mutated: OP_GWRI inverts operand bits, corrupting CDC FIFO strobes",
+        "description": "Asynchronous CDC FIFO and GPIO control corruption: OP_GWRI bitwise inverts the immediate output operand, corrupting CDC write/read request strobes, full/empty flag coordination, and multi-domain handshaking",
+    },
 ]
 
 
