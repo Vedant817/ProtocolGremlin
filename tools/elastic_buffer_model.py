@@ -236,7 +236,10 @@ def simulate_rate_matching(
     }
 
 
-import tools.assembler as assembler
+try:
+    import tools.assembler as assembler
+except ModuleNotFoundError:
+    import assembler
 
 
 def get_incore_elastic_buffer_microcode() -> List[int]:

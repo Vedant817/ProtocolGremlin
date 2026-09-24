@@ -9,7 +9,10 @@ PPA macro estimation on IHP 130nm SG13G2.
 
 from enum import IntEnum
 from typing import Dict, List, Optional, Tuple, Union
-import tools.assembler as assembler
+try:
+    import tools.assembler as assembler
+except ModuleNotFoundError:
+    import assembler
 
 
 class SyncHeaderType(IntEnum):
