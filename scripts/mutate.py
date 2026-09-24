@@ -913,6 +913,14 @@ MUTANTS = [
         "replacement": "              OP_LDI: begin\n                write_rd(rd_idx, operand ^ 8'h01);  // Mutated: OP_LDI corrupts immediate operand LSB",
         "description": "Link Training & Status State Machine (LTSSM) and register initialization corruption: OP_LDI corrupts immediate operand LSB (^ 8'h01), breaking training sequence link/lane numbering, rate negotiation flags, and in-core microcode state execution",
     },
+    {
+        "id": "MUT_112_BERT_ALU_ADD_OPERAND_CORRUPT",
+        "category": "BERT & Immediate Arithmetic / ALU Add Operand Datapath",
+        "file": "src/core.v",
+        "target": "    else alu_b = operand;",
+        "replacement": "    else alu_b = operand ^ 8'h02;  // Mutated: OP_ADDI operand bit 1 corrupted",
+        "description": "Bit Error Rate Tester (BERT) and immediate arithmetic datapath corruption: OP_ADDI corrupts immediate operand bit 1 (^ 8'h02), breaking in-core pattern verification signature generation, diagnostic calculation, and loopback qualification",
+    },
 ]
 
 

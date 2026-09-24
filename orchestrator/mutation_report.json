@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-24T09:03:29Z",
+  "timestamp": "2026-09-24T09:34:31Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 131.96,
+  "campaign_time_sec": 138.95,
   "mutants": [
     {
-      "id": "MUT_111_LTSSM_STATE_TRANSITION_CORRUPT",
-      "category": "LTSSM & Register Initialization / Immediate Load Datapath",
+      "id": "MUT_112_BERT_ALU_ADD_OPERAND_CORRUPT",
+      "category": "BERT & Immediate Arithmetic / ALU Add Operand Datapath",
       "file": "src/core.v",
-      "description": "Link Training & Status State Machine (LTSSM) and register initialization corruption: OP_LDI corrupts immediate operand LSB (^ 8'h01), breaking training sequence link/lane numbering, rate negotiation flags, and in-core microcode state execution",
+      "description": "Bit Error Rate Tester (BERT) and immediate arithmetic datapath corruption: OP_ADDI corrupts immediate operand bit 1 (^ 8'h02), breaking in-core pattern verification signature generation, diagnostic calculation, and loopback qualification",
       "status": "KILLED",
-      "elapsed_sec": 131.91
+      "elapsed_sec": 138.88
     }
   ]
 }
