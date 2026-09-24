@@ -921,6 +921,14 @@ MUTANTS = [
         "replacement": "    else alu_b = operand ^ 8'h02;  // Mutated: OP_ADDI operand bit 1 corrupted",
         "description": "Bit Error Rate Tester (BERT) and immediate arithmetic datapath corruption: OP_ADDI corrupts immediate operand bit 1 (^ 8'h02), breaking in-core pattern verification signature generation, diagnostic calculation, and loopback qualification",
     },
+    {
+        "id": "MUT_113_DVT_GPIO_PIN_OUT_BIT0_CORRUPT",
+        "category": "DVT Safeguard & GPIO Output / Physical Pin Drive Datapath",
+        "file": "src/gpio.v",
+        "target": "  assign pin_out = out_val & ~od_mode;",
+        "replacement": "  assign pin_out = (out_val & ~od_mode) ^ 8'h01;  // Mutated: GPIO output pin 0 bit inverted",
+        "description": "Dynamic Voltage & Temperature (DVT) safeguard and GPIO output datapath corruption: pin_out bit 0 is bitwise inverted, corrupting thermal throttle alert signatures, voltage trip indicators, and external system safety interlocks",
+    },
 ]
 
 
