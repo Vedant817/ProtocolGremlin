@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-24T12:47:16Z",
+  "timestamp": "2026-09-24T13:10:15Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 182.97,
+  "campaign_time_sec": 177.58,
   "mutants": [
     {
-      "id": "MUT_115_FEC_GWR_DATA_BIT2_CORRUPT",
-      "category": "Forward Error Correction & GPIO Output Datapath",
+      "id": "MUT_116_GEARBOX_SYNC_HEADER_MASK_CORRUPT",
+      "category": "64b/66b Gearbox Synchronization & ALU Immediate Add Datapath",
       "file": "src/core.v",
-      "description": "Reed-Solomon FEC and GPIO output status drive corruption: OP_GWR corrupts bit 2 of driven gpio_out register (^ 8'h04), breaking FEC threshold status reporting, uncorrectable error alarms, and physical diagnostic pin signatures",
+      "description": "64b/66b Gearbox synchronization and ALU immediate addition corruption: OP_ADDI corrupts bit 3 of alu_out written to rd (^ 8'h08), breaking gearbox sync header threshold calculation, block type field validation, and confirmation signatures",
       "status": "KILLED",
-      "elapsed_sec": 182.87
+      "elapsed_sec": 177.49
     }
   ]
 }

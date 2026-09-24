@@ -945,6 +945,14 @@ MUTANTS = [
         "replacement": "              OP_GWR:   gpio_out <= rd_val ^ 8'h04;  // Mutated: OP_GWR bit 2 corrupted",
         "description": "Reed-Solomon FEC and GPIO output status drive corruption: OP_GWR corrupts bit 2 of driven gpio_out register (^ 8'h04), breaking FEC threshold status reporting, uncorrectable error alarms, and physical diagnostic pin signatures",
     },
+    {
+        "id": "MUT_116_GEARBOX_SYNC_HEADER_MASK_CORRUPT",
+        "category": "64b/66b Gearbox Synchronization & ALU Immediate Add Datapath",
+        "file": "src/core.v",
+        "target": "              OP_ADDI, OP_SUBI, OP_ANDI, OP_ORI, OP_XORI: begin\n                write_rd(rd_idx, alu_result);",
+        "replacement": "              OP_ADDI, OP_SUBI, OP_ANDI, OP_ORI, OP_XORI: begin\n                write_rd(rd_idx, alu_result ^ 8'h08);  // Mutated: immediate ALU result bit 3 corrupted",
+        "description": "64b/66b Gearbox synchronization and ALU immediate addition corruption: OP_ADDI corrupts bit 3 of alu_out written to rd (^ 8'h08), breaking gearbox sync header threshold calculation, block type field validation, and confirmation signatures",
+    },
 ]
 
 
