@@ -1,11 +1,11 @@
 {
-  "phase": "gearbox-64b66b-scrambler-verified",
+  "phase": "elastic-buffer-rate-matcher-verified",
   "best_commit": null,
-  "active_objective": "RESEARCH_AND_PROOF: Iteration 113 complete (Physical Layer Scrambler/Descrambler & 64b/66b Gearbox Synchronization Engine, 109 modules with 639 tests, MUT_116 killed - 116/116 mutants killed 100.0%). Advancing to Iteration 114.",
+  "active_objective": "RESEARCH_AND_PROOF: Iteration 114 complete (Hardware Elastic Buffer & Clock Domain Asynchronous Rate Matcher Subsystem, 110 modules with 646 tests, MUT_117 killed - 117/117 mutants killed 100.0%). Advancing to Iteration 115.",
   "last_interaction_id": null,
   "environment_id": null,
   "consecutive_failures": 0,
-  "iterations": 113,
+  "iterations": 114,
   "halt": false,
-  "notes": "CI fully green. Iteration 113 complete: Physical Layer Scrambler/Descrambler & 64b/66b Gearbox study (docs/gearbox_64b66b_study.md), IEEE 802.3 Clause 49 & 82 line coding, 2-bit sync headers (0b01 DATA, 0b10 CONTROL), Block Type Field demuxing, 58-bit self-synchronizing multiplicative scrambler G(x)=1+x^39+x^58 with transparent sync header bypass, 64-to-66 synchronous bit gearbox rate adapter, autonomous 6-state Block Lock FSM with 1-bit slip hunting and 16-error loss-of-lock trapping, synthesizable in-core microcode execution (tools/gearbox_64b66b_model.py), cocotb suite (test/test_gearbox_64b66b.py, 7/7 tests), 639 total tests across 109 modules, MUT_116 OP_ADDI result bit 3 mutant killed in 177.49s (116/116 mutants killed, 100.0% kill rate), 8/8 gate-level tests passed in 27.34s, 7 formal invariants proven in 100s, 19,346 CMOS cells (zero gate bloat)."
+  "notes": "CI fully green. Iteration 114 complete: Hardware Elastic Buffer & Clock Domain Asynchronous Rate Matcher Subsystem study (docs/elastic_buffer_study.md), PPM drift compensation across CDR clk_rx and local clk_sys up to +/- 700 ppm, dual-clock Gray pointer CDC, dual hysteresis watermarks (HIGH_WM for slip, LOW_WM for insert), IPG symbol rate matching on Idle/Skip characters, in-packet immutability invariant with 0% data payload loss, overrun/underrun fault trapping, synthesizable in-core microcode execution (tools/elastic_buffer_model.py), cocotb suite (test/test_elastic_buffer.py, 7/7 tests), 646 total tests across 110 modules, MUT_117 OP_LDI operand bit 6 mutant killed in 145.71s (117/117 mutants killed, 100.0% kill rate), 8/8 gate-level tests passed in 30.36s, 7 formal invariants proven in 124s, 19,346 CMOS cells (zero gate bloat)."
 }

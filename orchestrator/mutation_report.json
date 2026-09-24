@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-24T13:10:15Z",
+  "timestamp": "2026-09-24T13:34:08Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 177.58,
+  "campaign_time_sec": 145.79,
   "mutants": [
     {
-      "id": "MUT_116_GEARBOX_SYNC_HEADER_MASK_CORRUPT",
-      "category": "64b/66b Gearbox Synchronization & ALU Immediate Add Datapath",
+      "id": "MUT_117_ELASTIC_BUFFER_LDI_OPERAND_BIT6_CORRUPT",
+      "category": "Elastic Buffer & Immediate Load Datapath",
       "file": "src/core.v",
-      "description": "64b/66b Gearbox synchronization and ALU immediate addition corruption: OP_ADDI corrupts bit 3 of alu_out written to rd (^ 8'h08), breaking gearbox sync header threshold calculation, block type field validation, and confirmation signatures",
+      "description": "Elastic Buffer rate matching and immediate load datapath corruption: OP_LDI corrupts bit 6 of immediate value written to rd (^ 8'h40), breaking buffer watermark configuration, slip/insert threshold setup, and rate-matching status signatures",
       "status": "KILLED",
-      "elapsed_sec": 177.49
+      "elapsed_sec": 145.71
     }
   ]
 }

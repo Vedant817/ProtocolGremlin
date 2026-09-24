@@ -953,6 +953,14 @@ MUTANTS = [
         "replacement": "              OP_ADDI, OP_SUBI, OP_ANDI, OP_ORI, OP_XORI: begin\n                write_rd(rd_idx, alu_result ^ 8'h08);  // Mutated: immediate ALU result bit 3 corrupted",
         "description": "64b/66b Gearbox synchronization and ALU immediate addition corruption: OP_ADDI corrupts bit 3 of alu_out written to rd (^ 8'h08), breaking gearbox sync header threshold calculation, block type field validation, and confirmation signatures",
     },
+    {
+        "id": "MUT_117_ELASTIC_BUFFER_LDI_OPERAND_BIT6_CORRUPT",
+        "category": "Elastic Buffer & Immediate Load Datapath",
+        "file": "src/core.v",
+        "target": "              OP_LDI: begin\n                write_rd(rd_idx, operand);",
+        "replacement": "              OP_LDI: begin\n                write_rd(rd_idx, operand ^ 8'h40);  // Mutated: OP_LDI operand bit 6 corrupted",
+        "description": "Elastic Buffer rate matching and immediate load datapath corruption: OP_LDI corrupts bit 6 of immediate value written to rd (^ 8'h40), breaking buffer watermark configuration, slip/insert threshold setup, and rate-matching status signatures",
+    },
 ]
 
 

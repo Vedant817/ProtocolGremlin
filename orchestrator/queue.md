@@ -220,9 +220,12 @@ bounded problem").
 - ~~RLDRAM 3 / Reduced Latency DRAM 3 (Micron Technology) Ultra-Low Latency Synchronous DRAM Protocol Engine~~ -
   done: `docs/rldram_study.md` (Micron RLDRAM 3 specifications, 16 independent banks, tRC ~6.67-10 ns random cycle time, BL2/BL4/BL8 DDR bursts, credit flow control, 16-bit CCITT CRC, and IHP 130nm SG13G2 PPA scaling), `tools/rldram_model.py` (`RldramBankState`, `RldramBankId`, `RldramOpCode`, `compute_rldram_crc16`, `encode_rldram_packet`, `decode_rldram_packet`, `RldramReceiverModel`, `RldramPpaModel`, and firmware generators) + `test/test_rldram.py` (6/6 cocotb tests pass: master packet header transmission via SHIFTOUT MSB-first on pin 3; slave sync ingress via WAITEDGE into R0/R1; in-register command filtering and fault trapping; in-register credit tracking and underflow trapping; packet framing, banks & receiver model validation; and RLDRAM standards compliance & PPA scaling validation), `MUT_93` killed.
 
+- ~~Hardware Elastic Buffer & Clock Domain Asynchronous Rate Matcher (Slip/Insert FIFO) Subsystem~~ -
+  done: `docs/elastic_buffer_study.md` (PPM clock drift physics, dual-clock Gray code pointer CDC, dual hysteresis watermarks, IPG slip/insert rate matching on Idle/Skip symbols, in-packet immutability invariant, and IHP 130nm SG13G2 PPA scaling), `tools/elastic_buffer_model.py` (`RateMatchAction`, `SymbolType`, `Symbol`, `ElasticBufferConfig`, `ElasticBuffer`, `build_test_packet`, `build_ipg`, `simulate_rate_matching`, `get_incore_elastic_buffer_microcode`, `get_elastic_buffer_ppa_metrics`) + `test/test_elastic_buffer.py` (7/7 cocotb tests pass: nominal dual-clock transfer, fast write clock slip, slow write clock insert, in-packet immutability protection, overrun/underrun fault trapping, synthesizable in-core microcode execution driving uio_out=0x75, and silicon PPA validation), `MUT_117` killed.
+
 ---
 
-### Task Queue Status: 113 Iterations Complete -> Entering RESEARCH_AND_PROOF Mode
+### Task Queue Status: 114 Iterations Complete -> Entering RESEARCH_AND_PROOF Mode
 *Per `AGENTS.md`: Continuous engineering project. When the explicit task queue becomes empty, enter **RESEARCH_AND_PROOF** mode: find verification gaps, attempt to falsify assumptions, improve formal proofs, improve PPA, test alternative architectures and investigate novel protocol capabilities.*
 
 
