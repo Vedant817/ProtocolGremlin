@@ -873,6 +873,14 @@ MUTANTS = [
         "replacement": "  wire [1:0] edge_mode = operand[5:4];  // Mutated: WAITEDGE edge_mode slice shifted to operand[5:4]",
         "description": "All-Digital Phase-Locked Loop (ADPLL) and Dynamic Frequency Scaling (DFS) edge-mode decode corruption: edge_mode slices operand[5:4] instead of operand[4:3], corrupting WAITEDGE trigger polarity (interpreting rising-edge lock assertion 0b01 as falling-edge 0b00) and causing core lock synchronization to hang indefinitely",
     },
+    {
+        "id": "MUT_107_RTC_TIMESTAMP_CAPTURE_BYTE_CORRUPT",
+        "category": "RTC & Timestamping / Cycle Counter Capture",
+        "file": "src/core.v",
+        "target": "                  // Timestamp mode: capture lower 8 bits of free-running cycle counter\n                  write_rd(rd_idx, cycle_cnt[7:0]);",
+        "replacement": "                  // Timestamp mode: capture lower 8 bits of free-running cycle counter\n                  write_rd(rd_idx, cycle_cnt[15:8]);  // Mutated: RTC timestamp captures cycle_cnt[15:8] instead of cycle_cnt[7:0]",
+        "description": "Real-Time Clock (RTC) and hardware timestamp capture corruption: OP_WAITEDGE in timestamp mode (edge_mode == 2'b11) captures cycle_cnt[15:8] instead of cycle_cnt[7:0], corrupting sub-microsecond event time-tagging, timestamp delta calculations, and real-time clock synchronization",
+    },
 ]
 
 
