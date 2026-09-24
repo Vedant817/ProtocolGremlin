@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-24T07:43:43Z",
+  "timestamp": "2026-09-24T08:02:30Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 173.66,
+  "campaign_time_sec": 150.2,
   "mutants": [
     {
-      "id": "MUT_107_RTC_TIMESTAMP_CAPTURE_BYTE_CORRUPT",
-      "category": "RTC & Timestamping / Cycle Counter Capture",
+      "id": "MUT_108_CRYPTO_ALU_XOR_MASK_CORRUPT",
+      "category": "Cryptographic Engine / Galois XOR ALU Decode",
       "file": "src/core.v",
-      "description": "Real-Time Clock (RTC) and hardware timestamp capture corruption: OP_WAITEDGE in timestamp mode (edge_mode == 2'b11) captures cycle_cnt[15:8] instead of cycle_cnt[7:0], corrupting sub-microsecond event time-tagging, timestamp delta calculations, and real-time clock synchronization",
+      "description": "Cryptographic engine and Galois field arithmetic corruption: OP_XORI instruction decode selects bitwise ALU_OR instead of ALU_XOR, corrupting Galois key whitening, AES AddRoundKey state mixing, and universal hash authentication",
       "status": "KILLED",
-      "elapsed_sec": 173.6
+      "elapsed_sec": 150.16
     }
   ]
 }

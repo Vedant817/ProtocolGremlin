@@ -881,6 +881,14 @@ MUTANTS = [
         "replacement": "                  // Timestamp mode: capture lower 8 bits of free-running cycle counter\n                  write_rd(rd_idx, cycle_cnt[15:8]);  // Mutated: RTC timestamp captures cycle_cnt[15:8] instead of cycle_cnt[7:0]",
         "description": "Real-Time Clock (RTC) and hardware timestamp capture corruption: OP_WAITEDGE in timestamp mode (edge_mode == 2'b11) captures cycle_cnt[15:8] instead of cycle_cnt[7:0], corrupting sub-microsecond event time-tagging, timestamp delta calculations, and real-time clock synchronization",
     },
+    {
+        "id": "MUT_108_CRYPTO_ALU_XOR_MASK_CORRUPT",
+        "category": "Cryptographic Engine / Galois XOR ALU Decode",
+        "file": "src/core.v",
+        "target": "      OP_XORI: alu_op = ALU_XOR;",
+        "replacement": "      OP_XORI: alu_op = ALU_OR;  // Mutated: OP_XORI selects ALU_OR instead of ALU_XOR",
+        "description": "Cryptographic engine and Galois field arithmetic corruption: OP_XORI instruction decode selects bitwise ALU_OR instead of ALU_XOR, corrupting Galois key whitening, AES AddRoundKey state mixing, and universal hash authentication",
+    },
 ]
 
 
