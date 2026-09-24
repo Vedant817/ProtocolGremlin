@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-24T08:27:20Z",
+  "timestamp": "2026-09-24T08:47:05Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 191.45,
+  "campaign_time_sec": 168.84,
   "mutants": [
     {
-      "id": "MUT_109_CDC_FIFO_GWRI_DATA_CORRUPT",
-      "category": "CDC FIFO & GPIO Subsystem / Immediate Write Data Path",
+      "id": "MUT_110_NV_CONFIG_COMMIT_STROBE_CORRUPT",
+      "category": "NV-Config Shadow Memory & GPIO / Output Drive Datapath",
       "file": "src/core.v",
-      "description": "Asynchronous CDC FIFO and GPIO control corruption: OP_GWRI bitwise inverts the immediate output operand, corrupting CDC write/read request strobes, full/empty flag coordination, and multi-domain handshaking",
+      "description": "NV-Config Shadow Memory and GPIO status drive corruption: OP_GWR bitwise inverts rd_val driven to gpio_out (~rd_val instead of rd_val), corrupting configuration commit acknowledge signals, active shadow parameter verification, and bus status reporting",
       "status": "KILLED",
-      "elapsed_sec": 191.36
+      "elapsed_sec": 168.74
     }
   ]
 }

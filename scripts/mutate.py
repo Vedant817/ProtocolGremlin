@@ -897,6 +897,14 @@ MUTANTS = [
         "replacement": "              OP_GWRI:  gpio_out <= ~operand;  // Mutated: OP_GWRI inverts operand bits, corrupting CDC FIFO strobes",
         "description": "Asynchronous CDC FIFO and GPIO control corruption: OP_GWRI bitwise inverts the immediate output operand, corrupting CDC write/read request strobes, full/empty flag coordination, and multi-domain handshaking",
     },
+    {
+        "id": "MUT_110_NV_CONFIG_COMMIT_STROBE_CORRUPT",
+        "category": "NV-Config Shadow Memory & GPIO / Output Drive Datapath",
+        "file": "src/core.v",
+        "target": "              OP_GWR:   gpio_out <= rd_val;",
+        "replacement": "              OP_GWR:   gpio_out <= ~rd_val;  // Mutated: OP_GWR inverts rd_val, corrupting NV-Config acknowledge",
+        "description": "NV-Config Shadow Memory and GPIO status drive corruption: OP_GWR bitwise inverts rd_val driven to gpio_out (~rd_val instead of rd_val), corrupting configuration commit acknowledge signals, active shadow parameter verification, and bus status reporting",
+    },
 ]
 
 
