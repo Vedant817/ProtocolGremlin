@@ -929,6 +929,14 @@ MUTANTS = [
         "replacement": "  assign pin_out = (out_val & ~od_mode) ^ 8'h01;  // Mutated: GPIO output pin 0 bit inverted",
         "description": "Dynamic Voltage & Temperature (DVT) safeguard and GPIO output datapath corruption: pin_out bit 0 is bitwise inverted, corrupting thermal throttle alert signatures, voltage trip indicators, and external system safety interlocks",
     },
+    {
+        "id": "MUT_114_DLL_GDIR_REG_MASK_CORRUPT",
+        "category": "Clock Phase Deskew & GPIO Direction Register Datapath",
+        "file": "src/core.v",
+        "target": "              OP_GDIR:  gpio_dir <= rd_val;",
+        "replacement": "              OP_GDIR:  gpio_dir <= rd_val ^ 8'h01;  // Mutated: OP_GDIR bit 0 direction inverted",
+        "description": "Multi-Phase DLL and clock phase deskew GPIO direction datapath corruption: OP_GDIR inverts bit 0 of driven gpio_dir register, causing pin direction mismatch, bus contention or High-Z float during high-speed clock phase alignment and status strobe",
+    },
 ]
 
 
