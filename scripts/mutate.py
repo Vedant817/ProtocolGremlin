@@ -865,6 +865,14 @@ MUTANTS = [
         "replacement": "                  z <= (rd_val[6:0] == 7'h00) && gpio_in[pin_idx];  // Mutated: SHIFTIN MSB zero flag checks gpio_in instead of !gpio_in",
         "description": "Analog-mixed signal telemetry and serial ingress shift zero detection corruption: OP_SHIFTIN in MSB mode checks gpio_in[pin_idx] instead of !gpio_in[pin_idx] for zero flag assertion, causing null samples (all zeros) to deassert z and non-zero samples with MSBs=0 to falsely assert z, corrupting delta-sigma bitstream null-detection and packet delimiting",
     },
+    {
+        "id": "MUT_106_ADPLL_DFS_WAITEDGE_MODE_SLICE_CORRUPT",
+        "category": "ADPLL & DFS / WAITEDGE Edge-Mode Decode",
+        "file": "src/core.v",
+        "target": "  wire [1:0] edge_mode = operand[4:3];",
+        "replacement": "  wire [1:0] edge_mode = operand[5:4];  // Mutated: WAITEDGE edge_mode slice shifted to operand[5:4]",
+        "description": "All-Digital Phase-Locked Loop (ADPLL) and Dynamic Frequency Scaling (DFS) edge-mode decode corruption: edge_mode slices operand[5:4] instead of operand[4:3], corrupting WAITEDGE trigger polarity (interpreting rising-edge lock assertion 0b01 as falling-edge 0b00) and causing core lock synchronization to hang indefinitely",
+    },
 ]
 
 
