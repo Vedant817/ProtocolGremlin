@@ -905,6 +905,14 @@ MUTANTS = [
         "replacement": "              OP_GWR:   gpio_out <= ~rd_val;  // Mutated: OP_GWR inverts rd_val, corrupting NV-Config acknowledge",
         "description": "NV-Config Shadow Memory and GPIO status drive corruption: OP_GWR bitwise inverts rd_val driven to gpio_out (~rd_val instead of rd_val), corrupting configuration commit acknowledge signals, active shadow parameter verification, and bus status reporting",
     },
+    {
+        "id": "MUT_111_LTSSM_STATE_TRANSITION_CORRUPT",
+        "category": "LTSSM & Register Initialization / Immediate Load Datapath",
+        "file": "src/core.v",
+        "target": "              OP_LDI: begin\n                write_rd(rd_idx, operand);",
+        "replacement": "              OP_LDI: begin\n                write_rd(rd_idx, operand ^ 8'h01);  // Mutated: OP_LDI corrupts immediate operand LSB",
+        "description": "Link Training & Status State Machine (LTSSM) and register initialization corruption: OP_LDI corrupts immediate operand LSB (^ 8'h01), breaking training sequence link/lane numbering, rate negotiation flags, and in-core microcode state execution",
+    },
 ]
 
 

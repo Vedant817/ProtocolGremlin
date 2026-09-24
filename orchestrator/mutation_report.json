@@ -1,18 +1,18 @@
 {
-  "timestamp": "2026-09-24T08:47:05Z",
+  "timestamp": "2026-09-24T09:03:29Z",
   "total_mutants": 1,
   "killed": 1,
   "survived": 0,
   "kill_rate_pct": 100.0,
-  "campaign_time_sec": 168.84,
+  "campaign_time_sec": 131.96,
   "mutants": [
     {
-      "id": "MUT_110_NV_CONFIG_COMMIT_STROBE_CORRUPT",
-      "category": "NV-Config Shadow Memory & GPIO / Output Drive Datapath",
+      "id": "MUT_111_LTSSM_STATE_TRANSITION_CORRUPT",
+      "category": "LTSSM & Register Initialization / Immediate Load Datapath",
       "file": "src/core.v",
-      "description": "NV-Config Shadow Memory and GPIO status drive corruption: OP_GWR bitwise inverts rd_val driven to gpio_out (~rd_val instead of rd_val), corrupting configuration commit acknowledge signals, active shadow parameter verification, and bus status reporting",
+      "description": "Link Training & Status State Machine (LTSSM) and register initialization corruption: OP_LDI corrupts immediate operand LSB (^ 8'h01), breaking training sequence link/lane numbering, rate negotiation flags, and in-core microcode state execution",
       "status": "KILLED",
-      "elapsed_sec": 168.74
+      "elapsed_sec": 131.91
     }
   ]
 }
